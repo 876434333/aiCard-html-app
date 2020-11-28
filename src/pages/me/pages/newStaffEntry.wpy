@@ -1,0 +1,293 @@
+<style lang="scss">
+$main_color: #e75152;
+page {
+  background: #f1f1f1;
+}
+.wrap {
+  margin: 0 44rpx 44rpx 44rpx;
+}
+.card {
+  .main {
+    height: 337rpx;
+    border-radius: 10rpx;
+    background: #fff;
+    box-shadow: rgba(0, 0, 0, 0.12) -1px 0px 17px;
+    .card-info {
+      padding-top: 60rpx;
+      margin-left: 60rpx;
+      .icon {
+        display: inline-block;
+        width: auto;
+        vertical-align: middle;
+        position: relative;
+        image {
+          width: 126rpx;
+          height: 126rpx;
+          border-radius: 50%;
+        }
+      }
+      .info {
+        display: inline-block;
+        width: auto;
+        margin-left: 40rpx;
+        margin-top: -16rpx;
+        vertical-align: middle;
+        image {
+          width: 21rpx;
+          height: 29rpx;
+          display: inline-block;
+        }
+      }
+    }
+    .company {
+      padding-left: 60rpx;
+      margin-top: 12rpx;
+      color: #646464;
+      font-size: 24rpx;
+    }
+  }
+}
+.btn {
+  background: $main_color;
+  color: #ffffff;
+  font-size: 36rpx;
+  margin-top: 44rpx;
+}
+</style>
+<template>
+<view class="wrap" wx:if="{{showAllPage}}">
+  <view class="card mt-40" wx:if="{{staff}}" @tap="cardView">
+      <view class="main" style="position:relative">
+        <view class="card-info">
+            <view class="icon"><image src="{{staff.inviteHeadIcon}}"/></view>
+            <view class="info">
+                <view class="font-size-45 c-323232">
+                  {{staff.inviteName}}<text class="font-size-24 ml-40">{{staff.station}}</text>
+                </view>
+                <view class="font-size-30 c-646464" style="padding-top:10rpx">
+                  <image src="../../../assets/images/card/card_phone_icon.png"/>
+                  <view style="display:inline-block;padding-left:10rpx">{{staff.phone}}</view>
+                </view>
+            </view>
+        </view>
+        <view class="company">{{staff.enterpriseName}}</view>
+      </view>
+  </view>
+   <button class="btn" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">立即认领</button>
+   <modal @getCherckResult.user="getCherckResult"></modal>
+</view>
+</template>
+<script>
+import wepy from 'wepy'
+import { authorizeFromMap } from '@/constants/pageMap'
+import { loginApi, companyApi } from '@/api'
+import Modal from '@/components/modal/modal'
+import {G_RES_URL} from '@/config'
+export default class newStaffEntry extends wepy.page {
+  config = {
+    navigationBarTitleText: '新员工认领'
+  }
+  components = {
+    modal: Modal
+  }
+  data = {
+    showAllPage: false,
+    res_url: G_RES_URL,
+    staff: {},
+    inviteEnterpriseId: '', // 邀请加入的公司id
+    inviterStaffId: '', // 被邀请人id
+    employeeId: '', // 邀请人id
+    openid: ''
+  }
+
+  onLoad(option) {
+    this.inviteEnterpriseId = option.enterprise_id
+    this.inviterStaffId = option.invite_staff_id
+    this.employeeId = option.employee_id
+    // this.inviteEnterpriseId = 'f1cb1187-f1ab-4b86-8484-891a51250e4a'
+    // this.inviterStaffId = '5dfe544c5a5d46468acbc0f21a5bf5ec'
+    // this.employeeId = '0c858e02b8dd46789c4e2f3628129a77'
+    let userInfo = this.$parent.getUserInfo()
+    // 点链接进来会执行getOpenid,从授权界面过来不会执行
+    if (!userInfo) {
+      this.getOpenId(this.inviteEnterpriseId)
+    } else {
+      this.showAllPage = true
+      this.getClaimInfo()
+    }
+  }
+
+  getClaimInfo() {
+    companyApi.getClaimInfo(this.inviterStaffId).then(res => {
+      this.staff = res
+      this.$apply()
+    })
+  }
+  methods = {
+    getCherckResult() {
+      this.claimStaff(this.staff.phone)
+    }
+  }
+  // 获取openid
+  getOpenId(enterpriseId) {
+    let promise = new Promise((resolve, reject) => {
+      // 获取code
+      wepy.login().then(loginDate => {
+        if (loginDate.code) {
+          // 获取openid
+          let param = {
+            code: loginDate.code,
+            enterprise_id: enterpriseId
+          }
+          loginApi.getOpenidAndCheck(param).then(
+            res => {
+              this.$parent.saveOpenid(res.openid)
+              if (res.status === '0') {
+                // 此openid在数据库没记录
+                this.whetherAuthorize()
+              } else {
+                this.showAllPage = true
+                this.getClaimInfo()
+                this.$apply()
+              }
+            },
+            err => {
+              wepy.showModal({
+                title: '提示',
+                content: '获取身份失败',
+                showCancel: false
+              })
+              this.hideLoading()
+              setTimeout(() => {
+                reject(err)
+              }, 1000)
+            }
+          )
+        }
+      })
+    })
+    return promise
+  }
+  /**
+   * 去授权
+   */
+  whetherAuthorize() {
+    let data = {
+      from: authorizeFromMap.newStaffEntery,
+      employee_id: this.staff_id,
+      enterprise_id: this.inviteEnterpriseId,
+      invite_staff_id: this.inviterStaffId
+    }
+    this.$parent.toAuthorize(data)
+  }
+  // 授权手机号
+  getPhoneNumber(e) {
+    this.openid = this.$parent.getNowOpenid()
+    if (e.detail.errMsg === 'getPhoneNumber:fail user deny') {
+      wepy.showToast({
+        title: '请授权手机号，否则无法认领企业',
+        icon: 'none',
+        duration: 2000
+      })
+    } else {
+      // 同意授权
+      let params = {
+        iv: e.detail.iv,
+        openid: this.openid,
+        phone: e.detail.encryptedData
+      }
+      // 后台解密获取手机号
+      companyApi.getPhone(params).then(res => {
+        let phone = res
+        this.checkPhoneSame(phone, this.staff.phone)
+      })
+    }
+  }
+  // 校验授权手机号和填写手机号是否一致
+  checkPhoneSame(wxPhone, staffPhone) {
+    if (wxPhone === staffPhone) {
+      this.claimStaff(wxPhone)
+    } else {
+      // 向管理员填写的手机号发送一条短息
+      let that = this
+      companyApi.sendMsg(staffPhone).then(
+        res => {
+          that.$apply()
+          that.$invoke('modal', 'openDialog', { msg: 'msg', phone: staffPhone })
+        },
+        err => {
+          wepy.showModal({
+            title: '提示',
+            content: err.err_msg
+          })
+        }
+      )
+    }
+  }
+  claimStaff(phone) {
+    let userInfo = this.$parent.getUserInfo()
+    let params = {}
+    if (userInfo) {
+      params = {
+        enterpriseId: this.inviteEnterpriseId,
+        staffId: this.employeeId,
+        openid: this.openid,
+        avatarUrl: userInfo.avatarUrl ? userInfo.avatarUrl : '',
+        sex: userInfo.gender ? userInfo.gender : '',
+        nickName: userInfo.nickName ? userInfo.nickName : '',
+        inviteStaffId: this.inviterStaffId,
+        phone: phone
+      }
+    } else {
+      params = {
+        enterpriseId: this.inviteEnterpriseId,
+        staffId: this.employeeId,
+        openid: this.openid,
+        inviteStaffId: this.inviterStaffId,
+        phone: phone
+      }
+    }
+
+    wepy.showLoading({
+      title: '认领中...'
+    })
+    companyApi.claimStaffByshare(params).then(
+      res => {
+        wepy.hideLoading()
+        setTimeout(() => {
+          wepy.showToast({
+            title: '认领成功',
+            icon: 'none',
+            duration: 2000
+          })
+          this.$parent.getStaffInfoFromBack(this.openid).then(res => {
+            wepy.reLaunch({
+              url: `/pages/card/cardIndex`
+            })
+          })
+        }, 2000)
+      },
+      err => {
+        wepy.hideLoading()
+        setTimeout(() => {
+          wepy.showToast({
+            title: err.err_msg,
+            icon: 'none',
+            duration: 2000
+          })
+          this.$parent.getStaffInfoFromBack(this.openid).then(
+            res => {
+              wepy.reLaunch({
+                url: `/pages/card/cardIndex`
+              })
+            },
+            err => {
+              console.info(err.err_msg)
+            }
+          )
+        }, 2000)
+      }
+    )
+  }
+}
+</script>

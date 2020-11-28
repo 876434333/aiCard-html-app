@@ -1,0 +1,197 @@
+<style lang="scss">
+  @import '../../assets/css/pages/website/website.scss';
+  $main_color: #e75152;
+  page {
+    background-color: #ffffff;
+  }
+  .wrap{
+    // padding-bottom:76rpx;
+    padding-bottom: 0;
+    overflow-y:hidden;
+    .edit-btn {
+      position: fixed;
+      right: 28rpx;
+      bottom:120rpx;
+      z-index: 10000;
+      width: 94rpx;
+      height: 94rpx;
+      line-height: 94rpx;
+      border-radius: 100%;
+      background: $main_color;
+    }
+    .component {
+      .about,
+      .about-title,
+      .about-content,
+      .about-phone,
+      .about-address {
+        border:0;
+      }
+      .contact-wrap {
+        border:0;
+        .contact-part {
+          border:0;
+        }
+      }  
+      .video-part {
+        .video-play {
+          position: absolute;
+          top: 180rpx;
+          left: 320rpx;
+          z-index: 9999;
+          width: 109rpx;
+          height: 109rpx;
+        }
+        .video {
+          width: 100%;
+          height: 100%;
+        }
+      }  
+    } 
+  }
+</style>
+<template>
+  <!-- 官网预览 -->
+  <view class="wrap">
+    <view style="min-height:{{componentList.length > 0 ? '1094rpx' : ''}}">
+      <cover-view class="font-size-24 c-ffffff ta-center edit-btn" @tap="editWebsite" wx:if="{{isShowEditBtn}}">编辑</cover-view>
+      <repeat for="{{componentList}}" index="index" item="item"> 
+        <view class="component">
+          <view class="component-part">
+            <!-- 企业简介 -->
+            <companyInfo :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'companyInfo'}}"></companyInfo>
+            <!-- 公司电话 -->
+            <companyPhone :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" w:websiteView.sync="websiteView" wx:if="{{item.textContent.type == 'companyPhone'}}"></companyPhone>
+            <!-- 地址 -->
+            <companyAddress :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'companyAddress'}}"></companyAddress>
+            <!-- 联系我们 -->
+            <contactUs :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView" wx:if="{{item.textContent.type == 'contactUs'}}"></contactUs>
+            <!-- 标题 -->
+            <baseTitle :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'baseTitle'}}"></baseTitle>
+            <!-- 内容 -->
+            <baseContent :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'baseContent'}}"></baseContent>
+            <!-- 图片 -->
+            <view class="{{index === 0 ? '' : 'mt-24'}}" wx:if="{{item.textContent.type == 'poster'}}">
+              <poster :area.sync="area" :idx.sync="index" :obj.sync="item.textContent"></poster>
+            </view>
+            <!-- 轮播图 -->
+            <view style="{{index === 0 ? '' : 'margin-top:24rpx;padding:0 30rpx;'}}" wx:if="{{item.textContent.type == 'swipe'}}">
+              <swipe :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView"></swipe>
+            </view>
+            <!-- 视频 -->
+            <view class="{{index === 0 ? '' : 'mt-24'}}" wx:if="{{item.textContent.type == 'playVideo'}}">
+              <playVideo :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView"></playVideo>
+            </view>
+            <!-- 占位 -->
+            <relative :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'relative'}}"></relative>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <!-- 底部内容 -->
+    <view class="foot-copyright" wx:if="{{componentList.length > 0}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_bottom_msg.png"/>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import companyInfo from './components/modular/companyInfo'
+  import companyPhone from './components/modular/companyPhone'
+  import companyAddress from './components/modular/companyAddress'
+  import contactUs from './components/modular/contactUs'
+  import baseTitle from './components/standard/baseTitle'
+  import baseContent from './components/standard/baseContent'
+  import poster from './components/standard/poster'
+  import swipe from './components/standard/swipe'
+  import playVideo from './components/standard/playVideo'
+  import relative from './components/standard/relative'
+  import { websiteApi, companyApi } from '@/api'
+  import { common } from '../../assets/js/common.js'
+  import {G_RES_URL} from '@/config'
+  export default class websiteIndex extends wepy.page {
+    config = {
+      navigationBarTitleText: '官网预览'
+    }
+    data = {
+      res_url: G_RES_URL,
+      websiteId: '',
+      obj: {},
+      area: 'show',
+      idx: null,
+      websiteView: false,
+      // type：1.企业简介  2.电话  3.地址  4.联系我们  5.标题  6.文本  7.图片  8.轮播图  9.视频  10.占位符
+      componentList: [],
+      isShowEditBtn: false
+    }
+    components = {
+      companyInfo: companyInfo,
+      companyPhone: companyPhone,
+      companyAddress: companyAddress,
+      contactUs: contactUs,
+      baseTitle: baseTitle,
+      baseContent: baseContent,
+      poster: poster,
+      swipe: swipe,
+      playVideo: playVideo,
+      relative: relative
+    }
+    onLoad(opt) {
+      let _this = this
+      _this.websiteId = opt.id
+      wepy.showLoading({
+        title: '加载中'
+      })
+      _this.getWebsiteInfo(_this)
+    }
+    onShow() {
+      let _this = this
+      wepy.getStorage({key: 'website_components'}).then(res => {
+        if (res.data.content) {
+          _this.componentList = []
+          _this.componentList = res.data.content
+          _this.$apply()
+        }
+        wepy.removeStorage({key: 'website_components'})
+      })
+      // 获取用户身份，如果为员工，无隐藏编辑按钮
+      companyApi.getUserRole(common.getEnterpriseId(this), common.getOpenId(this)).then((res) => {
+        if (res === 2) {
+          this.isShowEditBtn = false
+        } else {
+          this.isShowEditBtn = true
+        }
+        this.$apply()
+      })
+    }
+    // 获取官网信息
+    getWebsiteInfo(that) {
+      websiteApi.getWebsiteComponent(this.websiteId).then(rs => {
+        if (rs) {
+          for (let k in rs) {
+            rs[k].textContent = JSON.parse(rs[k].textContent)
+            that.componentList.push(rs[k])
+          }
+          that.$apply()
+        }
+        wepy.hideLoading()
+      })
+    }
+    methods = {
+      // 编辑官网
+      editWebsite() {
+        wepy.setStorage({
+          key: 'website_components',
+          data: {
+            content: this.componentList
+          }
+        }).then((res) => {
+          wepy.navigateTo({
+            url: '/pages/website/websiteEdit?id=' + this.websiteId
+          })
+        })
+      }
+    }
+  }
+</script>

@@ -1,0 +1,116 @@
+<style lang="scss">
+  // @import '../css/cardPoster.scss';
+.card-poster-wrap {
+  margin: 0 auto;
+  margin-top: 34rpx;
+  width: 91%;
+  height:954rpx;
+  font-size: 24rpx;
+  color: #aea8a8;
+  text-align: center;
+  border-radius:10rpx;
+  box-shadow: 0 0 12rpx rgba(0,0,0,0.18);
+  overflow: hidden;
+}
+</style>
+<template>
+  <!-- 名片海报 -->
+  <view class="card-poster-wrap" @tap="preview">
+    <image style="width: 100%;height: 100%;" src="{{imgPath}}"/>
+    <canvas canvas-id="myCanvas" style="width:682.5px;height:954px;position:absolute;top:-999px;left:-999px;"></canvas>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import { common } from '@/assets/js/common'
+  import {G_RES_URL} from '@/config'
+  import {canvasPosterMixin} from '@/mixins'
+  export default class cardPoster extends wepy.page {
+    mixins = [canvasPosterMixin];
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '名片海报'
+    }
+    data = {
+      res_url: G_RES_URL,
+      imgPath: '',
+      cardBg: '',
+      staff: {}
+    }
+    onLoad() {
+      let _this = this
+      this.staff = common.getStaffInfo(this)
+      this.staff.temlate_id = Number(this.staff.temlate_id)
+      let cardBg = this.res_url + '/dc_card_template_' + this.staff.temlate_id + '.png'
+      wepy.showLoading({
+        title: '图片加载中...'
+      })
+      wepy.getImageInfo({
+        src: cardBg
+      }).then(rs => {
+        _this.cardBg = rs.path
+        _this.drawCanvas(_this)
+      })
+    }
+    methods = {
+      preview() {
+        wepy.previewImage({
+          urls: [this.imgPath]
+        })
+      }
+    }
+    drawCanvas() {
+      let _this = this
+      let ctx = wepy.createCanvasContext('myCanvas')
+      ctx.setFillStyle('#ffffff')
+      ctx.fillRect(0, 0, 682.5, 954)
+
+      ctx.drawImage(_this.cardBg, 32.25, 20, 618, 374)
+
+      if (this.staff.temlate_id === 1) {
+        this.drawCardTypeOne(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 3) {
+        this.drawCardTypeThree(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 4) {
+        this.drawCardTypeFour(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 5) {
+        this.drawCardTypeFive(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 6) {
+        this.drawCardTypeSix(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 7) {
+        this.drawCardTypeSeven(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 8) {
+        this.drawCardTypeEight(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 9) {
+        this.drawCardTypeNine(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 10) {
+        this.drawCardTypeTen(_this.staff, ctx)
+      } else if (this.staff.temlate_id === 11) {
+        this.drawCardTypeEleven(_this.staff, ctx)
+      }
+      this.drawAddress(_this.staff, this.staff.temlate_id, ctx)
+      this.drawCardCode(_this, ctx)
+      ctx.draw(false, function() {
+        wepy.hideLoading()
+        wepy.canvasToTempFilePath({
+          canvasId: 'myCanvas',
+          fileType: 'jpg'
+        }).then((r) => {
+          _this.imgPath = r.tempFilePath
+          _this.$apply()
+        })
+      })
+    }
+    // 绘制名片码
+    drawCardCode(_this, ctx) {
+      ctx.drawImage(_this.staff.tmp_soft_img_url, 155.25, 432, 372, 372)
+
+      ctx.setFontSize(26)
+      ctx.setFillStyle('#8b8b8b')
+      let c = `长按或微信扫一扫查看${_this.staff.name}名片`
+      ctx.fillText(c, (682.5 - ctx.measureText(c).width) / 2, 877)
+    }
+  }
+</script>

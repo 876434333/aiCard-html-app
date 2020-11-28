@@ -1,0 +1,432 @@
+<style lang="scss">
+$main_color: #e75152;
+page,
+.page,
+.cover {
+  background-color: white;
+  height: 100%;
+}
+.none {
+  display: none;
+}
+.nav-title {
+  padding: 22rpx 22rpx 22rpx 35rpx;
+}
+.video-upload {
+  margin: 0 auto;
+  border-radius: 10rpx;
+  position: relative;
+  width: 680rpx;
+  height: 480rpx;
+}
+.video-upload .upload-cover,
+.upload-area {
+  width: 100%;
+  height: 480rpx;
+}
+.upload-area,
+.upload-cover {
+  background-color: #f9f9f9;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.video-upload > video {
+  width: 100%;
+  height: 100%;
+}
+.upload-area > .upload-text {
+  color: #909090;
+  font-size: 24rpx;
+}
+
+.video-tools button {
+  margin: 0;
+  padding: 0;
+  width: 160rpx;
+  line-height: 2.4;
+  font-size: 24rpx;
+  border-color: #808080;
+  color: #808080;
+}
+.video-tools button.gray {
+  color: #808080;
+  border-color: #808080;
+}
+.upload-cover .video-cover {
+  width: 100%;
+  height: 100%;
+}
+.cropper-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  background-color: #e5e5e5;
+}
+.cropper-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100rpx;
+  line-height: 100rpx;
+}
+.cropper-buttons .upload,
+.cropper-buttons .getCropperImage {
+  width: 50%;
+  text-align: center;
+}
+.cropper {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.cropper-buttons {
+  background-color: rgba(0, 0, 0, 0.95);
+  color: $main_color;
+}
+.progress_box {
+  position: relative;
+  height: 480rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+}
+.progress_bg {
+  position: absolute;
+  width: 440rpx;
+  height: 440rpx;
+}
+.progress_canvas {
+  width: 440rpx;
+  height: 440rpx;
+}
+.progress_text {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.progress_info {
+  font-size: 28rpx;
+  letter-spacing: 2rpx;
+  color: $main_color;
+}
+.upload-btn {
+  border: 1px solid #eaeaea;
+  width: 70rpx;
+  height: 70rpx;
+  border-radius: 100%;
+  margin: 0 auto;
+}
+</style>
+<template>
+    <view class="page">
+        <view class="video {{showArea == 'video' ? '' : 'none'}}">
+            <view class="nav-title font-size-30">
+                我的视频
+            </view>
+            <view class="video-upload">
+              <!--  -->
+                <view class="upload-area" wx:if="{{!video.source && !loading}}" @tap="chooseVideo">
+                  <view>
+                    <view class="upload-btn">
+                      <image wx:if="{{res_url}}" style="height:35rpx;width:35rpx;margin:19rpx" src="{{res_url}}/dc_me_addicon.png"/>
+                    </view>
+                    <view class="upload-text">
+                      上传视频
+                    </view>
+                  </view>
+                </view>
+                <view class='progress_box' wx:if="{{loading}}">
+                    <canvas class="progress_bg" canvas-id="canvasProgressbg"></canvas> 
+                    <canvas class="progress_canvas" canvas-id="canvasProgress"></canvas> 
+                    <view class="progress_text">
+                        <text class='progress_info'>{{progress}}%</text>
+                    </view>     
+                </view>
+                <view wx:if="{{video.source && !show}}" class="upload-cover" @tap="playVideo">
+                    <image wx:if="{{res_url}}" style="height:100rpx;width:100rpx;position:absolute;" src="{{res_url}}/dc_card_play_b.png"/>
+                    <image class="video-cover" wx:if="{{video.cover}}" src="{{video.cover}}"/>
+                    <view wx:if="{{res_url}}" style="background: url('{{res_url}}/dc_me_video_bg.png');width:100%;height:77rpx;background-size:100% 100%;position:absolute;bottom:0;"></view>
+                </view>
+                <image wx:if="{{video.source}}" src="/assets/images/card/close.png" class="close" bindtap="delVideo"/>
+                <video wx:if="{{show}}" id="perview" src="{{video.source}}" bindended="playVideoEnd"></video>
+                <view class="weui-flex video-tools mt-20" wx:if="{{video.source}}">
+                    <view class="weui-flex__item">
+                        <button class="weui-btn gray" type="default" plain="true" @tap="cutImg">上传封面</button>
+                    </view>
+                    <view class="weui-flex__item" ></view>
+                    <view class="weui-flex__item">
+                        <button class="weui-btn gray" type="default" plain="true" @tap="delCover" style="margin-left:66rpx;">删除封面</button>
+                    </view>
+                </view>
+                <view class="font-size-24 c-909090" style="margin-top:20rpx;">建议尺寸:680*480(宽*高)</view>
+                <view class="upload-process"></view>
+            </view>
+            <view class="mt-40" style="margin-top: 90px;">
+                <button class="weui-btn submit-btn" @tap="save" wx:if="{{showSave}}">保存</button>
+            </view>
+        </view>
+        <view class="cover {{showArea == 'cover' ? '' : 'none'}}">
+            <view class="cropper-wrapper">
+                <canvas
+                    class="cropper"
+                    disable-scroll="true"
+                    bindtouchstart="touchStart"
+                    bindtouchmove="touchMove"
+                    bindtouchend="touchEnd"
+                    style="width:{{width}}px;height:100%;background-color: rgba(0, 0, 0, 0.8)"
+                    canvas-id="cropper">
+                </canvas>
+                <cover-view class="cropper-buttons">
+                    <cover-view class="upload" bindtap="uploadTap">选择图片</cover-view>
+                    <cover-view class="getCropperImage" bindtap="getCropperImage">确定</cover-view>
+                </cover-view>
+            </view>
+        </view>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import WeCropper from '@/components/we-cropper/we-cropper.min.js'
+import { cardManagerApi } from '@/api'
+const device = wepy.getSystemInfoSync()
+const width = device.windowWidth
+const height = device.windowHeight - 50
+import {G_RES_URL} from '@/config'
+export default class EditCardVideo extends wepy.page {
+  data = {
+    res_url: G_RES_URL,
+    video: {
+      source: '',
+      cover: '',
+      duration: 0,
+      size: 0
+    },
+    loading: false,
+    progress: 0,
+    show: false,
+    showArea: 'video',
+    width,
+    height,
+    wecropper: null,
+    cropperOption: {
+      id: 'cropper',
+      width,
+      height,
+      scale: 2.5,
+      zoom: 8,
+      cut: {
+        x: (width - 300) / 2,
+        y: (height - 300) / 2,
+        width: 300,
+        height: 200
+      }
+    },
+    showSave: true
+  }
+  config = {
+    navigationBarTitleText: '视频'
+  }
+  onLoad(option) {
+    cardManagerApi.getVideo({
+      staffId: this.$parent.globalData.staffInfo.staffId
+    }).then(res => {
+      if (res) {
+        this.video.source = res.url
+        this.video.cover = res.cover_imageurl
+        this.video.duration = res.duration
+        this.video.size = res.size
+        this.$apply()
+      }
+    })
+    this.methods.drawCircleBg()
+    let wecropper = new WeCropper(this.cropperOption)
+      .on('beforeImageLoad', ctx => {
+        wepy.showToast({
+          title: '上传中',
+          icon: 'loading',
+          duration: 20000
+        })
+      })
+      .on('imageLoad', ctx => { wepy.hideToast() })
+      .updateCanvas()
+    this.wecropper = wecropper
+  }
+  methods = {
+    chooseVideo() {
+      let _this = this
+      wepy
+        .chooseVideo({
+          sourceType: ['album', 'camera']
+        })
+        .then(e => {
+          _this.video.duration = e.duration
+          _this.video.size = e.size
+          _this.loading = true
+
+          var apiURL =
+            this.$parent.globalData.api.apiUrl + '/push/v1.0/upload_files'
+          let uploadTask = wx.uploadFile({
+            url: apiURL,
+            filePath: e.tempFilePath,
+            name: 'editormd-image-file',
+            success: function(rs) {
+              _this.loading = false
+              _this.video.source = JSON.parse(rs.data).url
+              _this.$apply()
+            }
+          })
+          uploadTask.onProgressUpdate(res => {
+            _this.methods.drawCircle(0.02 * res.progress)
+            if (res.progress !== 100) {
+              _this.progress = res.progress
+              _this.$apply()
+            }
+          })
+        })
+    },
+    playVideo() {
+      this.show = true
+      let t = wepy.createVideoContext('perview')
+      t.play()
+    },
+    playVideoEnd() {
+      this.show = false
+      this.$apply()
+    },
+    delVideo() {
+      cardManagerApi.deleteResouces(this.video.source)
+      cardManagerApi.deleteResouces(this.video.cover)
+      this.video.source = ''
+      this.video.cover = ''
+      this.show = false
+    },
+    delCover() {
+      cardManagerApi.deleteResouces(this.video.cover)
+      this.video.cover = ''
+    },
+    touchStart(e) {
+      this.wecropper.touchStart(e)
+    },
+    touchMove(e) {
+      this.wecropper.touchMove(e)
+    },
+    touchEnd(e) {
+      this.wecropper.touchEnd(e)
+    },
+    getCropperImage() {
+      let self = this
+      this.wecropper.getCropperImage(src => {
+        if (src) {
+          var apiURL = this.$parent.globalData.api.apiUrl + '/push/v1.0/upload_files'
+          wepy.showLoading({
+            title: '正在上传图片……',
+            mask: true
+          })
+          wx.uploadFile({
+            url: apiURL,
+            filePath: src,
+            name: 'editormd-image-file',
+            success: function(rs) {
+              self.video.cover = JSON.parse(rs.data).url
+              self.showArea = 'video'
+              self.wecropper.croperTarget = ''
+              self.wecropper.updateCanvas()
+              self.$apply()
+              wepy.hideLoading()
+            }
+          })
+        } else {
+          console.log('获取图片地址失败，请稍后重试')
+        }
+      })
+    },
+    cutImg() {
+      this.showArea = 'cover'
+    },
+    uploadTap() {
+      let _this = this
+      wepy
+        .chooseImage({
+          count: 1, // 默认9
+          sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+          sourceType: ['album', 'camera'] // 可以指定来源是相册还是相机，默认二者都有
+          //   success (res) {
+          //     const src = res.tempFilePaths[0]
+          //     _this.wecropper.pushOrign(src)
+          //   }
+        })
+        .then(res => {
+          const src = res.tempFilePaths[0]
+          _this.wecropper.pushOrign(src)
+        })
+    },
+    drawCircleBg() {
+      var ctx = wepy.createCanvasContext('canvasProgressbg')
+      let circleX = device.windowWidth / 750 * 220
+      ctx.setLineWidth(1) // 设置圆环的宽度
+      ctx.setStrokeStyle('#808080') // 设置圆环的颜色
+      ctx.setLineCap('round') // 设置圆环端点的形状
+      ctx.beginPath() // 开始一个新的路径
+      ctx.arc(circleX, circleX, 22, 0, 2 * Math.PI, false)
+      // 设置一个原点(100,100)，半径为90的圆的路径到当前路径
+      ctx.stroke() // 对当前路径进行描边
+      ctx.draw()
+    },
+    drawCircle(step) {
+      var context = wepy.createCanvasContext('canvasProgress')
+      let circleX = device.windowWidth / 750 * 220
+      context.setLineWidth(1)
+      context.setStrokeStyle('#e75152')
+      context.setLineCap('round')
+      context.beginPath()
+      // 参数step 为绘制的圆环周长，从0到2为一周 。 -Math.PI / 2 将起始角设在12点钟位置 ，结束角 通过改变 step 的值确定
+      context.arc(
+        circleX,
+        circleX,
+        22,
+        -Math.PI / 2,
+        step * Math.PI - Math.PI / 2,
+        false
+      )
+      context.stroke()
+      context.draw()
+    },
+    save() {
+      this.showSave = false
+      let param = this.video
+      if (!this.video.cover) {
+        this.video.cover = this.res_url + '/dc_website_video_bg.png'
+      }
+      param['staffId'] = this.$parent.globalData.staffInfo.staffId
+      wepy.showLoading({
+        title: '正在保存...'
+      })
+      this.$parent.globalData.refreshPage = true
+      cardManagerApi.addVideo(this.video).then(rs => {
+        wepy.hideLoading()
+        wepy.showToast({
+          title: '保存成功',
+          icon: 'success',
+          duration: 1000
+        })
+        setTimeout(() => {
+          wepy.navigateBack({ delta: 1 })
+        }, 1000)
+      })
+    }
+  }
+}
+</script>

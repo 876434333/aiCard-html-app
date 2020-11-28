@@ -1,0 +1,110 @@
+$main_color: #e75152;
+.card-temple-five {
+  width: 100%;
+  background: #ffffff;
+  .card-bg {
+    text-align: center;
+    margin: 34rpx 0 0 34rpx;
+    width: 680rpx;
+    height: 416rpx;
+    .card-bg-image {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      .card-bg-text {
+        display: flex;
+        padding: 30rpx 0 0 40rpx;
+        .card-bg-left {
+          width: 76%;
+          flex-direction: row;
+          text-align: left;
+          font-size: 22rpx;
+          text {
+            margin-top: 0!important;
+          }
+          image {
+            display:block;
+            margin:0 auto;
+          }
+          .card-company {
+            margin-top:142rpx;
+            height: 70rpx;
+            line-height: 34rpx;
+            font-size: 30rpx;
+            font-weight: bold;
+          }
+          .card-phone {
+            display: flex;
+          }
+          .card-phone-border {
+            width:26rpx;
+            text-align: center;
+            border-radius: 10rpx;
+            .card-phone-image {
+              width:21rpx;
+              height:29rpx;
+            }
+          }
+          .card-email {
+            margin-top: 14rpx;
+            display: flex;
+            .card-email-image {
+              position:relative;
+              top: 8rpx;
+              width:26rpx;
+              height:20rpx;
+            }
+          }
+          .card-address {
+            margin-top: 14rpx;
+            display: flex;
+            .card-address-image {
+              position:relative;
+              top: 4rpx;
+              width:17rpx;
+              height:26rpx;
+            }
+            text {
+              margin-left: 15rpx;
+              padding-top:8rpx;
+              width: 250rpx;
+            }
+          }
+        }
+        .card-bg-right {
+          width: 21%;
+          flex-direction: row;
+          text-align: center;
+          .card-head {
+            image {
+              display:block;
+              width: 124rpx;
+              height: 124rpx;
+              border-radius: 65rpx;
+            }
+          }
+          .card-name {
+            font-size: 30rpx;
+          }
+          .card-station {
+            position:relative;
+            top:-6rpx;
+            font-size: 18rpx;
+          }
+          .card_edit {
+            position: relative;
+            width: 44rpx;
+            height: 37rpx;
+            margin-left: 158rpx;
+          }
+        }
+      }
+    }
+  }
+  .margin15 {
+    margin-left: 15rpx;
+    margin-top: 8rpx;
+    width: 250rpx;
+    font-size: 22rpx;
+  }
+}

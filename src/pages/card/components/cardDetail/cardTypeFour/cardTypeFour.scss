@@ -1,0 +1,96 @@
+.card-type-four {
+  width: 100%;
+  background: #ffffff;
+  .card-bg {
+    position: relative;
+    margin:34rpx 0rpx 0rpx  32rpx;
+    width:694rpx;
+    height:416rpx;
+    background-size: cover;
+    .name-station {
+      padding:48rpx 50rpx 0 67rpx;
+      line-height:34rpx;
+      justify-content:space-between;
+      .station{
+        margin-left: 10rpx;
+      }
+      .enterprise-name {
+        height:70rpx;
+        line-height:34rpx;
+        font-weight: bold;
+      }
+      .card-avatar{
+        .head-icon{
+          width: 126rpx;
+          height: 126rpx;
+          border-radius: 65rpx;
+        }
+      }
+    }
+    .bottom{
+      padding:30rpx 0 0 50rpx;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+      width:74%;
+      height: 130rpx;
+      .info{
+        flex:2;
+        margin-left: 24rpx;  
+        padding: 0;  
+        view {
+          line-height: 40rpx;
+          image {
+            vertical-align: middle;
+          }
+        } 
+        .address{    
+          display:-webkit-box;
+          display: -webkit-flex;
+          display: flex;    
+          padding-top:5rpx;  
+          width: 100%;        
+          image {
+            margin-top:6rpx!important;
+            vertical-align:top;
+          }
+          .address-text {
+            padding-top:8rpx;
+            width:88%;
+            line-height:28rpx;
+            vertical-align:top;
+          }
+        }     
+        .phone{
+          image {
+            margin:0 18rpx 0 2rpx;
+            width: 21rpx;
+            height: 29rpx;
+          }
+        }
+        .mail{
+          image {
+            margin:0 16rpx 0 0;
+            width: 26rpx;
+            height: 20rpx;
+          }
+        }
+        .address{
+          image {
+            margin:0 20rpx 0 4rpx;
+            width: 17rpx;
+            height: 26rpx;
+          }
+        }
+      }
+    }
+    .edit {
+      position: absolute;
+      right: 40rpx;
+      bottom: 40rpx;
+      z-index: 9999;
+      width: 44rpx;
+      height: 37rpx;
+    }
+  }
+}

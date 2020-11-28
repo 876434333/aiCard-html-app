@@ -1,0 +1,85 @@
+<template>
+  <!-- 内容 -->
+  <view class="website-components">
+    <view class="edit" wx:if="{{area == 'edit'}}">
+      <view class="weui-cell weui-cell-style">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable font-size-28 c-323232">内容</view>
+          </view>
+        </view>
+        <view  class="weui-cell weui-cell-style">
+          <view class="weui-cell__bd weui-cell_textarea">
+            <textarea class="font-size-24 c-646464 about-content" maxlength='{{cInfo.textLength}}' placeholder="请填写内容" value="{{obj.data.content.value}}" bindinput="introTextInput" style="height:250rpx;" />
+            <view class="weui-flex__item ta-right font-size-24 c-909090">{{cInfo.text.length>0 ? cInfo.text.length : obj.data.content.value.length}}/{{cInfo.textLength}}</view>
+          </view>
+        </view>
+      <button class="weui-btn submit-btn" @tap="save">保存</button>
+    </view>
+    <view class="preview" wx:if="{{area == 'preview'}}" style="border-top:2rpx solid #e8e8e8;">
+      <text class="font-size-24 c-646464 about-content" style="word-break:break-all;width:90%;" decode='true' space='true'>{{obj.data.content.value}}</text>
+    </view>
+    <view class="show" wx:if="{{area == 'show'}}">
+      <text class="font-size-24 c-646464 about-content" style="word-break:break-all;width:90%;">{{obj.data.content.value}}</text>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+export default class baseContent extends wepy.component {
+  props = {
+    obj: {
+      type: Object,
+      default: null,
+      twoWay: true
+    },
+    area: {
+      type: String,
+      default: null,
+      twoWay: true
+    },
+    idx: {
+      type: String,
+      default: null,
+      twoWay: true
+    }
+  }
+  data = {
+    cInfo: {
+      text: '',
+      textLength: 500
+    }
+  }
+  methods = {
+    alignLeft() {
+      this.obj.data.textAlign.value = 'left'
+    },
+    alignCenter() {
+      this.obj.data.textAlign.value = 'center'
+    },
+    introTextInput(e) {
+      let _this = this
+      if (e.detail.value.length <= _this.cInfo.textLength) {
+        _this.cInfo.text = e.detail.value
+        _this.obj.data.content.value = e.detail.value
+      }
+    },
+    save() {
+      let _this = this
+      if (!_this.obj.data.content.value) {
+        _this.obj.data.content.value = '内容'
+      }
+      wepy.setStorage({
+        key: 'website_plugin',
+        data: {
+          idx: _this.idx,
+          content: _this.obj,
+          save: true
+        }
+      })
+      wepy.navigateBack({
+        delta: 1
+      })
+    }
+  }
+}
+</script>

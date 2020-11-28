@@ -1,0 +1,124 @@
+<style lang="scss">
+  page {
+    background-color: #ffffff;
+  }
+  .avator {
+    display: block;
+    margin-left: 14rpx;
+    width: 104rpx;
+    height: 104rpx;
+    border-radius:10rpx;
+  }
+  .weui-cell {
+    padding:18rpx;
+    border-bottom: 2rpx solid #e8e8e8;
+  }
+  .weui-cell:before {
+    border: 0;
+  }
+  .name {
+    position: relative;
+    top: -6rpx;
+  }
+  .msg {
+    position: relative;
+    top: 8rpx;
+  }
+  .num {
+    margin-left:132rpx;
+    width: 32rpx;
+    height: 32rpx;
+    line-height: 32rpx;
+    border-radius: 100%;
+    background: red;
+  }
+</style>
+<template>
+  <!-- 留言列表 -->
+  <view class="wrap">
+    <view class="msg-list">
+      <view class="empty" wx:if="{{messageList.length === 0}}">
+          <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png" style="margin:226rpx auto 16rpx;width:192rpx;height:223rpx;"/>
+          <view class="font-size-26 c-909090 ta-center">空空如也</view>
+      </view>
+      <repeat for="{{messageList}}" key="index" item="msg">
+        <view class="weui-cell" @tap="goMsgDetail({{msg}})">
+          <view class="weui-cell__hd">
+            <image src="{{msg.head_icon}}" class="avator"/>
+          </view>
+          <view class="weui-cell__hd" style="margin-left:18rpx;width: 400rpx;">
+            <view class="name font-size-30 c-323232">{{msg.name}}</view>
+            <image class="msg font-size-26 c-909090" wx:if="{{msg.msgType === 1}}" src="{{msg.msg}}" style="width:50rpx;height:50rpx"></image>
+            <view class="msg font-size-26 c-909090" wx:else>{{msg.msg}}</view>
+          </view>
+          <view class="weui-cell__hd">
+            <view class="name font-size-20 ta-right c-909090">{{msg.time}}</view>
+            <view class="msg num font-size-24 c-ffffff ta-center" wx:if="{{unreadMsgObj[msg.account]}}">{{unreadMsgObj[msg.account]}}</view>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <radarTabar :tabBar.sync="tabBarData" wx:if="{{radarTabShow}}"></radarTabar>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import {setFriendChatInfoBlue, getMsgListBlue, getUnreadMsgBlue, setUnreadMsgBlue, setTotalUnreadMsgBlue, getTotalUnreadMsgBlue} from '@/storage/src/cardDetail'
+  import {G_RES_URL} from '@/config'
+  import radarTabar from '../../components/radartabBar/tabBarTemplate'
+  import { tabBarJs } from '../../components/radartabBar/tabBarJs'
+  export default class msgList extends wepy.page {
+    config = {
+      navigationBarTitleText: '留言列表'
+    }
+    data = {
+      res_url: G_RES_URL,
+      messageList: [],
+      unreadMsgObj: {},
+      tabBarData: {},
+      radarTabShow: false
+    }
+    components = {
+      radarTabar: radarTabar
+    }
+    onLoad(option) {
+      if (option.page === 'radar') {
+        this.radarTabShow = true
+      }
+      this.tabBarData = tabBarJs.selected(1, this)
+      this.messageList = getMsgListBlue()
+      this.unreadMsgObj = getUnreadMsgBlue()
+    }
+    onShow() {
+      this.refreshList()
+    }
+    methods = {
+      goMsgDetail (msg) {
+         // 设置本地的未读消息
+        let totalUnreadNum = getTotalUnreadMsgBlue()
+        for (var attr in this.unreadMsgObj) {
+          if (attr === msg.account) {
+            totalUnreadNum = totalUnreadNum - this.unreadMsgObj.attr
+            delete this.unreadMsgObj[attr]
+            break
+          }
+        }
+        setTotalUnreadMsgBlue(totalUnreadNum)
+        setUnreadMsgBlue(this.unreadMsgObj)
+        let friend = {
+          name: msg.account,
+          // 头像
+          avtor: msg.head_icon,
+          nickName: msg.name
+        }
+        setFriendChatInfoBlue(friend)
+        wepy.navigateTo({url: '/pages/chat/chat'})
+      }
+    }
+    refreshList() {
+      this.messageList = getMsgListBlue()
+      this.unreadMsgObj = getUnreadMsgBlue()
+      this.$apply()
+    }
+  }
+</script>

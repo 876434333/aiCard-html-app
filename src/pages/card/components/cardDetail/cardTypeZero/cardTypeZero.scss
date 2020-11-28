@@ -1,0 +1,117 @@
+.type-zero{
+  width: 670rpx;
+  // height: 302rpx;
+  // background: red;
+  margin:0 auto;
+  border-radius: 20rpx;
+  box-shadow: 0 4rpx 12rpx 4rpx rgba(0,0,0,0.1);
+  padding-top: 28rpx;
+  .type-one-top {
+    margin-bottom:24rpx;
+    position: relative;
+    .top-header-image {
+      width: 136rpx;
+      height: 136rpx;
+      border-radius: 10rpx;
+      margin-left: 28rpx;
+      display: inline-block;
+      vertical-align:top;
+    }
+    .top-info {
+      display: inline-block;
+      vertical-align:top;
+      margin-left: 42rpx;
+      .info-nike {
+        font-size: 30rpx;
+        color: #323232;
+      }
+      .info-position {
+        font-size: 24rpx;
+        color: #909090;
+        margin-top: 5rpx;
+      }
+      .info-conpany {   
+        position:absolute;
+        width:60%;
+        font-size: 24rpx;
+        color: #909090; 
+      }
+    }
+    .info-edit {
+      height: 29rpx;
+      width: 16rpx;
+      position: absolute;
+      top: 30rpx;
+      right: 5rpx;
+      padding: 30rpx;
+    }
+  }
+  .type-one-bottom {
+    border-top: 1rpx solid #e1e1e1;
+    .card-and-posters{
+      margin-left: 52rpx;
+      padding:24rpx 0 22rpx;
+      .card-image{
+        width: 40rpx;
+        height: 20rpx;
+      }
+    .card-posters {
+      //width: 250rpx;
+      display: inline-block;
+      padding-right: 40rpx;
+      padding-left: 20rpx;
+      .card-icon {
+        display: inline-block;
+        width: 34rpx;
+        height: 26rpx;
+        vertical-align: middle;
+      }
+      .card-text {
+        margin-left: 20rpx;
+        display: inline-block;
+        font-size: 28rpx;
+        color: #323232;
+        vertical-align: middle;
+      } 
+      .sun-code {
+        display: inline-block;
+        width: 32rpx;
+        height: 32rpx;
+        margin-left: 20rpx;
+        vertical-align: middle;
+      }
+    }
+    .jixue-posters {
+      // width: 250rpx;
+      display: inline-block;
+      margin-left: 40rpx;
+      .jixue-icon {
+        display: inline-block;
+        width: 40rpx;
+        height: 40rpx;
+        vertical-align: middle;
+      }
+      .jixue-text {
+        margin-left: 20rpx;
+        display: inline-block;
+        font-size: 28rpx;
+        vertical-align: middle;
+      }
+      .sun-code {
+        display: inline-block;
+        width: 32rpx;
+        height: 32rpx;
+        margin-left: 20rpx;
+        vertical-align: middle;
+      }
+    }
+  }
+  }
+}
+//分隔符
+.context-split{
+  display: inline-block;
+  font-size: 40rpx;
+  vertical-align: middle;
+  color: #e8e8e8;
+}

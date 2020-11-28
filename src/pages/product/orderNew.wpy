@@ -1,0 +1,477 @@
+<style lang="scss">
+  @import '../../assets/css/zanui.scss';
+  @import '../../assets/css/pages/product/listCard.scss';
+  @import '../../assets/css/pages/product/order.scss';
+  // @import '../../assets/css/pages/product/orderList.scss';
+  @import '../../assets/css/pages/product/mod.scss';
+  @import '../../assets/css/pages/product/trade.scss';
+  @import '../../assets/css/pages/product/stepper.scss';
+  .order-opt {
+    .opt-item {
+      padding:10rpx 0;
+      border:0;
+    }
+  }
+</style>
+<template>
+  <view class="view view-trade">
+    <noticemsg></noticemsg>
+    <scroll-view class="trade-detail" scroll-y>
+      <!-- 地址 -->
+      <view class="zan-panel no-margin" @tap="toAddressList">
+        <view class="zan-cell zan-cell--access order-address" wx:if="{{address}}">
+          <image src="../../assets/images/product/local.png" class="img-local" />
+          <view class="zan-cell__bd">
+            <view class="zan-cell__text">
+              <text class="address-name address-text">收货人：{{address.name}}</text>
+              <text class="address-phone address-text">{{address.phone}}</text>
+            </view>
+            <view class="zan-cell__desc address-detail address-text">收货地址：{{address.province_name + address.city_name + address.area_name + address.address}}</view>
+          </view>
+          <view class="zan-cell__ft"></view>
+        </view>
+        <view class="zan-cell zan-cell--access order-address" wx:else>
+          <view class="zan-cell__bd">还没有收货地址，立即添加</view>
+          <view class="zan-cell__ft"></view>
+        </view>
+      </view>
+      <repeat for="{{norms}}" item="item" index="index" key="index">
+        <view class="list-card mt-20">
+          <view class="card-box">
+            <image class="card-thumb" src="{{item.norms_pic}}" mode="aspectFit" />
+            <view class="card-detail">
+              <view class="card-title zan-ellipsis--l2">{{item.offer_name}}</view>
+              <view class="card-subtitle zan-ellipsis--l2">{{item.norms_name}}</view>
+              <view class="card-content">
+                <text class="discount-price"><text class="money-mark">¥</text>{{item.discount_price || item.offer_price}}</text>
+                <text wx:if="{{discount < 1}}" class="zan-text-deleted price"><text class="money-mark">¥</text>{{item.offer_price}}</text>
+              </view>
+              <view class="card-stepper">
+                <stepper :max.sync="item.offer_leave"
+                          :min.sync="min"
+                          :stepper.sync="item.offer_num"
+                          :componentId="index"></stepper>
+              </view>
+            </view>
+          </view>
+        </view>
+      </repeat>
+      <view class="zan-panel zan-panel--without-border no-margin order-opt">
+        <view class="zan-row font-size-32 opt-item">
+          <view class="zan-col zan-col-15 zan-col-offset-1" style="margin-left:0">商品金额</view>
+          <view class="zan-col zan-col-6 zan-col-offset-1 ta-right"><text class="money-mark">¥</text>{{totalOfferPrcie}}</view>
+        </view>
+        <view class="zan-row font-size-32 opt-item" wx:if="{{discount < 1}}">
+          <view class="zan-col zan-col-15 zan-col-offset-1" style="margin-left:0">
+            来自<text class="c-ff4343">{{name}}</text>的特权折扣特惠
+          </view>
+          <view class="zan-col zan-col-6 zan-col-offset-1 ta-right">-<text class="money-mark">¥</text>{{dValue}}</view>
+        </view>
+        <view class="zan-row font-size-32 opt-item">
+          <view class="zan-col zan-col-15 zan-col-offset-1" style="margin-left:0">运费</view>
+          <view class="zan-col zan-col-6 zan-col-offset-1 ta-right"><text class="money-mark">¥</text>{{expressFee}}</view>
+        </view>
+        <view class="zan-row font-size-32 opt-item">
+          <view class="zan-col zan-col-15 zan-col-offset-1" style="margin-left:0">订单总计</view>
+          <view class="zan-col zan-col-6 zan-col-offset-1 ta-right c-ff4343"><text class="money-mark">¥</text>{{lastPrice}}</view>
+        </view>
+      </view>
+    </scroll-view>
+    <view class="trade-opts count-price">
+      <view class="flex-4 font-size-30">
+        <text class="price-titl">实付金额：</text>
+        <text class="price-num"><text class="money-mark">¥</text>{{lastPrice}}</text>
+      </view>
+      <view class="trade-opt-buy" @tap="newAndPayOrder" style="background:#ff7f02;">
+        立即支付
+      </view>
+      <!-- <view class="trade-opt-buy" @tap="newAndPayOrder" style="background:#ff7f02;" wx:if="{{isPayType===1}}">
+        立即支付
+      </view> -->
+      <!-- <view class="trade-opt-buy" @tap="createOrder" style="background:#ff7f02;" wx:if="{{isPayType===0}}">
+        下单
+      </view> -->
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {orderApi, addressApi} from '@/api'
+  import {cardActionMap} from '@/utils'
+  import NoticeMsg from '@/components/noticeMsg'
+  import stepper from '@/components/common/stepper/stepper'
+  // import {ORDER_LIST} from '@/router/index'
+  import {setEmployeeMixin} from '@/mixins/index.js'
+  export default class Empty extends wepy.page {
+    components = {
+      noticemsg: NoticeMsg,
+      stepper: stepper
+    }
+    mixins = [
+      setEmployeeMixin
+    ]
+    config = {
+      navigationBarBackgroundColor: '#ff7f02',
+      navigationBarTitleText: '填写订单'
+    }
+    data = {
+      name: '',
+      mobile: '',
+      address: null,
+      productInfo: [],
+      norms: [{
+        norms_id: null,
+        offer_id: null,
+        offer_num: null
+      }],
+      employee: {},
+      sellerId: '',
+      enterpriseId: '',
+      departmentId: '',
+      min: 1,
+      discount: 1,
+      totalOfferPrcie: 0,
+      totalDiscountPrice: 0,
+      expressFee: 0,
+      lastPrice: 0,
+      dValue: 0,
+      firstAddress: true,
+      chooseAddress: false,
+      isPayType: 0
+    }
+    onLoad(params, data) {
+      // 获取默认地址
+      this.getAddress()
+      // this.productInfo = data.preload.details
+      this.discount = data.preload.discount
+      this.norms = data.preload.norms
+      let sellerInfo = this.$parent.getSellerInfo(this.sellerId)
+      this.name = sellerInfo.name
+      this.$apply()
+      // 获取运费
+      this.computedPrice()
+      // 获取是否开通支付0：未开通 1开通
+      // this.getShopPayType(this.enterpriseId)
+    }
+
+    onShow() {
+      if (!this.firstAddress) {
+        // 检查是否从选择地址页面选择了地址，并回来了
+        this.isChooseFromAddressList()
+      }
+      if (this.firstAddress) {
+        this.firstAddress = false
+      }
+    }
+
+    onUnload() {
+      if (this.chooseAddress) {
+        this.chooseAddress = false
+      }
+    }
+
+    events = {
+      /**
+       * 计数器数值变化
+       * @param  {[string]} options.componentId 组件的key
+       * @param  {[number]} options.stepper     计数
+       * @param  {[object]} event               组件对象
+       */
+      stepperChange({ componentId, stepper }, event) {
+        this.norms[componentId].offer_num = stepper
+        this.computedPrice(componentId)
+      }
+    }
+
+    /**
+     * 下订单，获取微信支付订单数据
+     */
+    newAndPayOrder() {
+      if (!this.address) {
+        wepy.showToast({
+          title: '请先选择地址'
+        })
+        return
+      }
+      wepy.showLoading({
+        title: '加载中',
+        mask: true
+      })
+      // 下单未支付
+      let address = `${this.address.province_name}${this.address.city_name}${this.address.area_name}${this.address.address}`
+      let data = []
+      this.norms.some(val => {
+        let obj = {
+          norm_id: val.norms_id,
+          num: val.offer_num,
+          offer_id: val.offer_id,
+          offer_price: val.offer_price,
+          offer_price_discount: val.discount_price || val.offer_price
+        }
+        data.push(obj)
+      })
+      let params = {
+        address: address,
+        express_fee: this.expressFee,
+        link_man: this.address.name,
+        link_phone: this.address.phone,
+        total_price: this.totalOfferPrcie,
+        total_price_discount: this.lastPrice,
+        order_detail: data
+      }
+      orderApi.newOrder(params).then((data) => {
+        wepy.hideLoading()
+        let len = (Object.keys(data)).length
+        if (len === 0) {
+          wepy.showToast({
+            title: '请求订单失败 ',
+            duration: 1000
+          })
+          return
+        }
+        // 记录下单动作，暂时注释
+        this.orderProduct()
+        this.requestPayment(data)
+      }, (err) => {
+        wepy.hideLoading()
+        if (err.err_code === 30017) {
+          let content = err.err_msg
+          wepy.showModal({
+            title: '提示',
+            content: content,
+            showCancel: false
+          })
+        } else {
+          wepy.showToast({
+            title: '请求订单失败',
+            duration: 1000
+          })
+        }
+      })
+    }
+
+    /**
+     * 发起微信支付
+     * @param  {[type]} data 所需数据
+     */
+    requestPayment(data) {
+      // 调用微信支付接口
+      let wxOrderParams = {
+        timeStamp: data.timeStamp,
+        nonceStr: data.nonceStr,
+        signType: data.signType,
+        paySign: data.paySign,
+        package: data.package
+      }
+      wepy.requestPayment(wxOrderParams).then((res) => {
+        // 支付成功，跳转
+        // 记录支付成功动作，暂时注释
+        this.payForProduct()
+        wepy.showToast({
+          title: '支付成功',
+          icon: 'success'
+        }).then(() => {
+          setTimeout(() => {
+            this.toOrder()
+          }, 1000)
+        })
+      }, (res) => {
+        wepy.showToast({
+          title: '支付失败'
+        }).then(() => {
+          this.toOrder()
+          setTimeout(() => {
+          }, 1000)
+        })
+      })
+    }
+
+    /**
+     * 获取默认地址信息
+     */
+    getAddress() {
+      let userId = this.$parent.getUserId()
+      addressApi.getDefaultAddressDetail(userId).then(data => {
+        if (data) {
+          this.address = data
+        }
+        this.$apply()
+      })
+    }
+    /**
+     * 判断是否在地址选择了
+     */
+    isChooseFromAddressList() {
+      if (!this.chooseAddress) {
+        return
+      }
+      // 清除标志位
+      this.chooseAddress = false
+      // 读取之前选择的，保存在缓存中的地址
+      let address = this.$parent.getCheckedAddress()
+      if (address) {
+        // 有选择
+        this.address = address
+        this.$apply()
+        this.$parent.setCheckedAddress(null)
+      } else {
+        // 没选择地址；也有可能把已选的地址在列表页删掉，但是却没另外选择
+        // this.getAddress()
+      }
+    }
+    /**
+     * 前往地址页面
+     */
+    toAddressList() {
+      // 标记正在选择地址
+      this.chooseAddress = true
+      this.$preload('fromOrder', true)
+      this.$navigate('/pages/product/addressList')
+    }
+    /**
+     * 计算各种价格
+     * @param  {ingter} index [description]
+     */
+    computedPrice() {
+      let norms = this.norms
+      // 打折前
+      let lastOp = 0
+      // 打折后
+      let lastDp = 0
+      // 运费
+      let expressFee = 0
+      norms.some((val) => {
+        lastOp += val.offer_price * val.offer_num
+        lastOp = Number((lastOp).toFixed(2))
+        if (this.discount < 1) {
+          lastDp += val.discount_price * val.offer_num
+          lastDp = Number((lastDp).toFixed(2))
+        }
+        if (expressFee > 0) {
+          expressFee += val.express_fee
+        }
+      })
+      if (this.discount < 1) {
+        this.totalDiscountPrice = lastDp
+      }
+      this.totalOfferPrcie = lastOp
+      this.dValue = Number(lastOp - lastDp).toFixed(2)
+      this.expressFee = expressFee
+      if (this.discount < 1) {
+        this.lastPrice = lastDp + this.expressFee
+      } else {
+        this.lastPrice = lastOp + this.expressFee
+      }
+      this.$apply()
+    }
+    /**
+     * 前往订单列表
+     */
+    toOrder() {
+      wepy.redirectTo({
+        url: '/pages/product/order'
+      })
+    }
+    /**
+     * 记录动作支付商品
+     */
+    payForProduct() {
+      let employee = this.$parent.getNowEmployee()
+      let offerIds = ''
+      let offerName = ''
+      this.norms.some((val, idx) => {
+        offerIds += val.offer_id
+        offerName += val.offer_name
+        if (idx < this.norms.length - 1) {
+          offerIds += ','
+          offerName += ','
+        }
+      })
+      let params = {
+        action_code: cardActionMap.payForProduct,
+        employee_id: employee.employeeId,
+        enterprise_id: employee.enterpriseId,
+        department_id: employee.departmentId,
+        offer_id: offerIds,
+        offer_name: offerName
+      }
+      this.$parent.recordClickAction(params)
+    }
+    /**
+     * 下单商品动作记录
+     */
+    orderProduct() {
+      let employee = this.$parent.getNowEmployee()
+      let offerIds = ''
+      let offerName = ''
+      this.norms.some((val, idx) => {
+        offerIds += val.offer_id
+        offerName += val.offer_name
+        if (idx < this.norms.length - 1) {
+          offerIds += ','
+          offerName += ','
+        }
+      })
+      let params = {
+        action_code: cardActionMap.orderProduct,
+        employee_id: employee.employeeId,
+        enterprise_id: employee.enterpriseId,
+        department_id: employee.departmentId,
+        offer_id: offerIds,
+        offer_name: offerName
+      }
+      this.$parent.recordClickAction(params)
+    }
+    createOrder() {
+      if (!this.address) {
+        wepy.showToast({
+          title: '请先选择地址'
+        })
+        return
+      }
+      // 下单未支付
+      let address = `${this.address.province_name}${this.address.city_name}${this.address.area_name}${this.address.address}`
+      let data = []
+      this.norms.some(val => {
+        let obj = {
+          norm_id: val.norms_id,
+          num: val.offer_num,
+          offer_id: val.offer_id,
+          offer_price: val.offer_price,
+          offer_price_discount: val.discount_price || val.offer_price
+        }
+        data.push(obj)
+      })
+      let params = {
+        address: address,
+        express_fee: this.expressFee,
+        link_man: this.address.name,
+        link_phone: this.address.phone,
+        total_price: this.totalOfferPrcie,
+        total_price_discount: this.lastPrice,
+        order_detail: data
+      }
+
+      orderApi.createOrder(params).then((data) => {
+        if (data) {
+          this.payForProduct()
+          this.toOrder()
+        }
+      }, err => {
+        wepy.showModal({
+          content: err.err_msg,
+          showCancel: false
+        })
+      })
+    }
+    /**
+     * 获取商城开通支付
+     */
+    getShopPayType(enterpriseId) {
+      orderApi.getShopPayType(enterpriseId).then(res => {
+        this.isPayType = res
+      })
+    }
+  }
+</script>

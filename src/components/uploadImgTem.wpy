@@ -1,0 +1,149 @@
+<style lang="scss">
+  @import '../assets/css/base.scss';
+</style>
+<template name="uploadImg">
+      <!-- 上传我的照片 -->
+      <view class="weui-uploader">
+         <view class="weui-uploader__hd weui-uploader__hd-new" hidden="{{imgObj.imgLengthShow}}">
+          <view class="weui-uploader__title font-size-30 c-323232">图片上传</view>
+          <view class="weui-uploader__info font-size-24 c-909090">{{imgObj.files.length}}/{{maxCount}}</view>
+        </view>
+        <view class="weui-uploader__bd weui-uploader-bd">
+          <view class="weui-uploader__files">
+            <block wx:for="{{imgObj.files}}" wx:key="id">
+              <view class="weui-uploader__file weui-uploader-file">
+                <image class="weui-uploader__img uploader-img" style="width:{{imgWidth}}rpx;height:{{imgHeigth}}rpx" src="{{item.url}}" mode="aspectFill" @tap="previewImage" data-index="{{index}}"/>
+                <image src="../assets/images/card/close.png" class="close" data-index="{{index}}" @tap="deleteImage"/>
+              </view>
+            </block>
+          </view>
+          <view class="weui-uploader__input-box weui-uploader__input-box-new" wx:if="{{imgObj.files.length < maxCount}}">
+            <view class="weui-uploader__input" @tap="chooseImage"></view>
+          </view>
+        </view>
+      </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { common } from '../assets/js/common'
+  import { cardManagerApi } from '@/api'
+  export default class uploadImgTem extends wepy.component {
+    data = {}
+    props = {
+      imgObj: {
+        type: Object,
+        default: {},
+        twoWay: true
+      },
+      maxCount: {
+        type: Number,
+        default: 9,
+        twoWay: true
+      },
+      isChange: {
+        type: Boolean,
+        default: false,
+        twoWay: true
+      }
+    }
+    methods = {
+      // 选择图片
+      chooseImage(e) {
+        wepy.chooseImage({
+          count: this.maxCount - this.imgObj.files.length,
+          sizeType: ['original', 'compressed'],
+          sourceType: ['album', 'camera']
+        }).then((res) => {
+          this.methods.uploadServer(res.tempFilePaths, this)
+        })
+        this.isSave = true
+      },
+      // 预览图片
+      previewImage(e) {
+        let files = this.imgObj.files
+        let previewUrls = []
+        for (let i = 0; i < files.length; i++) {
+          previewUrls.push(files[i].url)
+        }
+        wepy.previewImage({
+          current: files[e.currentTarget.dataset.index].url,
+          urls: previewUrls
+        })
+      },
+      // 删除照片
+      deleteImage(e) {
+        let index = e.currentTarget.dataset.index
+        // 存放展示照片的数组
+        let files = this.imgObj.files
+        // 临时存放新增、删除照片的数组
+        let tempFiles = this.imgObj.tempFiles
+        // 当前被删除的图片
+        let currentDelFile = this.imgObj.files[index]
+        // 从七牛云上删除
+        cardManagerApi.deleteResouces(currentDelFile.url)
+        if (this.methods.isTempExist(currentDelFile.id, tempFiles)) {
+          // 清除addTempFiles中对应的数据，不将删除数据放入delTempFiles中
+          this.methods.clearTempFile(currentDelFile.id, tempFiles)
+        } else {
+          currentDelFile['state'] = 'del'
+          tempFiles.push(currentDelFile)
+        }
+        files.splice(index, 1)
+      },
+      // 上传照片到服务器
+      uploadServer(uploadfiles, that) {
+        let filesLength = that.imgObj.files.length
+        if ((uploadfiles.length + filesLength) > that.maxCount) {
+          common.tip('超出上传限制！图片最多上传' + that.maxCount + '张', 'none')
+          return
+        }
+        // var apiURL = that.$parent.globalData.api.apiUrl + '/push/v1.0/upload_files'
+        let apiURL = wepy.$instance.globalData.api.apiUrl + '/push/v1.0/upload_files'
+        wepy.showLoading({
+          title: '正在上传图片……',
+          mask: true
+        })
+        for (let i = 0; i < uploadfiles.length; i++) {
+          wepy.uploadFile({
+            url: apiURL,
+            filePath: uploadfiles[i],
+            name: 'editormd-image-file'
+          }).then((e) => {
+            let temp = {id: common.getUUID(), url: JSON.parse(e.data).url}
+            // 存放展示照片的数组
+            let files = that.imgObj.files
+            // 临时存放新增照片的数组
+            let tempFiles = that.imgObj.tempFiles
+            files.push(temp)
+            temp['state'] = 'add'
+            tempFiles.push(temp)
+            if (i === uploadfiles.length - 1) {
+              wepy.hideLoading()
+            }
+            that.$apply()
+          })
+        }
+      },
+      // 查找addTempFiles、delTempFiles中是否存在图片
+      isTempExist(id, tempFiles) {
+        let flag = false
+        for (let i = 0; i < tempFiles.length; i++) {
+          if (id === tempFiles[i].id) {
+            flag = true
+            break
+          }
+        }
+        return flag
+      },
+      // 清除临时文件
+      clearTempFile(id, tempFiles) {
+        for (let i = 0; i < tempFiles.length; i++) {
+          if (id === tempFiles[i].id) {
+            tempFiles.splice(i, 1)
+          }
+        }
+      }
+    }
+  }
+</script>

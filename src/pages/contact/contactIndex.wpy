@@ -1,0 +1,263 @@
+<style lang="scss">
+@import '../../assets/css/pages/contact/cardList.scss';
+@import '../../assets/css/pages/me/entOrg.scss';
+@import '../../assets/css/pages/contact/contactIndex.scss';
+</style>
+<template>
+  <!-- 通讯录主页 -->
+  <view class="wrap">
+    <navigator url="/pages/contact/cardList" class="head" hover-class="none">
+      <text class="font-size-30 c-323232">我的名片夹</text>
+      <view class="head-right">
+        <view>
+          <repeat for="{{cardList}}" index="index" key="index" item="item" wx:if="{{index < 4}}">
+            <image src="{{item.head_icon}}"/>
+          </repeat>
+        </view>
+        <text class="font-size-26 c-909090">{{cardList.length}}人</text>
+        <image src="../../assets/images/card/card_edit_right.png" class="head-arrow"/> 
+      </view>             
+    </navigator>
+    <view class="company">
+      <image src="{{enterparise.head_icon}}" class="company-logo {{ent.logoType == 1 ? 'company-logo-rect' : ''}}"/>
+      <view class="font-size-30 c-323232 ta-center" style="padding:10rpx 30rpx 14rpx 30rpx;">{{enterparise.name}}</view>
+      <!-- <view class="font-size-26 c-646464 ta-center">免费版{{enterparise.sale_card_num}}/{{enterparise.used_car_num}}人</view> -->
+      <view class="font-size-26 c-646464 ta-center">免费版 {{enterparise.sale_card_num}} / {{enterparise.money_init}} 人</view>
+      <button class="font-size-30 c-ffffff" open-type='share' @tap="onShareAppMessage">一键添加同事进入企业通讯录</button>
+    </view>
+    <view class="cardList-wrap">
+      <view class="cardList-tab">
+        <!-- 按照排序部分 -->
+        <view class="cardList-order-part" @tap="mask" wx:if="{{!searchStatus}}">
+          <repeat for="{{orderList}}" index="index" key="index" item="item">
+            <view class="cardList-order" hidden="{{number == index ? '' : orderShow }}" data-index="{{index}}">
+              <image src="{{item.image}}" class="cardList-order-time"/>
+              <text>{{item.text}}</text>
+              <image src="../../assets/images/contact/arrow_down.png" class="cardList-order-arrow" hidden="{{arrowShow}}"/>
+              <image src="../../assets/images/contact/arrow_up.png" class="cardList-order-arrow cardList-order-arrow-check" hidden="{{maskShow}}"/>
+            </view>  
+          </repeat>
+        </view>
+        <view class="cardList-search {{searchStatus ? 'cardList-len' : ''}}">
+          <image src="../../assets/images/contact/search.png"/>
+          <input type="text" placeholder="搜索" @input="search" bindfocus="lengthen" bindblur="restore"/>
+          <view class="search-cancel" wx:if="{{searchStatus}}" @tap="restore">取消</view>
+        </view>
+      </view>
+      <view class="cardList-order-mask" hidden="{{maskShow}}">
+        <!-- 排序弹窗 -->
+        <repeat for="{{maskOrder}}" index="index" key="index" item="item">
+          <view class="cardList-order {{ number == index ? 'cardList-order-check' : ''}}" @tap="order" data-index="{{index}}">
+            <image src="{{item.image}}" class="cardList-order-time"/>
+            <image src="{{item.imageCheck}}" class="cardList-order-time cardList-order-time-check" hidden="{{imgShow}}"/>
+            <text>{{item.text}}</text>
+            <image src="../../assets/images/contact/hook.png" class="cardList-order-hook"/>
+          </view>
+        </repeat>
+      </view> 
+
+      <!-- 联系人列表 -->
+      <view class="contact-part">
+        <repeat for="{{staffGroupList}}" index="groupIndex" key="index" item="item">
+          <view class="contact-list">
+            <view class="staff font-size-24 c-909090">{{item.groupName}}</view>
+            <repeat for="{{item.dataList}}" index="index" key="index" item="staff">
+              <view class="weui-cell" wx:if="{{staff.status != 0}}">
+                <view class="weui-cell__hd" @tap="cardView" data-groupindex="{{groupIndex}}" data-staffindex="{{index}}">
+                  <image src="{{staff.head_icon}}"/>
+                </view>
+                <view class="weui-cell__hd" @tap="cardView" data-groupindex="{{groupIndex}}" data-staffindex="{{index}}" style="width:100%">
+                  <view class="branch font-size-36 c-323232">{{staff.name}}</view>
+                  <view class="count font-size-30 c-909090">{{staff.station === '' || staff.station === null ? '暂无' : staff.station}}</view>
+                </view>
+                <view class="weui-cell__hd" @tap="tel('{{staff.phone}}')">
+                  <image src="../../assets/images/contact/tel.png" class="tel"/>
+                </view>
+              </view>
+            </repeat>
+          </view>
+        </repeat>
+      </view>
+      <view class="load-more" hidden="{{!loadMore}}">正在加载数据....</view>
+    </view>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { common } from '../../assets/js/common.js'
+import { companyApi, contactApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class cardList extends wepy.page {
+  // 相当于page.json
+  config = {
+    enablePullDownRefresh: true,
+    navigationBarTitleText: '通讯录'
+  }
+  data = {
+    res_url: G_RES_URL,
+    enterparise: {},
+    orderShow: true,
+    arrowShow: false,
+    maskShow: true,
+    imgShow: true,
+    number: 0,
+    cardList: [],
+    staffList: [],
+    ent: {
+      logoType: 0
+    },
+    orderList: [
+      { image: '../../assets/images/contact/company.png', text: '按部门' },
+      { image: '../../assets/images/contact/people.png', text: '按名称' }
+    ],
+    maskOrder: [
+      {
+        image: '../../assets/images/contact/time.png',
+        imageCheck: '../../assets/images/contact/company_check.png',
+        text: '按部门排序'
+      },
+      {
+        image: '../../assets/images/contact/people.png',
+        imageCheck: '../../assets/images/contact/people_check.png',
+        text: '按名称排序'
+      }
+    ],
+    searchStatus: false,
+    page: 1,
+    staffGroupList: [],
+    department_id: '', // 企业在部门表中对应部门id，用于分享小程序
+    enterpriseId: '',
+    openId: '',
+    loadMore: false,
+    order: ['department_name', 'first_letter'],
+    userRole: ''
+  }
+  methods = {
+    lengthen(e) {
+      this.searchStatus = true
+      this.$apply()
+    },
+    restore(e) {
+      this.searchStatus = false
+      this.$apply()
+    },
+    // 显示隐藏排序弹窗
+    mask() {
+      this.arrowShow = !this.arrowShow
+      this.maskShow = !this.maskShow
+    },
+    // 选择排序方式
+    order(e) {
+      this.number = e.currentTarget.dataset.index
+      this.maskShow = true
+      this.arrowShow = false
+      this.staffGroupList = common.getGroupListByKey(this.staffList, this.order[this.number])
+      this.$apply()
+    },
+
+    // 微信分享
+    onShareAppMessage(e) {
+      let sharename = this.$parent.getUserInfo().nickName
+      let staffInfo = this.$parent.getStaffInfo()
+      let title = `${sharename}邀请您加入"${this.enterparise.name}",快去查看吧~~~`
+      return {
+        title: title,
+        path: `/pages/contact/addContact?enterprise_id=${
+          this.enterparise.id
+        }&department_id=${this.department_id}&employee_id=${staffInfo.staffId}&userRole=${this.userRole}`,
+        imageUrl: this.res_url + '/dc_share_entry_1.png',
+        success: res => {
+          // 转发成功
+          this.staffMaskHidden = true
+        },
+        fail: res => {
+          // 转发失败
+        }
+      }
+    },
+    // 拨打电话
+    tel(phone) {
+      common.callPhone(phone)
+    },
+    cardView(e) {
+      let groupIndex = e.currentTarget.dataset.groupindex
+      let staffIndex = e.currentTarget.dataset.staffindex
+      let staff = this.staffGroupList[groupIndex].dataList[staffIndex]
+      if (staff.status === 0) {
+        this.$navigate('/pages/card/subPackage/pages/dimission?staff=' + JSON.stringify(staff))
+      } else {
+        this.$navigate(
+          `/pages/card/cardView?employee_id=${staff.id}&enterprise_id=${
+            staff.enterprise_id
+          }&department_id=${staff.department_id}&cardHolder=cardHolder`
+        )
+      }
+    },
+    search(e) {
+      let cond = e.detail.value
+      let searchList = []
+      let staffList = this.staffList
+      if (cond.length > 0) {
+        for (let i = 0; i < staffList.length; i++) {
+          if (
+            staffList[i].name.toLowerCase().indexOf(cond.toLowerCase()) > -1
+          ) {
+            searchList.push(staffList[i])
+          }
+        }
+        this.staffGroupList = common.getGroupListByKey(searchList, this.order[this.number])
+      } else {
+        this.staffGroupList = common.getGroupListByKey(staffList, this.order[this.number])
+      }
+      this.$apply()
+    }
+  }
+  onReachBottom() {
+    this.page = this.page + 1
+    this.loadMore = true
+    contactApi.getStaffList(this.enterpriseId, this.openId, this.page).then(res => {
+      for (let k in res.list) {
+        this.staffList.push(res.list[k])
+      }
+      this.staffGroupList = common.getGroupListByKey(this.staffList, this.order[this.number])
+      this.loadMore = false
+      this.$apply()
+    })
+    this.$apply()
+  }
+  onLoad(option) {
+    this.page = 1
+    this.openId = common.getOpenId(this)
+    this.staff = common.getStaffInfo(this)
+    if (option && option.enterprise_id) {
+      this.enterpriseId = option.enterprise_id
+    } else {
+      this.enterpriseId = this.staff.enterprise_id
+    }
+    companyApi.getCurrentEnterpriseInfo(this.enterpriseId).then(res => {
+      this.enterparise = res
+      this.$apply()
+    })
+    contactApi.getCardList(this.staff.userId, this.openId).then(res => {
+      this.cardList = res
+      this.$apply()
+    })
+    contactApi.getStaffList(this.enterpriseId, this.openId, this.page).then(res => {
+      this.staffList = res.list
+      this.staffGroupList = common.getGroupListByKey(this.staffList, this.order[this.number])
+      this.$apply()
+    })
+    companyApi.getRootDptId(this.enterpriseId).then(res => {
+      this.department_id = res
+    })
+    companyApi.getUserRole(this.enterpriseId, this.openId).then(res => {
+      this.userRole = res
+    })
+  }
+  onPullDownRefresh() {
+    this.onLoad()
+    wepy.stopPullDownRefresh()
+  }
+}
+</script>

@@ -1,0 +1,105 @@
+<template>
+  <view class="dept {{(currentIndex+1) < len ? 'bord-bottom':''}}">
+    <view class="weui-cell" style="margin-left:{{margin_left}}rpx;padding:0 30rpx;height:102rpx;" >
+        <view class="weui-cell__hd" data-deptid="{{dept.id}}" data-deptname="{{dept.title}}" data-type="1" @tap="chooseDept">
+            <view class="check-part" wx:if="{{dept.id !== chooseDeptId}}"></view>
+            <image src="/assets/images/me/check.png" wx:if="{{dept.id === chooseDeptId}}"/>
+        </view>
+        <!-- data-deptid="{{dept.id}}" data-level="{{level}}" @tap="show" data-type="1" -->
+        <view class="weui-cell__bd" data-deptid="{{dept.id}}" data-deptname="{{dept.title}}" data-type="1" @tap="chooseDept">
+            <view class="c-323232 font-size-30 ml-30">{{dept.title}}</view>
+        </view>
+        <view class="weui-cell__ft weui-cell__ft_in-access" style="width:15%;height:100%" wx:if="{{dept.children.length > 0}}" data-deptid="{{dept.id}}" data-level="{{level}}" @tap="show" data-type="1"></view>
+    </view>
+    <slot></slot>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class dept extends wepy.component {
+    data = {
+
+    }
+    props = {
+      dept: {
+        type: Object,
+        default: {}
+      },
+      margin_left: {
+        type: String,
+        default: '0'
+      },
+      currentIndex: {
+        type: Number,
+        default: 0
+      },
+      len: {
+        type: Number,
+        default: 0
+      },
+      level: {
+        type: Number,
+        default: 0
+      },
+      chooseDeptId: {
+        type: String,
+        default: ''
+      }
+    }
+    methods = {
+      show(e) {
+        let id = e.currentTarget.dataset.deptid
+        let level = e.currentTarget.dataset.level
+        let that = this.$parent
+        if (level === 1) {
+          that.showId1 = id
+          that.showId1State = !that.showId1State
+          if (id !== that.currentId && level === that.currentLevel && that.showId1State === false) {
+            that.showId1State = true
+          }
+        } else if (level === 2) {
+          that.showId2 = id
+          that.showId2State = !that.showId2State
+          if (id !== that.currentId && level === that.currentLevel && that.showId2State === false) {
+            that.showId2State = true
+          }
+        } else if (level === 3) {
+          that.showId3 = id
+          that.showId3State = !that.showId3State
+          if (id !== that.currentId && level === that.currentLevel && that.showId3State === false) {
+            that.showId3State = true
+          }
+        } else if (level === 4) {
+          that.showId4 = id
+          that.showId4State = !that.showId4State
+          if (id !== that.currentId && level === that.currentLevel && that.showId4State === false) {
+            that.showId4State = true
+          }
+        } else if (level === 5) {
+          that.showId5 = id
+          that.showId5State = !that.showId5State
+          if (id !== that.currentId && level === that.currentLevel && that.showId5State === false) {
+            that.showId5State = true
+          }
+        }
+        that.currentId = id
+        that.currentLevel = level
+        that.$apply()
+      },
+      chooseDept(e) {
+        let id = e.currentTarget.dataset.deptid
+        let deptname = e.currentTarget.dataset.deptname
+        let that = this.$parent
+        if (that.chooseDeptId === id) {
+          that.chooseDeptId = null
+          that.chooseDeptName = null
+        } else {
+          that.chooseDeptId = id
+          that.chooseDeptName = deptname
+        }
+        that.$apply()
+      }
+    }
+    onLoad() {}
+  }
+</script>

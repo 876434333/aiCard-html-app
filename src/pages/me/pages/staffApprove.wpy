@@ -1,0 +1,212 @@
+<style lang="scss">
+$main_color: #e75152;
+.tab-head {
+  height: 104rpx;
+  line-height: 104rpx;
+  .title {
+    display: inline-block;
+    width: 50%;
+    text-align: center;
+    view {
+      width: 80%;
+      height: 100rpx;
+      margin: 0 auto;
+    }
+    .on {
+      border-bottom: solid 7rpx $main_color;
+      color: $main_color;
+    }
+  }
+}
+.head-icon {
+  width: 103rpx;
+  height: 103rpx;
+  border-radius: 10rpx;
+}
+.weui-cell {
+  padding: 20rpx 20rpx 4rpx 20rpx;
+}
+.check-part {
+  width: 35rpx;
+  height: 35rpx;
+  border: 1px solid #d4d4d4;
+  border-radius: 100%;
+}
+.foot {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  // height: 112rpx;
+  border-top: 1px solid #e8e8e8;
+  text-align: center;
+  overflow: hidden;
+  background: #fff;
+  .b-bar {
+    display: inline-block;
+    width: 50%;
+    button {
+      background: #fff;
+      color: #323232;
+      width: 85%;
+    }
+  }
+}
+.check image {
+  width: 36rpx !important;
+  height: 36rpx !important;
+}
+.wrap {
+  overflow: hidden;
+  padding-bottom: 200rpx;
+}
+.foot-btns {
+  height: 96rpx;
+  margin-bottom: 15rpx;
+  button {
+    float: left;
+    width: 337rpx;
+    height: 100%;
+  }
+  .cancel {
+    margin-left: 29rpx;
+  }
+  .confirm {
+    margin-left: 19rpx;
+  }
+}
+</style>
+
+<template>
+<view class="wrap">
+    <view class="tab-head bord-bottom c-323232 font-size-30">
+        <view class="title" @tap="switchTab(0)"><view class="{{tabIndex === '0' ? 'on' : ''}}">待处理</view></view>
+        <view class="title" @tap="switchTab(1)"><view class="{{tabIndex === '1' ? 'on' : ''}}">已处理</view></view>
+    </view>
+    <view class="tab-panel">
+        <!--待处理-->
+        <view class="weui-cells weui-cells_after-title" wx:if="{{tabIndex === '0'}}">
+            <repeat for="{{pendingStaffList}}" index="index" key="index" item="staff">
+              <view class="weui-cell" @tap="chooseStaff('{{index}}', 'ok')">
+                <view class="weui-cell__hd check">
+                  <view wx:if="{{!staff.selected}}" class="check-part" ></view>
+                  <image src="../../../assets/images/me/check.png" wx:if="{{staff.selected}}"/>
+                </view>
+                <view class="weui-cell__hd ml-20">
+                  <image src="{{staff.head_icon}}" class="head-icon"/>
+                </view>
+                <view class="weui-cell__hd ml-20">
+                  <view class="branch font-size-30 c-323232" style="margin-top:-4rpx">{{staff.name}}</view>
+                  <view class="count font-size-26 c-909090" style="margin-top:12rpx">{{staff.phone}} | {{staff.station ? staff.station : '暂无职位'}}</view>
+                </view>
+              </view>
+            </repeat>
+        </view>
+        <!--已处理-->
+        <view class="weui-cells weui-cells_after-title" wx:if="{{tabIndex === '1'}}">
+          <repeat for="{{approveStaffList}}" index="index" key="index" item="staff">
+            <view class="weui-cell">
+              <view class="weui-cell__hd ml-20">
+                <image src="{{staff.head_icon}}" class="head-icon"/>
+              </view>
+              <view class="weui-cell__hd ml-20">
+                <view class="branch font-size-30 c-323232" style="margin-top:-4rpx">{{staff.name}}</view>
+                <view class="count font-size-26 c-909090" style="margin-top:12rpx">{{staff.phone}} | {{staff.station}}</view>
+              </view>
+              <view class="font-size-26 c-3DB8C8" style="position: absolute;right:20rpx" wx:if="{{staff.status == 1}}">已通过</view>
+              <view class="font-size-26 c-323232" style="position: absolute;right:20rpx" wx:if="{{staff.status == 4}}">已拒绝</view>
+            </view>
+          </repeat>
+      </view>
+    </view>
+    <view class="foot" wx:if="{{tabIndex === '0'}}">
+      <view class="c-909090 font-size-30 mt-20 mb-20">已选择{{selecteds.length}}人</view>
+      <view class="foot-btns">
+        <button class="font-size-36 bg-fff cancel" @tap="handle(0)">拒绝申请</button>
+        <button class="font-size-36 c-ffffff bg-3DB8C8 confirm" @tap="handle(1)">通过申请</button>
+      </view>
+      <!-- <view>
+          <view class="b-bar">
+              <button class="font-size-36 ml-40" @tap="handle(0)">拒绝申请</button>
+          </view>
+          <view class="b-bar">
+              <button class="font-size-36 c-ffffff bg-3DB8C8 mr-40" @tap="handle(1)">通过申请</button>
+          </view>
+      </view> -->
+    </view>
+</view>
+</template>
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+export default class empApproval extends wepy.page {
+  config = {
+    navigationBarTitleText: '加入组织申请'
+  }
+  data = {
+    tabIndex: '0',
+    // 待批准人员列表
+    pendingStaffList: [],
+    // 已批准人员列表
+    approveStaffList: [],
+    selecteds: []
+  }
+  onLoad() {
+    let staffInfo = this.$parent.getStaffInfo()
+    companyApi.getApproveList(staffInfo.enterprise_id).then(res => {
+      this.approveStaffList = res.approveStaffList
+      this.pendingStaffList = res.pendingStaffList
+      this.$apply()
+    })
+  }
+  components = {}
+  methods = {
+    // 选项卡切换
+    switchTab(tabIndex) {
+      this.tabIndex = tabIndex
+      this.$apply()
+    },
+    // 选择人员
+    chooseStaff(index) {
+      if (!this.pendingStaffList[index].selected) {
+        this.pendingStaffList[index].selected = true
+        this.selecteds.push(this.pendingStaffList[index])
+      } else {
+        let currentStaff = this.pendingStaffList[index]
+        currentStaff.selected = false
+        let id = currentStaff.id
+        for (let i = 0; i < this.selecteds.length; i++) {
+          if (this.selecteds[i].id === id) {
+            this.selecteds.splice(i, 1)
+          }
+        }
+      }
+    },
+    // 通过
+    handle(state) {
+      if (this.selecteds.length === 0) {
+        wepy.showToast({
+          title: '请先选择人员',
+          icon: 'none'
+        })
+        return
+      }
+      let staffIdList = []
+      for (let i = 0; i < this.selecteds.length; i++) {
+        staffIdList.push(this.selecteds[i].id)
+      }
+      let staffInfo = this.$parent.getStaffInfo()
+      let params = {
+        staffIdList: staffIdList,
+        result: state,
+        handleStaffId: staffInfo.staffId
+      }
+      companyApi.updataApprove(params).then(res => {
+        wepy.reLaunch({
+          url: `../meIndex`
+        })
+      })
+    }
+  }
+}
+</script>

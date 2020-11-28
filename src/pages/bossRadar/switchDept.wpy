@@ -1,0 +1,83 @@
+<style lang="scss">
+  .dept-list {
+    border-top:1px solid #e8e8e8;
+    .weui-cell {
+      padding:20rpx 30rpx 20rpx 27rpx;
+      border-bottom:1px solid #e8e8e8;
+      background: #ffffff;
+    }
+    .weui-cell:before {
+      border: 0;
+    }
+    .weui-cell__hd:nth-child(1) {
+      margin-right: 30rpx;
+    }
+    .weui-cell__hd:nth-child(2) {
+      margin-right:10rpx;
+    }
+    .avatar {
+      display:block;
+      width: 40rpx;
+      height: 40rpx;
+    }
+    .arrow {
+      width: 16rpx;
+      height: 29rpx;
+    }
+  } 
+</style>
+<template>
+  <view class="wrap">
+    <!-- 切换部门 -->
+    <view class="dept-list">
+      <repeat for="{{deptList}}" index="index" key="index" item="item">
+        <view class="weui-cell" @tap="chooseDept('{{item.id}}')">
+          <view class="weui-cell__hd">
+            <image src="./images/people.jpg" class="avatar"/>
+          </view>
+          <view class="weui-cell__hd font-size-30 c-323232" style="width:100%">
+            {{item.name}}
+          </view>
+          <view class="weui-cell__hd">
+            <image src="/assets/images/contact/arrow_right.png" class="arrow"/>
+          </view>
+        </view>
+      </repeat>
+      <view class="font-size-28 c-909090 ta-center" style="line-height:80rpx;">没有更多了</view>
+    </view>
+  </view>  
+</template>
+<script>
+  import wepy from 'wepy'
+  import { bossRadarApi } from '@/api'
+  export default class switchDept extends wepy.page {
+    config = {
+      navigationBarTitleText: '切换部门'
+    }
+    data = {
+      deptList: []
+    }
+    onLoad() {
+      this.getDeptList()
+    }
+    getDeptList() {
+      bossRadarApi.departListPromise().then(res => {
+        this.deptList = res
+        this.$apply()
+      })
+    }
+    methods = {
+      // 选择部门
+      chooseDept(departmentId) {
+        wepy.setStorage({
+          key: 'departmentId',
+          data: departmentId
+        }).then(res => {
+          wepy.navigateBack({
+            delta: 1
+          })
+        })
+      }
+    }
+  }
+</script>

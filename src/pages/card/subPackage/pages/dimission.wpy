@@ -1,0 +1,220 @@
+<style lang="scss">
+  $main_color: #e75152;
+  page {
+    background: #fafafa;
+  }
+  .card {
+    margin: 0 44rpx 44rpx 44rpx;
+    .main {
+      height: 337rpx;
+      border-radius: 10rpx;
+      background: #fff;
+      box-shadow: rgba(0, 0, 0, 0.12) -1px 0px 17px;
+      .mask_dimission {
+        width:245rpx;
+        height:121rpx;
+        margin-top:115rpx;
+      }
+      .mask_dimission_lg{
+        width:332rpx;
+        height:131rpx;
+      }
+      .mask {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        box-shadow: rgba(0, 0, 0, 0.12) -1px 0px 17px;
+        font-size: 30rpx;
+        // line-height:337rpx;
+        z-index: 9999;
+        text-align: center;
+        background: #e3e3e3;
+        border-radius: 10rpx;
+        filter: alpha(opacity=90);
+        opacity: 0.9;
+        -moz-opacity: 0.9;
+        -khtml-opacity: 0.9;
+        color: $main_color;
+      }
+      .card-info {
+        padding-top: 60rpx;
+        margin-left: 60rpx;
+        .icon {
+          display: inline-block;
+          width: auto;
+          vertical-align: middle;
+          position: relative;
+          image {
+            width: 126rpx;
+            height: 126rpx;
+            border-radius: 50%;
+          }
+        }
+        .info {
+          display: inline-block;
+          width: auto;
+          margin-left: 40rpx;
+          margin-top: -16rpx;
+          vertical-align: middle;
+          image {
+            width: 21rpx;
+            height: 29rpx;
+            display: inline-block;
+          }
+        }
+      }
+      .company {
+        padding-left: 60rpx;
+        margin-top: 12rpx;
+        color: #646464;
+        font-size: 24rpx;
+      }
+    }
+    .source {
+      font-size: 30rpx;
+      color: #909090;
+      padding: 26rpx 0;
+    }
+  }
+  .btns {
+    position:absolute;
+    bottom:20rpx;
+    right:20rpx;
+    text-align: right;
+    margin-top:4rpx;
+    view {
+      display: inline-block;
+      margin-right: 34rpx;
+      padding: 0 14rpx;
+      height:50rpx;
+      line-height:50rpx;
+      font-size: 24rpx;
+      color: #b2b2b2;
+      text-align: center;
+      border-radius: 10rpx;
+      border: solid 1rpx #e9e9e9;
+    }
+    .on {
+      border: solid 1rpx $main_color;
+      color: $main_color;
+    }
+  }
+  .btn {
+    margin-right: 34rpx;
+    border: solid 1rpx $main_color;
+    color: $main_color;
+    padding: 0 10rpx;
+    font-size: 18rpx;
+    border-radius: 5rpx;
+  }
+.receiver-info {
+  font-size: 30rpx;
+  color: #909090;
+  padding: 26rpx 0;
+  display: flex;
+  .receiver-info-icon {
+    flex: 0.1;
+    line-height: 57rpx;
+  }
+  .receiver-info-text {
+    flex: 1
+  }
+}
+</style>
+<template>
+  <view class="wrap">
+    <view class="card mt-40">
+      <view class="main mt-40" style="position:relative">
+        <view class="mask">
+          <image  wx:if="{{res_url}}" src="{{type === 1 ? res_url + '/dc_card_dimission' + (from ? '_blue' : '') + '.png' : res_url + '/dc_card_dissolve' + (from ? '_blue' : '') + '.png'}}" class="mask_dimission {{type != 1 ? 'mask_dimission_lg' : ''}}"/>
+        </view>
+        <view class="card-info" >
+            <view class="icon"><image wx:if="{{res_url}}" src="{{staff.head_icon}}"/></view>
+            <view class="info">
+                <view class="font-size-45 c-323232">
+                  {{staff.name}}<text class="font-size-24 ml-40">{{staff.station}}</text>
+                </view>
+                <view class="font-size-30 c-646464" style="padding-top:10rpx">
+                  <image src="/assets/images/card/card_phone_icon.png"/>
+                  <view style="display:inline-block;padding-left:10rpx">{{staff.phone}}</view>
+                </view>
+            </view>
+        </view>
+        <view class="company">{{staff.enterprise_name}}</view>
+        <!-- @tap="cardView('{{index}}')" -->
+      </view>
+    </view>
+    <view class="receiver-info">
+      <view class="receiver-info-icon">
+        <image style="width:26rpx;height:26rpx;" src="/assets/images/card/dimission_hint{{from ? '_blue' : ''}}.png"/>
+      </view>
+      <view class="receiver-info-text">
+        <view>{{type === 1 ? '离职时间：' + staff.dimission_time : staff.enterprise_modify_time  === null ? '' : '解散时间：' + staff.enterprise_modify_time}}</view>
+        <view wx:if="{{type === 1}}">工作已转交给{{receiverStaff.name}}</view>
+        <view wx:else>{{staff.enterprise_name}}已解散</view>
+      </view>
+    </view>
+    <view class="card" @tap="cardView" wx:if="{{type === 1}}">
+      <view class="main" style="position:relative">
+        <view class="card-info" >
+            <view class="icon"><image wx:if="{{res_url}}" src="{{receiverStaff.head_icon}}"/></view>
+            <view class="info">
+                <view class="font-size-45 c-323232">
+                  {{receiverStaff.name}}<text class="font-size-24 ml-40">{{receiverStaff.station}}</text>
+                </view>
+                <view class="font-size-30 c-646464" style="padding-top:10rpx">
+                  <image src="/assets/images/card/card_phone_icon.png"/>
+                  <view style="display:inline-block;padding-left:10rpx">{{receiverStaff.phone}}</view>
+                </view>
+            </view>
+        </view>
+        <view class="company">{{receiverStaff.enterprise_name}}</view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import { contactApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class Dimission extends wepy.page {
+  config = {
+    navigationBarTitleText: '名片详情'
+  }
+  data = {
+    res_url: G_RES_URL,
+    staff: {},
+    type: null,
+    receiverStaff: {},
+    from: ''
+  }
+  onLoad(opt) {
+    this.from = opt.from
+    let o = {
+      color: '#ffffff',
+      background: '#e75152'
+    }
+    if (this.from) {
+      o.background = '#e75152'
+    }
+    wepy.setNavigationBarColor({
+      frontColor: o.color,
+      backgroundColor: o.background
+    })
+    let _this = this
+    this.type = parseInt(opt.type)
+    this.staff = JSON.parse(opt.staff)
+    contactApi.getReceiverStaff(this.staff.id).then(res => {
+      _this.receiverStaff = res
+      _this.$apply()
+    })
+  }
+  methods = {
+    cardView() {
+      wepy.reLaunch({
+        url: `/pages/card/cardView?employee_id=${this.receiverStaff.id}&enterprise_id=${this.receiverStaff.enterprise_id}&department_id=${this.receiverStaff.department_id}&cardHolder=cardHolder`
+      })
+    }
+  }
+}
+</script>

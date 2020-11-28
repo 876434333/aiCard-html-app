@@ -1,0 +1,317 @@
+<style lang="scss">
+$main_color: #e75152;
+page,
+.page,
+.cover {
+  background-color: white;
+  height: 100%;
+}
+.none {
+  display: none;
+}
+.cropper-wrapper {
+  position: relative;
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  justify-content: center;
+  height: 80%;
+  background-color: #e5e5e5;
+}
+.cropper-buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  line-height: 50px;
+}
+.upload {
+  width: 40%;
+  text-align: center;
+}
+.getCropperImage {
+  width: 40%;
+  text-align: center;
+}
+.cropper {
+  // position: absolute;
+  // top: 0;
+  // left: 0;
+}
+.cropper-buttons {
+  background-color: rgba(0, 0, 0, 0.95);
+  color: $main_color;
+}
+</style>
+
+<template>
+<view style="height:100%;">
+  <view class="cover {{showArea == 'edit' ? '' : 'none'}}">
+    <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_access">
+            <view class="weui-cell__bd">
+                <view style="display: inline-block; vertical-align: middle; font-size:30rpx;color:#323232">公司名称:</view>
+                <input style="display: inline-block;width:450rpx;vertical-align: middle;margin-left:20rpx;font-size:30rpx;color:#909090;" value="{{enterprise_name}}" @input="input" @focus="inputFocus" @blur="inputBlur" maxlength='32'/>
+            </view>
+            <image class="weui-cell__ft" style="width:20rpx;height:20rpx" hidden="{{showClose}}" src="../../../assets/images/card/close.png" @tap="clear"/>
+        </view>
+    </view>
+    <view style="margin-top:30rpx">
+      <view class="weui-cells weui-cells_after-title">
+        <!-- <view class="weui-cell weui-cell_access">
+            <view class="weui-cell__bd">
+                <view style="display: inline-block; vertical-align: middle">矩形Logo</view>
+            </view>
+        </view> -->
+        <view class="weui-cell weui-cell_access">
+            <view class="weui-cell__bd">
+                <view style="display: inline-block; vertical-align: middle;font-size:30rpx;color:#323232">Logo</view>
+            </view>
+            <!-- <icon type="success_no_circle" size="23"></icon> -->
+            <image wx:if="{{res_url}}" style="height:55rpx;width:55rpx" src="{{res_url}}/dc_card_check.png"/>
+        </view>
+      </view>
+    </view>
+    <view class="ta-center mt-20">
+        <image wx:if="{{res_url}}" src="{{icon == '' || icon == null || icon == 'null' ? res_url + '/dc_me_ent_logo.png' : icon}}" style="width: 400rpx; height: 400rpx;" @tap="cutImg" />
+    </view>
+    <view class="ta-center mt-20" wx:if="{{!icon || icon == 'null'}}">
+        <image  src="../../../assets/images/me/uploading_img.png" style="width: 200rpx; height: 200rpx;" @tap="cutImg" />
+    </view>
+    <view class="ta-center mt-20 pd-30">
+        <button class="bg-3DB8C8 c-ffffff bord-radius font-size-36" @tap="save">保存</button>
+    </view>
+  </view>
+  <view class="cover {{showArea == 'cover' ? '' : 'none'}}">
+      <view class="cropper-wrapper" style="height:90%">
+          <canvas
+              class="cropper"
+              disable-scroll="true"
+              bindtouchstart="touchStart"
+              bindtouchmove="touchMove"
+              bindtouchend="touchEnd"
+              style="width:100%;height:100%;background-color: rgba(0, 0, 0, 0.8)"
+              canvas-id="cropper">
+          </canvas>
+      </view>
+      <view class="cropper-buttons"  style="height:10%">
+          <view class="upload" @tap="uploadTap">选择图片</view>
+          <view class="getCropperImage" @tap="getCropperImage">确定</view>
+      </view>
+  </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import WeCropper from '@/components/we-cropper/we-cropper.min.js'
+import { companyApi, cardManagerApi } from '@/api'
+import {G_RES_URL} from '@/config'
+const device = wepy.getSystemInfoSync()
+const width = device.windowWidth
+const height = device.windowHeight
+export default class entEdit extends wepy.page {
+  config = {
+    navigationBarTitleText: '编辑公司名字和logo'
+  }
+  data = {
+    res_url: G_RES_URL,
+    showClose: true,
+    icon: '',
+    enterprise_name: '',
+    enterprise_id: '',
+    showArea: 'edit',
+    width,
+    height,
+    wecropper: null,
+    cropperOption: {
+      id: 'cropper',
+      width,
+      height,
+      scale: 2.5,
+      zoom: 8,
+      cut: {
+        x: (width - 200) / 2,
+        y: (height - 300) / 2,
+        width: 200,
+        height: 200
+      }
+    },
+    isHave: false
+  }
+  onLoad(option) {
+    this.icon = option.icon
+    this.enterprise_name = option.enterprise_name
+    this.enterprise_id = option.enterprise_id
+    this.$apply()
+    this.methods.drawCircleBg()
+    let wecropper = new WeCropper(this.cropperOption)
+      .on('ready', ctx => {
+        console.log(`wecropper is ready for work!`)
+      })
+      .on('beforeImageLoad', ctx => {
+        console.log(`before picture loaded, i can do something`)
+        console.log(`current canvas context:`, ctx)
+        wepy.showToast({
+          title: '上传中',
+          icon: 'loading',
+          duration: 20000
+        })
+      })
+      .on('imageLoad', ctx => {
+        console.log(`picture loaded`)
+        console.log(`current canvas context:`, ctx)
+        wepy.hideToast()
+      })
+      .on('beforeDraw', (ctx, instance) => {
+        console.log(`before canvas draw,i can do something`)
+        console.log(`current canvas context:`, ctx)
+      })
+      .updateCanvas()
+    this.wecropper = wecropper
+  }
+  components = {}
+  methods = {
+    // 获取输入的公司的名字
+    input(e) {
+      this.enterprise_name = e.detail.value
+      this.showClose = false
+    },
+    // 清空输入的文字
+    clear() {
+      this.enterprise_name = ''
+    },
+    // 输入框聚焦
+    inputFocus() {
+      this.showClose = false
+      this.$apply()
+    },
+    // 输入框失焦
+    inputBlur() {
+      this.showClose = true
+    },
+    // 公司设置页
+    goCompanySetup() {
+      this.$navigate('./entSetMenu')
+    },
+    delCover() {
+      console.log(this.video.cover)
+      this.video.cover = ''
+    },
+    touchStart(e) {
+      this.wecropper.touchStart(e)
+    },
+    touchMove(e) {
+      this.wecropper.touchMove(e)
+    },
+    touchEnd(e) {
+      this.wecropper.touchEnd(e)
+    },
+    getCropperImage() {
+      let self = this
+      if (this.isHave) {
+        this.wecropper.getCropperImage(src => {
+          if (src) {
+            var apiURL =
+              this.$parent.globalData.api.apiUrl + '/push/v1.0/upload_files'
+            wx.uploadFile({
+              url: apiURL,
+              filePath: src,
+              name: 'editormd-image-file',
+              success: function(rs) {
+                console.log(rs)
+                console.log('upload success')
+                self.icon = JSON.parse(rs.data).url
+                self.$apply()
+              }
+            })
+          } else {
+            console.log('获取图片地址失败，请稍后重试')
+          }
+        })
+        this.isHave = false
+      }
+      self.showArea = 'edit'
+    },
+    cutImg() {
+      if (this.icon) {
+        cardManagerApi.deleteResouces(this.icon)
+      }
+      this.showArea = 'cover'
+      this.showEdit = false
+      this.$apply()
+    },
+    uploadTap() {
+      let _this = this
+      wepy
+        .chooseImage({
+          count: 1, // 默认9
+          sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+          sourceType: ['album', 'camera'] // 可以指定来源是相册还是相机，默认二者都有
+          //   success (res) {
+          //     const src = res.tempFilePaths[0]
+          //     _this.wecropper.pushOrign(src)
+          //   }
+        })
+        .then(res => {
+          this.isHave = true
+          const src = res.tempFilePaths[0]
+          _this.wecropper.pushOrign(src)
+        })
+    },
+    drawCircleBg() {
+      var ctx = wepy.createCanvasContext('canvasProgressbg')
+      ctx.setLineWidth(1) // 设置圆环的宽度
+      ctx.setStrokeStyle('#808080') // 设置圆环的颜色
+      ctx.setLineCap('round') // 设置圆环端点的形状
+      ctx.beginPath() // 开始一个新的路径
+      ctx.arc(110, 110, 22, 0, 2 * Math.PI, false)
+      // 设置一个原点(100,100)，半径为90的圆的路径到当前路径
+      ctx.stroke() // 对当前路径进行描边
+      ctx.draw()
+    },
+    drawCircle(step) {
+      var context = wepy.createCanvasContext('canvasProgress')
+      context.setLineWidth(1)
+      context.setStrokeStyle('#e75152')
+      context.setLineCap('round')
+      context.beginPath()
+      // 参数step 为绘制的圆环周长，从0到2为一周 。 -Math.PI / 2 将起始角设在12点钟位置 ，结束角 通过改变 step 的值确定
+      context.arc(
+        110,
+        110,
+        22,
+        -Math.PI / 2,
+        step * Math.PI - Math.PI / 2,
+        false
+      )
+      context.stroke()
+      context.draw()
+    }
+  }
+  save() {
+    if (!this.enterprise_name) {
+      wepy.showToast({ title: '请输入公司名字', icon: 'none' })
+      return
+    }
+    let params = {
+      enterpriseId: this.enterprise_id,
+      enterpriseName: this.enterprise_name,
+      iconUrl: this.icon
+    }
+    companyApi.updataCompanyNameOrLogo(params).then(res => {
+      this.$parent.globalData.staffInfo.enterprise_name = this.enterprise_name
+      wepy.reLaunch({
+        url: `/pages/me/meIndex`
+      })
+    })
+  }
+}
+</script>

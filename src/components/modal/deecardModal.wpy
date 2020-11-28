@@ -1,0 +1,52 @@
+<style type="scss">
+@import 'deecardModal.scss';
+</style>
+<template>
+<view class="modal-mask" wx:if="{{modal.show}}">
+    <view class="modal-content">
+      <view class="bord-bottom weui-flex" wx:if="{{modal.title}}">
+          <view class="weui-flex__item font-size-30 c-323232 ta-center" style="padding-left:35rpx;padding-top:35rpx;padding-bottom:35rpx">{{modal.title}}</view>
+          <view bindtap="cancel" style="padding-top:25rpx;padding-right:35rpx">
+              <image wx:if="{{res_url}}" class="v-middle" src="{{res_url}}/dc_public_close.png" style="width:30rpx;height:30rpx;"/>
+          </view>
+      </view>
+      <scroll-view scroll-y class="main-content">
+          <slot></slot>
+      </scroll-view>
+      <view class="modal-btn-wrapper" wx:if="{{modal.btns.length>0}}">
+          <block wx:for="{{modal.btns}}" wx:key="btns">
+              <view class="bar-btn bord-right" bindtap="btnOperate" data-index="{{index}}" style="color:{{item.color}}">{{item.text}}</view>
+          </block>
+      </view>
+    </view>
+</view>
+</template>
+<script>
+import wepy from 'wepy'
+import {G_RES_URL} from '@/config'
+export default class m extends wepy.component {
+  props = {
+    modal: {
+      type: Object,
+      default: {}
+    }
+  }
+  data = {
+    res_url: G_RES_URL
+  }
+  methods = {
+    btnOperate(e) {
+      let index = e.currentTarget.dataset.index
+      let parent = this.$parent
+      let btns = parent.modal.btns
+      btns[index].method(parent.modal)
+      parent.$apply()
+    },
+    cancel() {
+      let parent = this.$parent
+      parent.modal.show = false
+      parent.$apply()
+    }
+  }
+}
+</script>

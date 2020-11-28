@@ -1,0 +1,303 @@
+<style lang="scss">
+  $main_color: #e75152;
+  page {
+    background-color: #fff;
+  }
+  .wrap {
+    overflow: hidden;
+    .logo {
+      display:block;
+      margin:16rpx auto 14rpx;
+      width: 90rpx;
+      height: 90rpx;
+      line-height: 90rpx;
+      font-size: 42rpx;
+      border-radius: 100%;
+      background: $main_color;
+    }
+    .website-part {
+      position: relative;
+      .website-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 999;
+        width: 100%;
+        height: 692rpx;
+        opacity: 0;
+        background: #ffffff;
+      }
+      swiper {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        position: relative;
+        margin-top: 26rpx;
+        padding-top: 30rpx;
+        height: 661rpx;
+        border-top:1px solid #e8e8e8;
+      }
+      .website-left{
+        position: absolute;
+        left: 0;
+        width: 121rpx!important;
+        height: 661rpx!important;
+        border-top-right-radius:10rpx;
+        border-bottom-right-radius:10rpx;
+        overflow: hidden;
+        background: #fafafa;
+        image {
+          display:block;
+          margin:164rpx auto 18rpx;
+          width: 46rpx;
+          height: 46rpx;
+        }
+        view{
+          margin:0 auto;
+          width: 26rpx;
+          line-height:34rpx;
+          color:#b5b5b5;
+        }
+      }
+      .website-right {
+        left: auto;
+        right: 0;
+      }
+      .website-box {
+        left: 150rpx;
+        // left:-327rpx;
+        width: 478rpx!important;
+        height: 661rpx!important;
+        .website{
+          width: 444rpx;
+          height: 656rpx;
+          border-radius: 10rpx;
+          border:2rpx solid $main_color;
+          .check {
+            margin:26rpx auto 22rpx;
+            width: 40rpx;
+            height: 40rpx;
+          }
+          .check-img {
+            display: block;
+            margin:26rpx auto 22rpx;
+            width: 44rpx;
+            height: 44rpx;
+          }
+          .charge-box {
+            display:-webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            padding:16rpx 0 24rpx 16rpx;
+            overflow: hidden;
+            .line {
+              margin: 30rpx 24rpx 0;
+              width: 124rpx;
+              height: 2rpx;
+              background: #dfdfdf;
+            }
+            .charge{
+
+            }
+          }
+          .content-box {
+            display:-webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            padding:0 50rpx 0 42rpx;
+            .check {
+              margin:6rpx 18rpx 0 0;
+              width: 18rpx;
+              height: 18rpx;
+              border:1px solid #909090;
+            }
+            .content{
+              width:85%;
+              line-height:34rpx;
+              text-align:justify;
+            }
+          }
+        }
+      }
+    }
+    .open {
+      display:-webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      margin-top:22rpx;
+      overflow: hidden;
+    }
+    .check {
+      margin:4rpx 8rpx 0 52rpx;
+      width: 26rpx;
+      height: 26rpx;
+      border:1px solid #e8e8e8;
+      border-radius:100%;
+    }
+    .check-img {
+      margin:4rpx 8rpx 0 52rpx;
+      width: 30rpx;
+      height: 30rpx;
+    }
+    .foot {      
+      display:-webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      height: 96rpx;
+      line-height: 96rpx;
+      border-top:2rpx solid #e8e8e8;
+      image {
+        margin:40rpx 10rpx 0 55rpx;
+        width: 13rpx;
+        height: 16rpx;
+      }
+      view {
+        position: absolute;
+        top: 13rpx;
+        right: 52rpx;
+        width: 164rpx;
+        height: 75rpx;
+        line-height: 75rpx;
+        border-radius: 10rpx;
+        background: $main_color;
+      }
+    }
+  }
+</style>
+<template>
+  <!-- 选择官网模板 -->
+  <view class="wrap">
+    <view class="c-ffffff ta-center logo">{{avatarText}}</view>
+    <view class="font-size-30 c-323232 ta-center">{{enterpriseName}}</view>
+    <view class="font-size-20 c-909090 ta-center" style="padding-top:4rpx;">*所有收费版本均可免费试用7天</view>
+    <!-- 官网模板 -->
+    <view class="website-part">
+      <view class="website-bg" wx:if="{{websiteTemList.length == 1}}"></view>
+      <swiper autoplay="{{swiper.autoplay}}" @change="slide">
+        <!-- <view class="website-left">
+          <image src="../../assets/images/website/hand.png"/>
+          <view class="font-size-24">到顶了，请往左滑</view>
+        </view> -->
+        <repeat for="{{websiteTemList}}" index="index" item="item">
+          <swiper-item class="website-box">
+            <view class="website">
+              <view class="check" wx:if="{{current != index}}"></view>
+              <image src="../../assets/images/me/check.png" class="check-img" wx:if="{{current == index}}"/>
+              <view class="font-size-30 c-323232 ta-center">{{item.type}}</view>
+              <view class="font-size-36 c-3DB8C8 ta-center charge-box">
+                <view class="line"></view>
+                <view class="charge">{{item.charge}}</view>
+                <view class="line"></view>
+              </view>
+              <view class="content-box">
+                <view class="check"></view>
+                <view class="font-size-24 c-909090 content">{{item.content}}</view>
+              </view>
+            </view>
+          </swiper-item>
+        </repeat>
+        <!-- <view class="website-left website-right">
+          <image src="../../assets/images/website/hand.png"/>
+          <view class="font-size-24">到底了，请往右滑</view>
+        </view> -->
+      </swiper>
+    </view>
+    <view class="open">
+      <view class="check" hidden="{{!openHidden}}" @tap="open"></view>
+      <image src="../../assets/images/me/check.png" class="check-img" hidden="{{openHidden}}" @tap="open"/>
+      <view class="font-size-24 c-909090">开通即表示同意<text style="color:#e75152;" @tap="goService"> 服务协议 </text>和<text style="color:#e75152;" @tap="goLaw"> 法律声明</text></view>
+    </view>
+    <view class="foot">
+      <image src="../../assets/images/website/money.png"/>
+      <text class="font-size-30 c-323232" style="margin-right: 8rpx;">{{cost}}</text>
+      <text class="font-size-32 c-3DB8C8">{{useTime}}</text>
+      <view class="font-size-24 c-ffffff ta-center" @tap="goOpen">立即开通</view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { common } from '../../assets/js/common.js'
+  // import { WebComponent } from '../../assets/js/website/template'
+  import { websiteApi } from '@/api'
+  export default class chooseWebsite extends wepy.page {
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '选择官网模板'
+    }
+    data = {
+      openHidden: false,
+      avatarText: '',
+      enterpriseName: '南京深卡网络技术有限公司',
+      current: 0,
+      swiper: {
+        autoplay: false
+      },
+      websiteTemList: [
+        {type: '单页展示型', charge: '免费', content: '官网信息、图文编辑、名片、 视频、地图'}
+      ],
+      cost: '0.00',
+      useTime: '1年'
+    }
+    onLoad() {
+      // 头像文字显示
+      this.avatarText = this.enterpriseName.substr(0, 1)
+    }
+    methods = {
+      // 滑动官网模板
+      slide(e) {
+        this.current = e.detail.current
+      },
+      // 同意服务协议
+      open() {
+        this.openHidden = !this.openHidden
+      },
+      // 点击立即开通
+      goOpen() {
+        let _this = this
+        if (!this.openHidden) {
+          wepy.showLoading({
+            title: '正在保存...'
+          })
+          let params = {
+            name: this.$parent.globalData.staffInfo.enterprise_name,
+            enterprise_id: this.$parent.globalData.staffInfo.enterprise_id
+          }
+          websiteApi.addWebsite(params).then(rs => {
+            if (rs) {
+              this.$parent.globalData.refreshPage = true
+              let websiteId = rs.id
+              wepy.hideLoading()
+              _this.$redirect('/pages/website/websiteCreatSuccess?id=' + websiteId)
+              // websiteApi.updWebsiteComponent(WebComponent.buildBaseTemplate(), websiteId).then(rs => {
+              //   console.log(rs)
+              //   _this.$redirect('/pages/website/websiteCreatSuccess?id=' + websiteId)
+              // })
+            } else {
+              wepy.hideLoading()
+              wepy.showToast({
+                title: '开通失败',
+                icon: 'none',
+                duration: 1000
+              })
+            }
+          })
+        } else {
+          common.tip('请勾选上面开通按钮', 'none')
+        }
+      },
+      // 点击服务协议
+      goService() {
+        // this.$navigate('/pages/website/service')
+      },
+      // 点击法律声明
+      goLaw() {
+        // this.$navigate('/pages/website/law')
+      }
+    }
+  }
+</script>

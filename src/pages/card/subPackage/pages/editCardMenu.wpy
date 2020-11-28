@@ -1,0 +1,161 @@
+<style type="css">
+.icon{
+    padding-left:34rpx;
+    padding-right:35rpx;
+}
+.weui-cell{
+    padding-left:0;
+}
+.icon-padding{
+    height:100%;
+    padding:0;
+}
+.iconImg{
+    width: 55rpx;
+    height: 55rpx;
+}
+.al-center{
+    margin:0 auto;
+    vertical-align: middle;
+}
+.font-style{
+    font-size: 30rpx;
+    color: #323232;
+}
+</style>
+<template>
+    <view class="font-style">
+        <view class="weui-cells weui-cells_after-title edit-card-menu">
+            <navigator class="weui-flex" hover-class="none" url="./editCardInfo?userRole={{userRole}}">
+                <view class="icon">
+                    <view class="weui-cell icon-padding">
+                        <image wx:if="{{res_url}}" class="iconImg al-center" src="{{res_url}}/dc_card_info.png" />
+                    </view>
+                </view>
+                <view class="weui-flex__item bord-bottom">
+                    <view  class="weui-cell" hover-class="none">
+                        <view class="weui-cell__bd font-style">名片基本信息</view>
+                        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+                    </view>
+                </view>
+            </navigator>
+            <navigator class="weui-flex" hover-class="none" url="./editCardStyle">
+                <view class="icon">
+                    <view class="weui-cell icon-padding">
+                        <image wx:if="{{res_url}}" class="iconImg al-center" src="{{res_url}}/dc_card_cardStyle.png" />
+                    </view>
+                </view>
+                <view class="weui-flex__item bord-bottom">
+                    <view  class="weui-cell weui-cell_access" hover-class="none">
+                        <view class="weui-cell__bd c-323232 font-size-30">名片样式</view>
+                        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+                    </view>
+                </view>
+            </navigator>
+            <navigator class="weui-flex" hover-class="none" url="./resume">
+                <view class="icon">
+                    <view class="weui-cell icon-padding">
+                        <image wx:if="{{res_url}}" class="iconImg al-center" src="{{res_url}}/dc_card_label.png" />
+                    </view>
+                </view>
+                <view class="weui-flex__item bord-bottom">
+                    <view class="weui-cell weui-cell_access" hover-class="none">
+                        <view class="weui-cell__bd c-323232 font-size-30">个人简介/语音/标签/图片</view>
+                        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+                    </view>
+                </view>
+            </navigator>
+            <navigator class="weui-flex" hover-class="none" url="./editCardVideo">
+                <view class="icon">
+                    <view class="weui-cell icon-padding">
+                        <image wx:if="{{res_url}}" class="iconImg al-center" src="{{res_url}}/dc_card_sp.png" />
+                    </view>
+                </view>
+                <view class="weui-flex__item bord-bottom">
+                    <view class="weui-cell weui-cell_access" hover-class="none">
+                        <view class="weui-cell__bd c-323232 font-size-30">我的视频</view>
+                        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+                    </view>
+                </view>
+            </navigator>
+            <view class="weui-flex" hover-class="none">
+                <view class="icon">
+                    <view class="weui-cell icon-padding">
+                        <image wx:if="{{res_url}}" class="iconImg al-center" src="{{res_url}}/dc_card_tjsp.png" />
+                    </view>
+                </view>
+                <view class="weui-flex__item bord-bottom">
+                    <view @tap="openShop" class="weui-cell weui-cell_access" hover-class="none">
+                        <view class="weui-cell__bd c-323232 font-size-30">选择推荐商品</view>
+                        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <navigator url="./editCardShare" class="weui-cells edit-card-menu" hover-class="none">
+            <view class="weui-flex">
+                <view class="icon">
+                    <view class="weui-cell icon-padding">
+                        <image wx:if="{{res_url}}" class="iconImg al-center" src="{{res_url}}/dc_card_share.png" />
+                    </view>
+                </view>
+                <view class="weui-flex__item">
+                    <view class="weui-cell weui-cell_access">
+                        <view class="weui-cell__bd c-323232 font-size-30">名片转发介绍设置</view>
+                        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+                    </view>
+                </view>
+            </view>
+        </navigator>
+    </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import {G_RES_URL} from '@/config'
+  import { common } from '@/assets/js/common'
+  import { cardApi, companyApi } from '@/api'
+  export default class EditCardMenu extends wepy.page {
+    config = {
+      navigationBarTitleText: '编辑我的名片'
+    }
+    data = {
+      res_url: G_RES_URL,
+      userRole: '',
+      shopType: '',
+      staff: {}
+    }
+    onLoad(opt) {
+      this.userRole = opt.userRole
+      this.shopType = opt.shopType
+      if (!this.userRole || !this.shopType) {
+        let enterpriseId = this.$parent.getStaffInfo().enterprise_id
+        let openid = this.$parent.getNowOpenid()
+        companyApi.getUserRole(enterpriseId, openid).then(res => {
+          this.userRole = res + ''
+        })
+        cardApi.getShopType(enterpriseId).then(res => {
+          this.shopType = res + ''
+        })
+      }
+    }
+    methods = {
+      openShop() {
+        let type = this.shopType
+        let role = this.userRole
+        if ((type === '1' || type === '') && role === '2') {
+          common.tip('该企业还未开通商城', 'none')
+        } else if (type === '2') {
+          this.$navigate('/pages/product/recommendOffer')
+        } else {
+          wepy.showModal({
+            content: '该企业还未开通商城，要去开通吗？'
+          }).then((res) => {
+            if (!res.cancel) {
+              this.$navigate(`/pages/product/shopMgr?enterprise_id=${common.getEnterpriseId(this)}`)
+            }
+          })
+        }
+      }
+    }
+  }
+</script>

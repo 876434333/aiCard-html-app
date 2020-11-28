@@ -1,0 +1,501 @@
+<style lang="scss">
+  @import '../../assets/css/pages/moment/momentIndex.scss';
+  .del-btn{
+    position: relative;
+    z-index: 998;
+    margin-left: 30rpx;
+    color:#455b8a;
+  }
+</style>
+<template>
+  <view class="dyn-list">
+    <view wx:if="{{commentCircleId}}">
+      <release :entity.sync="releaseData" @submit-input.user="submitInput"></release>
+    </view>
+    <repeat for="{{table.list}}" index="index" key="index" item="item" wx:if="{{table.list.length > 0}}">
+      <view class="dyn-item" @tap.capture="inputOnBlur">
+        <view class="dyn-avtor">
+          <image src="{{item.head_icon}}" />
+        </view>
+        <view class="dyn-main" style="margin-top:-10rpx;">
+          <view style="min-height:66rpx;">
+            <text class="dyn-user">{{item.name}}</text>
+            <text class="zan-tag zan-tag--primary zan-tag--plain zan-tag--disabled dyn-tag font-size-24 c-909090"
+                  wx:if="{{item.flag === 1}}">公司</text>
+            <button class="dyn-share dyn-share-spt"
+                    open-type="share"
+                    plain="true"
+                    hover-class="none"
+                    data-index="{{index}}"
+                    data-circle-Id="{{item.circle_id}}"
+                    data-flag="{{item.flag}}">转发</button>
+          </view>
+          <!-- 普通朋友圈 -->
+          <view class="dyn-content normal" wx:if="{{item.type === 0}}">
+            <text sapce="nbsp"
+                  decode
+                  selectable>{{item.content}}</text>
+          </view>
+          <view class="dyn-photo" wx:if="{{item.type === 0 && item.circle_imgs.length > 0}}">
+            <view class="dyn-photo-{{item.circle_imgs.length > 3 ? 4 : item.circle_imgs.length}}">
+              <repeat for="{{item.circle_imgs}}" index="idx" key="idx" item="it">
+                <image src="{{it}}"
+                       data-index="{{index}}"
+                       data-idx="{{idx}}"
+                       mode="aspectFill"
+                       lazy-load="true"
+                       @tap="previewImage"
+                       wx:if="{{item.circle_imgs.length > 1}}" />
+                <image src="{{it}}"
+                       data-index="{{index}}"
+                       data-idx="{{idx}}"
+                       mode="widthFix"
+                       lazy-load="true"
+                       @tap="previewImage"
+                       wx:elif="{{item.circle_imgs.length === 1}}" />
+              </repeat>
+            </view>
+          </view>
+          <!-- 大图/小图 -->
+          <view wx:if="{{item.type > 0 }}"
+                class="dyn-content photo {{item.type === 1 ? 'small' : 'big'}}"
+                data-index="{{index}}"
+                @tap="toMomentDetail" style="margin-top:20rpx;">
+            <image src="{{item.cover}}"
+                   class="dyn-content-img"
+                   wx:if="{{item.type === 1}}" />
+            <image src="{{item.cover}}"
+                   class="dyn-content-img"
+                   mode="widthFix"
+                   wx:elif="{{item.type === 2}}" />
+            <text class="zan-ellipsis--l2 dyn-content-text">{{item.title}}</text>
+          </view>
+          <view class="dyn-time">
+            <view>{{item.create_time}}<text class="font-size-26 del-btn" data-circle-Id="{{item.circle_id}}" data-index="{{index}}" @tap="delMoment" wx:if="{{item.employee_id === staffId || (item.flag === 1 && role !== 2)}}">删除</text></view>
+            <view class="dyn-opts {{nowShowId === item.circle_id ? 'show' : ''}}">
+              <view class="dyn-opts-container">
+                <view wx:if="{{item.is_zan === 1}}" class="dyn-opt dyn-opt-spt"  data-circle-Id="{{item.circle_id}}" data-index="{{index}}" @tap="praise">
+                  <image src="../../assets/images/moment/praise_white.png" /> 取消赞
+                </view>
+                <view wx:else class="dyn-opt dyn-opt-spt" data-circle-Id="{{item.circle_id}}" data-index="{{index}}" @tap="praise">
+                  <image src="../../assets/images/moment/praise_white.png"/> 赞
+                </view>
+                <view class="dyn-opt dyn-opt-spt" data-index="{{index}}" data-circle-Id="{{item.circle_id}}" @tap="comt">
+                  <image src="../../assets/images/moment/comment_white.png"/> 评论
+                </view>
+              </view>
+            </view>
+            <form report-submit="true" bindsubmit="formSubmit">
+              <button form-type="submit" 
+                      plain="true"
+                      over-class="none"
+                      class="button-plain-hidden-form dyn-time-comt"
+                      @tap="tapShowMenu"
+                      data-menu="{{true}}"
+                      data-index="{{index}}"
+                      data-circle-Id="{{item.circle_id}}" >
+                <image src="../../assets/images/moment/comment.png" />
+              </button>
+            </form>
+          </view>
+          <view class="dyn-reply" wx:if="{{item.circle_zan_logs.length > 0 || item.circle_comment_logs.length > 0}}">
+            <view class="dyn-praise" wx:if="{{item.circle_zan_logs.length > 0}}">
+              <image src="../../assets/images/moment/praise.png" />
+              <repeat for="{{item.circle_zan_logs}}"
+                      index="idxZan"
+                      item="itZan">
+                <text>{{itZan.user_name}}{{idxZan === item.circle_zan_logs.length - 1 ? '': ', '}}</text>
+              </repeat>
+            </view>
+            <view class="dyn-comt" wx:if="{{item.circle_comment_logs.length > 0}}">
+              <repeat for="{{item.circle_comment_logs}}"
+                      index="idxCmt"
+                      item="itCmt">
+                <view class="dyn-comt-item" data-id="itCmt.id">
+                  <text class="dyn-comt-item-user">{{itCmt.user_name}}：</text>
+                  <text class="dyn-comt-item-text">{{itCmt.content}}</text>
+                </view>
+              </repeat>
+            </view>
+          </view>
+        </view>
+      </view>
+    </repeat>
+    <view class="list-no-more" wx:if="{{!isNonthing && (isNoMore || isLoading)}}">
+      <zanLoadmore :loading.sync="isLoading" wx:if="{{isLoading}}"></zanLoadmore>
+      <text wx:elif="{{isNoMore}}" class="font-size-32 ta-center c-909090">已经没有更多了</text>
+    </view>
+    <!-- 空页面 -->
+    <view class="empty" wx:if="{{isNonthing}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+      <view class="font-size-32 ta-center c-909090">还没有内容哦，发点什么吧</view>
+    </view>
+    <!-- 发布按钮 -->
+    <image src="../../assets/images/moment/camera.png" class="camera" @tap="goRelease"/>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {momentApi} from '@/api'
+  import {cardActionMap, momentFormDate} from '@/utils'
+  import {
+    indexMixin,
+    onticeMsgNumberMixin,
+    saveFormidMixin
+  } from '@/mixins/index.js'
+  import Release from '../../components/release'
+  import NoticeMsg from '@/components/noticeMsg'
+  import zanLoadmore from '@/components/libs/zanui/zan-loadmore'
+  import momentContChange from '@/assets/js/transformSpc/momentContChange'
+  import {common} from '../../assets/js/common.js'
+  import {G_RES_URL} from '@/config'
+  export default class momentIndex extends wepy.page {
+    data = {
+      res_url: G_RES_URL,
+      nowShowId: '',
+      nowIndex: '',
+      releaseData: {
+        id: '',
+        name: '',
+        content: ''
+      },
+      commentCircleId: '',
+      staffId: '',
+      enterpriseId: '',
+      departmentId: '',
+      role: null
+    }
+
+    mixins = [
+      indexMixin,
+      onticeMsgNumberMixin,
+      saveFormidMixin
+    ]
+
+    components = {
+      release: Release,
+      noticemsg: NoticeMsg,
+      zanLoadmore: zanLoadmore
+    }
+
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '动态'
+    }
+
+    onLoad() {
+      wepy.showTabBar()
+      this.init()
+      this.staffId = common.getStaffId(this)
+      this.enterpriseId = common.getEnterpriseId(this)
+      this.departmentId = common.getDepartmentId(this)
+      this.firstShow = false
+      this.role = common.getStaffInfo(this).role
+    }
+    onReady() {
+      let data = this.outComment(this.staffId, this.enterpriseId)
+      if (data) {
+        this.table.list = data
+        this.$apply()
+      }
+    }
+
+    onShow(item) {
+      this.onLoad()
+    }
+
+    methods = {
+      /**
+       * 显示点赞、评论菜单
+       */
+      tapShowMenu(e) {
+        this.showMenu(e)
+      },
+      /**
+       * 点赞
+       */
+      praise(e) {
+        let index = e.currentTarget.dataset.index
+        let sessionId = this.$parent.getSessionId()
+        let param = {
+          circle_id: e.currentTarget.dataset.circleId
+        }
+        let oldStatus = this.table.list[index].is_zan
+        let newStatus = this.table.list[index].is_zan === 0 ? 1 : 0
+        this.table.list[index].is_zan = newStatus
+        let userId = this.$parent.getUserId()
+        if (newStatus === 1) {
+          this.addPraise(index, userId, newStatus)
+        } else {
+          this.cancelPraise(index, userId, newStatus)
+        }
+        this.$apply()
+        momentApi.clickPraise(param, sessionId).then((res) => {
+          wepy.showToast({
+            title: '操作成功',
+            icon: 'none',
+            duration: 1000
+          }).then(() => {
+            this.nowShowId = ''
+            if (newStatus === 1) {
+              this.recordClickAction(cardActionMap.praiseMoment)
+            }
+            this.$apply()
+          })
+        }, () => {
+          wepy.showToast({
+            title: '操作失败',
+            icon: 'none',
+            duration: 1000
+          })
+          // 重置状态
+          if (newStatus === 1) {
+            this.cancelPraise(index, userId, oldStatus)
+          } else {
+            this.addPraise(index, userId, oldStatus)
+          }
+          this.$apply()
+        })
+      },
+      /**
+       * 点击评论按钮
+       */
+      comt(e) {
+        this.nowShowId = ''
+        this.nowIndex = e.currentTarget.dataset.index
+        this.commentCircleId = e.currentTarget.dataset.circleId
+        this.releaseData = {
+          id: this.commentCircleId,
+          name: this.table.list[this.nowIndex].name,
+          content: ''
+        }
+      },
+      /**
+       * 输入框失焦隐藏
+       */
+      inputOnBlur(e) {
+        if (e.target.dataset && e.target.dataset.menu) {
+          return
+        }
+        this.hiddenInput()
+        this.nowShowId = ''
+        this.nowIndex = ''
+      },
+      /**
+       * 提交评论
+       */
+      submitInput(text) {
+        let sessionId = this.$parent.getSessionId()
+        // 插入
+        this.table.list[this.nowIndex]['circle_comment_logs'].push({
+          user_id: sessionId,
+          user_name: this.$parent.globalData.userInfo.nickName,
+          content: text
+        })
+        this.hiddenInput()
+        this.$apply()
+      },
+      // 预览图片
+      previewImage(e) {
+        let index = e.currentTarget.dataset.index
+        let idx = e.currentTarget.dataset.idx
+        let urls = this.table.list[index].circle_imgs
+        wepy.previewImage({
+          current: urls[idx],
+          urls: urls
+        })
+      },
+      /**
+       * 前往详情
+       * @param  {[type]} e 绑定事件的元素
+       */
+      toMomentDetail(e) {
+        let index = e.currentTarget.dataset.index
+        let id = this.table.list[index].circle_id
+        let type = this.table.list[index].type
+        let path = `/pages/moment/momentDetail?circle_id=${id}&t=${type}&employee_id=${this.staffId}&enterprise_id=${this.enterpriseId}&department_id=${this.departmentId}`
+        this.$preload('fromList', true)
+        this.$navigate(path)
+      },
+      // 跳转到发布动态页面
+      goRelease() {
+        this.$navigate('/pages/moment/releaseMoment')
+      },
+      // 删除朋友圈某个动态
+      delMoment(e) {
+        let circleId = e.currentTarget.dataset.circleId
+        let index = e.currentTarget.dataset.index
+        wepy.showModal({
+          content: '您确定要删除吗？'
+        }).then(res => {
+          if (res.confirm) {
+            momentApi.deleteMoment(circleId).then((res) => {
+              common.tip('删除成功', 'success')
+              this.table.list.splice(index, 1)
+              this.$apply()
+            })
+          }
+        })
+      }
+    }
+    /**
+     * 分享
+     * @param  {[type]} res element
+     */
+    onShareAppMessage(res) {
+      let circleId = res.target.dataset.circleId
+      let index = res.target.dataset.index
+      let flag = res.target.dataset.flag
+      let path = `/pages/moment/momentDetail?circle_id=${circleId}&employee_id=${this.staffId}&enterprise_id=${this.enterpriseId}&department_id=${this.departmentId}`
+      console.log(path)
+      let imageUrl
+      if (this.table.list[index].type === 0) {
+        imageUrl = this.table.list[index].circle_imgs[0]
+      } else {
+        imageUrl = this.table.list[index].cover
+      }
+      let msg = flag === 1 ? '公司动态' : '个人动态'
+      return {
+        title: msg,
+        path: path,
+        imageUrl: imageUrl,
+        success: (res) => {
+          // 转发成功
+          this.recordClickAction(cardActionMap.forwardMoment)
+        },
+        fail: (res) => {
+          // 转发失败
+        }
+      }
+    }
+
+    /**
+     * 取消点赞
+     * @param  {[type]} userId 用户id
+     * @param  {[type]} newStatus 要变成的状态
+     * @param  {[type]} index 对应的朋友圈的数组下标
+     */
+    cancelPraise(index, userId, newStatus) {
+      this.table.list[index]['circle_zan_logs'].some((val, idx) => {
+        if (val.flag === 2 && val.user_id === userId) {
+          this.table.list[index]['circle_zan_logs'].splice(idx, 1)
+          return true
+        }
+      })
+      this.table.list[index].is_zan = newStatus
+      this.$apply()
+    }
+    /**
+     * 添加赞
+     * @param  {[type]} userId 用户id
+     * @param  {[type]} newStatus 要变成的状态
+     * @param  {[type]} index 对应的朋友圈的数组下标
+     */
+    addPraise(index, userId, newStatus) {
+      let newObj = {
+        flag: 2,
+        user_id: userId,
+        user_name: this.$parent.globalData.userInfo.nickName
+      }
+      this.table.list[index]['circle_zan_logs'].push(newObj)
+      this.table.list[index].is_zan = newStatus
+      this.$apply()
+    }
+    /**
+     * 隐藏输入框
+     * @return {[type]} [description]
+     */
+    hiddenInput() {
+      this.releaseData = {
+        id: '',
+        name: '',
+        content: ''
+      }
+      this.commentCircleId = ''
+    }
+    getApi() {
+      return momentApi
+    }
+    /**
+     * 获取朋友圈列表
+     */
+    list(pageNum, pageSize) {
+      let param = {
+        page_num: pageNum,
+        page_size: pageSize
+      }
+      return this.getApi().getMomentList(param)
+    }
+    /**
+     * 查询成功后执行，可更改list
+     * @param {any} page
+     */
+    afterList(page) {
+      page.data_list.some((value, index) => {
+        // 处理时间
+        value['create_time'] = momentFormDate(value.create_time)
+        if (value.type === 0) {
+          value.content = momentContChange(value.content)
+        }
+      })
+    }
+    /**
+     * 列表数据加载完之后
+     */
+    setTableList(page) {
+      if (page.page_num === 1) {
+        this.putComment(page.data_list, this.staffId, this.enterpriseId)
+      }
+    }
+    showMenu(e) {
+      if (this.nowShowId === e.currentTarget.dataset.circleId) {
+        this.nowShowId = ''
+        this.nowIndex = ''
+      } else {
+        this.nowShowId = e.currentTarget.dataset.circleId
+        this.nowIndex = e.currentTarget.dataset.index
+      }
+      this.$apply()
+    }
+    /**
+     * 获取图片宽高
+     */
+    /**
+     * 记录查看
+     * @return {[type]} [description]
+     */
+    seeMoment() {
+      this.recordClickAction(cardActionMap.seeMoment)
+    }
+    /**
+     * 点击行为
+     * @param  {[type]} action 动作代码
+     */
+    recordClickAction(action) {
+      let params = {
+        action_code: action,
+        employee_id: common.getStaffId(this),
+        enterprise_id: common.getEnterpriseId(this),
+        department_id: common.getDepartmentId(this)
+      }
+      this.$parent.recordClickAction(params)
+    }
+    /**
+     * 缓存本次的第一页
+     */
+    putComment(data, staffId, enterpriseId) {
+      return wepy.setStorage({
+        key: enterpriseId + staffId + '-comment',
+        data: data
+      })
+    }
+    /**
+     * 获取上次缓存的第一页
+     */
+    outComment(staffId, enterpriseId) {
+      return wepy.getStorageSync(enterpriseId + staffId + '-comment')
+    }
+  }
+</script>

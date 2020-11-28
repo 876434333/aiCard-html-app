@@ -1,0 +1,564 @@
+<style lang="scss">
+@import '../../../../assets/css/pages/website/cropper.scss';
+$main_color: #e75152;
+.weui-flex {
+  background-color: #fff;
+}
+.card-style {
+  margin: 20px;
+}
+.card-style-default {
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px 4px #ebebeb;
+}
+.card-style-default > .top-img > image {
+  width: 100%;
+  border-radius: 5px 5px 0px 0px;
+}
+.card-style-default > .content {
+  padding: 10px;
+}
+.info,
+.content > .phone {
+  padding: 0 10px;
+}
+.info > .job {
+  flex-grow: 3;
+  font-size: 14px;
+  line-height: 30px;
+}
+.info > .name,
+.info > .job {
+  float: left;
+}
+.content > .phone,
+.content > .company {
+  color: #808080;
+}
+.content > .company {
+  text-align: right;
+  font-size: 13px;
+}
+.content > .phone {
+  margin-top: -5px;
+}
+.nav-title,
+.card-style-small,
+.head-img {
+  margin-left: 20px;
+  color: #323232;
+  font-size: 30rpx;
+}
+.card-style-small {
+  padding: 0;
+}
+.selected > image {
+  border: 3px solid $main_color;
+  border-radius: 6px;
+}
+
+.weui-uploader__file {
+  position: relative;
+}
+.weui-uploader__file .weui-uploader__img {
+  width: 210rpx;
+  height: 210rpx;
+}
+.scroll-one,
+.scroll-two {
+  height: 102rpx;
+  margin-left: 21rpx;
+  border-radius: 5rpx;
+  text-align: center;
+}
+.scroll-one {
+  position: relative;
+  margin:0 6rpx 0 0rpx;
+  width:129rpx!important;
+  image {
+    display: inline-block;
+    height:91rpx;
+    width:129rpx;
+  }
+}
+.scroll-two {
+  display: inline-block;
+  image {
+    display: inline-block;
+    height: 100rpx;
+    width: 80rpx;
+  }
+}
+.card-selected {
+  position: absolute;
+  top: 4rpx;
+  left: 6rpx;
+  width: 109rpx;
+  height: 71rpx;
+  border:5rpx $main_color solid;
+  border-radius: 6rpx;
+}
+.foot {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  border-top: 1px solid #e8e8e8;
+  overflow: hidden;
+  background: #fff;
+  z-index: 10000;
+}
+.wrap {
+  overflow: hidden;
+  padding-bottom: 200rpx;
+}
+</style>
+<template>
+    <view>
+    <view  wx:if="{{showCropper}}" style="height: {{cropperHeight+1}}px">
+      <view class="cropper-wrapper">
+        <canvas
+          class="cropper"
+          disable-scroll="true"
+          bindtouchstart="touchStart"
+          bindtouchmove="touchMove"
+          bindtouchend="touchEnd"
+          style="width:100%;height:100%;background-color: rgba(0, 0, 0, 0.8)"
+          canvas-id="headCropper">
+        </canvas>
+      </view>
+      <view class="cropper-buttons">
+        <button class="bord-radius selectImgBtn" bindtap="uploadTap">选择图片</button>
+        <button class="bg-3DB8C8 bord-radius c-e8e8e8 okBtn" bindtap="getCropperImage">确定</button>
+      </view>
+    </view>  
+    <view wx:if="{{!showCropper}}" class="wrap" >
+        <view class="weui-flex">
+            <view class="weui-flex__item">
+                <!-- 名片模板 -->
+                <view style="margin-top:0rpx;margin-bottom:5rpx" wx:if="{{templateId === '1'}}">
+                    <templateone :syncData.sync="cardInfo" :isManager.sync="false"></templateone>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId === '2'}}">
+                    <templatetwo :syncData.sync="cardInfo" :isManager.sync="false"></templatetwo>
+                </view>
+               <view style="margin-top:0rpx" wx:if="{{templateId === '3'}}">
+                    <templatethree :syncData.sync="cardInfo" :isManager.sync="false"></templatethree>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId === '4'}}">
+                    <templatefour :syncData.sync="cardInfo" :isManager.sync="false"></templatefour>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId == '5'}}">
+                    <templatefive :syncData.sync="cardInfo" :isManager.sync="false"></templatefive>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId == '6'}}">
+                    <templatesix :syncData.sync="cardInfo" :isManager.sync="false"></templatesix>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId == '7'}}">
+                    <templateseven :syncData.sync="cardInfo" :isManager.sync="false"></templateseven>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId == '8'}}">
+                    <templateeight :syncData.sync="cardInfo" :isManager.sync="false"></templateeight>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId == '9'}}">
+                    <templatenine :syncData.sync="cardInfo" :isManager.sync="false"></templatenine>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId == '10'}}">
+                    <templateten :syncData.sync="cardInfo" :isManager.sync="false"></templateten>
+                </view>
+                <view style="margin-top:0rpx" wx:if="{{templateId == '11'}}">
+                    <templateeleven :syncData.sync="cardInfo" :isManager.sync="false"></templateeleven>
+                </view>
+                
+                <view class="weui-flex" style="margin-top:10rpx;">
+                    <view class="weui-flex__item nav-title mt-20 mb-20">
+                        更换名片样式
+                    </view>
+                </view>
+                <view class="weui-flex mb-20">
+                    <view class="weui-flex__item">
+                        <view class="card-style-small selected">
+                          <swiper class="scroll-view-x card-opt-list-type-two" display-multiple-items="5" style="height:100rpx;">
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('1')">
+                                  <image src="{{res_url}}/dc_card_style_1.png"/>
+                                  <view class="{{templateId === '1'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <!-- <view class="scroll-two {{templateId === '2'? 'card-selected ' : ''}}" @tap="choseTemplateId('2')">
+                                  <image src="/assets/images/card/card_style_2.png"/>
+                              </view> -->
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('3')">
+                                  <image src="{{res_url}}/dc_card_style_3.png"/>
+                                  <view class="{{templateId === '3'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('4')">
+                                  <image src="{{res_url}}/dc_card_style_4.png"/>
+                                  <view class="{{templateId === '4'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('5')">
+                                  <image src="{{res_url}}/dc_card_style_5.png"/>
+                                  <view class="{{templateId === '5'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('6')">
+                                  <image src="{{res_url}}/dc_card_style_6.png"/>
+                                  <view class="{{templateId === '6'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('7')">
+                                  <image src="{{res_url}}/dc_card_style_7.png"/>
+                                  <view class="{{templateId === '7'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('8')">
+                                  <image src="{{res_url}}/dc_card_style_8.png"/>
+                                  <view class="{{templateId === '8'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('9')">
+                                  <image src="{{res_url}}/dc_card_style_9.png"/>
+                                  <view class="{{templateId === '9'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('10')">
+                                  <image src="{{res_url}}/dc_card_style_10.png"/>
+                                  <view class="{{templateId === '10'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                              <swiper-item class="scroll-one" @tap="choseTemplateId('11')">
+                                  <image src="{{res_url}}/dc_card_style_11.png"/>
+                                  <view class="{{templateId === '11'? 'card-selected ' : ''}}"></view>
+                              </swiper-item>
+                          </swiper>
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="weui-flex mt-20">
+            <view class="weui-flex__item">
+                <view class="weui-flex mt-20 mb-20">
+                    <view class="weui-flex__item nav-title">
+                        更换名片头像
+                    </view>
+                </view>
+                <view class="weui-flex head-img">
+                    <view class="weui-flex__item">
+                        <block wx:for="{{files}}" wx:key="*this" wx:for-index="index">
+                            <view class="weui-uploader__file" id="{{item}}">
+                                <image src="/assets/images/card/close.png" class="close" bindtap="close" data-method="del" data-index="{{index}}"/>
+                                <image class="weui-uploader__img"  bindtap="previewImage" src="{{item}}"/>
+                            </view>
+                        </block>
+                        <view class="weui-uploader__input-box weui-uploader__input-box-new" wx:if="{{imgSelect}}">
+                            <view class="weui-uploader__input" bindtap="selectImg"></view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="foot" style="padding:40rpx 0 40rpx">
+            <button class="weui-btn submit-btn" @tap="save">保存</button>
+        </view>
+    </view>
+    <canvas canvas-id="myCanvas" style="width:682.5px;height:954px;position:absolute;top:-999px;left:-999px;"></canvas>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import CardTypeOne from '../../components/cardDetail/cardTypeOne/cardTypeOne'
+import CardTypeTwo from '../../components/cardDetail/cardTypeTwo/cardTypeTwo'
+import CardTypeThree from '../../components/cardDetail/cardTypeThree/cardTypeThree'
+import CardTypeFour from '../../components/cardDetail/cardTypeFour/cardTypeFour'
+import CardTypeFive from '../../components/cardDetail/cardTypeFive/cardTypeFive'
+import CardTypeSix from '../../components/cardDetail/cardTypeSix/cardTypeSix'
+import CardTypeSeven from '../../components/cardDetail/cardTypeSeven/cardTypeSeven'
+import CardTypeEight from '../../components/cardDetail/cardTypeEight/cardTypeEight'
+import CardTypeNine from '../../components/cardDetail/cardTypeNine/cardTypeNine'
+import CardTypeTen from '../../components/cardDetail/cardTypeTen/cardTypeTen'
+import CardTypeEleven from '../../components/cardDetail/cardTypeEleven/cardTypeEleven'
+import WeCropper from '@/components/we-cropper/we-cropper.min.js'
+import { cardManagerApi } from '@/api'
+import {G_RES_URL} from '@/config'
+import {canvasPosterMixin} from '@/mixins'
+export default class EditCardStyle extends wepy.page {
+  mixins = [canvasPosterMixin];
+  data = {
+    files: [],
+    imgSelect: true,
+    styleInfo: {
+      template: '',
+      headIcon: '',
+      staffId: ''
+    },
+    cardInfo: {},
+    templateId: '',
+    showCropper: false,
+    isSave: false,
+    isHave: false,
+    wecropper: null,
+    cropperHeight: 450,
+    swipeCropper: {
+      id: 'headCropper',
+      width: 0,
+      height: 0,
+      scale: 2.5,
+      zoom: 8,
+      cut: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      }
+    },
+    res_url: G_RES_URL,
+    imgPath: ''
+  }
+  components = {
+    templateone: CardTypeOne,
+    templatetwo: CardTypeTwo,
+    templatethree: CardTypeThree,
+    templatefour: CardTypeFour,
+    templatefive: CardTypeFive,
+    templatesix: CardTypeSix,
+    templateseven: CardTypeSeven,
+    templateeight: CardTypeEight,
+    templatenine: CardTypeNine,
+    templateten: CardTypeTen,
+    templateeleven: CardTypeEleven
+  }
+  config = {
+    navigationBarTitleText: '名片样式'
+  }
+  onLoad(option) {
+    this.cardInfo = this.$parent.getStaffInfo()
+    this.templateId = this.cardInfo.temlate_id.toString()
+    if (this.cardInfo.head_icon) {
+      this.files.push(this.cardInfo.head_icon)
+      this.imgSelect = false
+    }
+    let device = wepy.getSystemInfoSync()
+    this.cropperHeight = device.windowHeight
+    this.initCropper(200, 200)
+  }
+  initCropper(cutWidth, cutHeight) {
+    let _this = this
+    _this.isSave = true
+    let device = wepy.getSystemInfoSync()
+    _this.swipeCropper.width = device.windowWidth
+    _this.swipeCropper.height = device.windowHeight * 0.75
+    _this.swipeCropper.id = 'headCropper'
+    _this.swipeCropper.cut.width = cutWidth
+    _this.swipeCropper.cut.height = cutHeight
+    _this.swipeCropper.cut.x = (_this.swipeCropper.width - _this.swipeCropper.cut.width) / 2
+    _this.swipeCropper.cut.y = (_this.swipeCropper.height - _this.swipeCropper.cut.height) / 2
+    // 初始化裁剪
+    let wecropper = new WeCropper(_this.swipeCropper)
+    .on('ready', (ctx) => {
+    })
+    .on('beforeImageLoad', (ctx) => {
+      wepy.showToast({
+        title: '加载中...',
+        icon: 'loading',
+        duration: 20000
+      })
+    })
+    .on('imageLoad', (ctx) => {
+      wepy.hideToast()
+    })
+    .on('beforeDraw', (ctx, instance) => {
+    }).updateCanvas()
+    this.wecropper = wecropper
+  }
+  methods = {
+    touchStart (e) {
+      this.wecropper.touchStart(e)
+    },
+    touchMove (e) {
+      this.wecropper.touchMove(e)
+    },
+    touchEnd (e) {
+      this.wecropper.touchEnd(e)
+    },
+    getCropperImage () {
+      let _this = this
+      if (_this.isSave) {
+        _this.isSave = false
+        this.wecropper.getCropperImage((src) => {
+          if (_this.isHave) {
+            _this.isHave = false
+            if (src) {
+              wepy.showLoading({
+                title: '正在上传图片……',
+                mask: true
+              })
+              let apiURL = wepy.$instance.globalData.api.apiUrl + '/push/v1.0/upload_files'
+              wx.uploadFile({
+                url: apiURL,
+                filePath: src,
+                name: 'editormd-image-file',
+                success: function(rs) {
+                  // console.log(rs)
+                  if (rs) {
+                    _this.styleInfo.headIcon = JSON.parse(rs.data).url
+                    _this.cardInfo.head_icon = JSON.parse(rs.data).url
+                    _this.$apply()
+                    wepy.hideLoading()
+                  }
+                }
+              })
+            } else {
+              wepy.hideLoading()
+            }
+          }
+        })
+        _this.showCropper = false
+      }
+    },
+    uploadTap() {
+      let _this = this
+      _this.isSave = true
+      wepy.chooseImage({
+        count: 1, // 默认9
+        sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+        sourceType: ['album', 'camera'] // 可以指定来源是相册还是相机，默认二者都有
+      }).then((res) => {
+        _this.isHave = true
+        _this.imgSelect = false
+        const src = res.tempFilePaths[0]
+        _this.files = res.tempFilePaths
+        _this.wecropper.pushOrign(src)
+      })
+    },
+    selectImg() {
+      this.showCropper = true
+      this.isSave = true
+      this.isHave = false
+    },
+    close(idx) {
+      cardManagerApi.deleteResouces(this.files[0])
+      this.files = []
+      this.imgSelect = true
+    },
+    previewImage(e) {
+      wepy.previewImage({
+        current: e.currentTarget.id, // 当前显示图片的http链接
+        urls: this.data.files // 需要预览的图片http链接列表
+      })
+    },
+    save() {
+      this.saveStyleAndHeadIcon()
+    }
+  }
+  choseTemplateId(e) {
+    this.templateId = e.currentTarget.dataset.wpychosetemplateidA
+    this.$apply()
+  }
+ // 保存名片样式及头像
+  saveStyleAndHeadIcon() {
+    wepy.showLoading({
+      title: '正在保存...'
+    })
+    this.styleInfo.template = this.templateId
+    let param = this.styleInfo
+    if (!param.headIcon) {
+      param.headIcon = this.cardInfo.head_icon
+    }
+    param['staffId'] = this.cardInfo.staffId
+    cardManagerApi.updCardStyle(param).then(res => {
+      this.$parent.globalData.staffInfo.temlate_id = parseInt(this.templateId)
+      wepy.hideLoading()
+      wepy.showToast({
+        title: '保存成功',
+        icon: 'success',
+        duration: 1000
+      })
+      this.$parent.globalData.staffInfo.head_icon = this.styleInfo.headIcon
+      this.$parent.globalData.staffInfo.temlate_id = this.styleInfo.template
+      this.saveTempAndStartCanvas()
+    })
+  }
+   // 保存临时图片并启动画布
+  saveTempAndStartCanvas() {
+    let cardBg = this.res_url + '/dc_card_template_' + Number(this.templateId) + '.png'
+    wepy.getImageInfo({
+      src: cardBg
+    }).then(rs => {
+      cardBg = rs.path
+      this.drawCanvas(Number(this.templateId), cardBg)
+    })
+  }
+  drawCanvas(templateId, cardBg) {
+    let that = this
+    let staff = this.$parent.getStaffInfo()
+    let ctx = wepy.createCanvasContext('myCanvas')
+    ctx.setFillStyle('#ffffff')
+    ctx.fillRect(0, 0, 682.5, 954)
+
+    ctx.drawImage(cardBg, 32.25, 20, 618, 374)
+
+    if (templateId === 1) {
+      this.drawCardTypeOne(staff, ctx)
+    } else if (templateId === 3) {
+      this.drawCardTypeThree(staff, ctx)
+    } else if (templateId === 4) {
+      this.drawCardTypeFour(staff, ctx)
+    } else if (templateId === 5) {
+      this.drawCardTypeFive(staff, ctx)
+    } else if (templateId === 6) {
+      this.drawCardTypeSix(staff, ctx)
+    } else if (templateId === 7) {
+      this.drawCardTypeSeven(staff, ctx)
+    } else if (templateId === 8) {
+      this.drawCardTypeEight(staff, ctx)
+    } else if (templateId === 9) {
+      this.drawCardTypeNine(staff, ctx)
+    } else if (templateId === 10) {
+      this.drawCardTypeTen(staff, ctx)
+    } else if (templateId === 11) {
+      this.drawCardTypeEleven(staff, ctx)
+    }
+
+    this.drawAddress(staff, templateId, ctx)
+    this.drawViewButton(ctx)
+    ctx.draw(false, function() {
+      wepy.canvasToTempFilePath({
+        canvasId: 'myCanvas',
+        fileType: 'jpg',
+        y: 25,
+        x: 38,
+        width: 605,
+        height: 530
+      }).then((r) => {
+        let imgPath = r.tempFilePath
+        that.uploadBg(imgPath)
+      }, err => {
+        console.info(err)
+      })
+    })
+  }
+  uploadBg(imgPath) {
+    let apiURL = wepy.$instance.globalData.api.apiUrl + '/push/v1.0/upload_files'
+    wepy.uploadFile({
+      url: apiURL,
+      filePath: imgPath,
+      name: 'editormd-image-file'
+    }).then((e) => {
+      let cardImgUrl = JSON.parse(e.data).url
+      this.saveCardimg(cardImgUrl)
+    })
+  }
+  // 保存名片背景图
+  saveCardimg(url) {
+    let staff = this.$parent.getStaffInfo()
+    if (staff.card_img_url) {
+      cardManagerApi.deleteResouces(this.cardInfo.card_img_url).then(res => {})
+    }
+    cardManagerApi.updCardImg(url).then(res => {
+      this.$parent.globalData.staffInfo.card_img_url = url
+      setTimeout(() => {
+        let pages = this.getCurrentPages()
+        for (let i = 0; i < pages.length; i++) {
+          if (pages[i].route.indexOf('editCardMenu') > -1) {
+            wepy.navigateBack({ delta: i })
+            break
+          }
+        }
+      }, 100)
+    })
+  }
+}
+</script>

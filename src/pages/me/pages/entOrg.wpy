@@ -1,0 +1,471 @@
+<style lang="scss">
+  @import '../../../assets/css/pages/me/entOrg.scss';
+  .claim {
+    position: absolute;
+    bottom: 20rpx;
+    width: 103rpx;
+    height: 30rpx;
+    border-bottom-left-radius:10rpx;
+    border-bottom-right-radius:10rpx;
+    background: rgba(0,0,0,0.5)
+  }
+</style>
+<template>
+  <!-- 管理组织架构 -->
+  <view class="wrap">
+    <view class="search">
+      <image src="../../../assets/images/contact/search.png"/>
+      <input type="text" placeholder="搜索" class="font-size-30 c-909090" bindfocus="searchOpen" bindblur="searchClose" bindinput="search"/>
+    </view>
+    <!-- 部门列表 -->
+    <view wx:if="{{!onSearch}}" class="contact-list {{branchList.length === 0 && staffList.length === 0 ? 'contact-part-empty' : ''}}">
+      <view class="staff font-size-26 c-909090"><text class="c-3DB8C8" @tap="showRootDepartment">全部</text>{{currentDepratmentName}}</view>
+      <view wx:if="{{showEmpty}}">
+        <view class="empty" wx:if="{{(branchList.length === 0 && staffList.length === 0 && ready.staff && ready.depart)}}">
+          <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+          <view class="font-size-26 c-909090 ta-center">部门内空空如也，快去添加吧...</view>
+        </view>
+      </view>
+      <repeat for="{{branchList}}" index="index" key="index" item="item">
+        <view class="weui-cell" @tap="getChildDepartment('{{item}}')">
+          <view class="weui-cell__hd">
+            <image src="../../../assets/images/contact/contact.png"/>
+          </view>
+          <view class="weui-cell__hd">
+            <view class="branch font-size-30 c-323232">{{item.name}}</view>
+            <view class="count font-size-26 c-909090">{{item.num}}人</view>
+          </view>
+          <view class="weui-cell__hd">
+            <image src="../../../assets/images/contact/arrow_right.png" class="arrow"/>
+          </view>
+        </view>
+      </repeat>
+      <view class="weui-cell" wx:if="{{currentDepartmentId === rootDepart && departureNum > 0}}" @tap="showDeparturePersonList">
+        <view class="weui-cell__hd">
+          <image src="../../../assets/images/contact/departure.png"/>
+        </view>
+        <view class="weui-cell__hd">
+          <view class="branch font-size-30 c-323232">已离职员工</view>
+          <view class="count font-size-26 c-909090">{{departureNum}}人</view>
+        </view>
+        <view class="weui-cell__hd">
+          <image src="../../../assets/images/contact/arrow_right.png" class="arrow"/>
+        </view>
+      </view>
+    </view>    
+    <!-- 成员列表 -->
+    <view class="contact-list" style="margin-bottom:{{onSearch ? 0 : 140}}rpx;border-top:0;" wx:if="{{staffList.length > 0}}">
+      <view class="staff font-size-26 c-909090">成员</view>
+      <repeat for="{{staffList}}" index="index" key="index" item="item">
+        <view class="weui-cell" @tap="goEditStaff('{{item}}')">
+          <view class="weui-cell__hd" wx:if="{{item.head_icon}}">
+            <image src="{{item.head_icon}}"  wx:if="{{item.status == 1}}"/>
+            <image src="{{item.head_icon}}"  wx:if="{{item.status != 1}}"/>
+            <view class="font-size-18 c-ffffff ta-center claim" wx:if="{{item.status != 1}}">未认领</view>
+          </view>
+          <view class="weui-cell__hd" wx:else>
+            <image src="../../../assets/images/contact/contact.png"/>
+          </view>
+          <view class="weui-cell__hd">
+            <view class="branch font-size-30 c-323232">{{item.name}}</view>
+            <view class="count font-size-26 c-909090">{{item.station === '' ? '暂无' : item.station}}</view>
+          </view>
+          <view class="weui-cell__hd">
+            <image src="../../../assets/images/contact/edit.png" class="edit"/>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <view wx:if="{{onSearch}}" class="ta-center c-909090 font-size-26 mt-20">{{staffList.length}}位联系人</view>
+    <!-- 离职员工 -->
+    <view class="contact-list" style="margin-bottom:140rpx;border-top:0;" wx:if="{{departurePersonList.length > 0 && showDeparture}}">
+      <view class="staff font-size-26 c-909090">成员</view>
+      <repeat for="{{departurePersonList}}" index="index" key="index" item="item">
+        <view class="weui-cell">
+          <view class="weui-cell__hd" wx:if="{{item.head_icon}}">
+            <image src="{{item.head_icon}}"/>
+          </view>
+          <view class="weui-cell__hd" wx:else>
+            <image src="../../../assets/images/contact/contact.png"/>
+          </view>
+          <view class="weui-cell__hd">
+            <view class="branch font-size-30 c-323232">{{item.name}}</view>
+            <view class="count font-size-26 c-909090">{{item.station}}</view>
+          </view>
+          <view class="weui-cell__hd">
+            <!-- <image src="../../assets/images/contact/edit.png" class="edit"/> -->
+            <button class="bg-fff"
+            style="border:2rpx solid #e75152; height:62rpx;line-height:62rpx;color: #e75152;font-size:26rpx;width:128rpx;"
+            @tap="reentry({{item}})">复职</button>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <!-- 添加成员、部门设置 -->
+    <view class="foot" hidden="{{hiddenFoot}}">
+      <view class="foot-btn font-size-36 c-3DB8C8" @tap="addStaffMask" data-method="maskShow">添加成员</view>
+      <view class="foot-btn font-size-36 c-3DB8C8" @tap="addBranchMask" data-method="maskShow" hidden="{{addBranchHidden}}">添加部门</view>
+      <view class="foot-btn font-size-36 c-3DB8C8" @tap="branchSetchMask" data-method="maskShow" hidden="{{branchSetHidden}}">部门设置</view>
+    </view>
+    <!-- 添加成员弹窗 -->
+    <view class="mask-black" hidden="{{staffMaskHidden}}" @tap="addStaffMask" data-method="maskHide"></view>
+    <view class="mask mask-staff" hidden="{{staffMaskHidden}}">
+      <!-- <view class="font-size-36 c-323232 ta-center" @tap="addStaffMask" data-method="chooseStaff" hidden="{{chooseStaffHidden}}">选择成员</view> -->
+      <button class="font-size-36 c-323232" open-type='share'>微信邀请</button>
+      <view class="font-size-36 c-323232 ta-center" @tap="addStaffMask" data-method="handInput">手动输入添加</view>
+      <view class="font-size-36 c-323232 ta-center" @tap="addStaffMask" data-method="maskHide">取消</view>
+    </view>
+    <!-- 部门设置弹窗 -->
+    <view class="mask-black" hidden="{{branchSetMaskHidden}}" @tap="branchSetchMask" data-method="maskHide"></view>
+    <view class="mask mask-set" hidden="{{branchSetMaskHidden}}">
+      <view class="font-size-36 c-323232" style="border-bottom:1px solid #e8e8e8;" @tap="branchSetchMask" data-method="edit">编辑部门名称</view>
+      <view class="font-size-36 c-323232" @tap="branchSetchMask" data-method="add">添加部门</view>
+      <view class="font-size-36 c-323232" @tap="branchSetchMask" data-method="delete">删除部门</view>
+    </view>
+    <!-- 添加部门弹窗 -->
+    <view class="mask-black" hidden="{{branchMaskHidden}}" @tap="addBranchMask" data-method="maskHide"></view>
+    <view class="mask mask-branch" hidden="{{branchMaskHidden}}">
+      <view class="font-size-36 c-323232 ta-center">添加部门</view>
+      <input type="text" placeholder="输入自定义部门" class="font-size-30 c-909090" value="{{branchName}}" @input="addBranchMask" data-method="input"/>
+      <view class="mask-branch-btn">
+        <view class="font-size-36 c-323232 ta-center" @tap="addBranchMask" data-method="maskHide">取消</view>
+        <view class="font-size-36 c-3DB8C8 ta-center" @tap="addBranchMask" data-method="sure">确定</view>
+      </view>
+    </view>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+import { common } from '../../../assets/js/common'
+import {G_RES_URL} from '@/config'
+export default class entOrg extends wepy.page {
+  // 相当于page.json
+  config = {
+    enablePullDownRefresh: true,
+    navigationBarTitleText: '管理组织架构'
+  }
+  data = {
+    res_url: G_RES_URL,
+    emptyHidden: true,
+    staffMaskHidden: true,
+    branchSetMaskHidden: true,
+    branchMaskHidden: true,
+    addBranchHidden: false,
+    branchSetHidden: true,
+    chooseStaffHidden: true,
+    branchList: [], // 部门列表
+    staffList: [], // 员工列表
+    tmpStaffList: [], // 临时员工列表
+    branchName: '', // 输入部门名字
+    enterprise_id: '', // 企业id
+    enterprise_name: '', // 企业名字
+    currentDepratmentName: '', // 当前部门名字
+    departureNum: 0, // 离职人数
+    currentDepartmentId: '', // 当前部门的id
+    departurePersonList: '', // 离职员工列表
+    showDeparture: false,
+    showEmpty: true,
+    hiddenFoot: false,
+    rootDepart: null,
+    onSearch: false,
+    searchText: '',
+    ready: {
+      staff: false,
+      depart: false
+    }
+  }
+  onShow() {
+    // 获取根部门
+    this.showRootDepartment()
+  }
+  onLoad(option) {
+    if (this.branchList.length === 0 && this.staffList.length === 0) {
+      this.emptyHidden = false
+    } else {
+      this.emptyHidden = true
+    }
+    // this.enterprise_id = option.enterprise_id，改成从：公共信息中获取
+    this.enterprise_id = common.getEnterpriseId(this)
+    // this.enterprise_name = option.enterprise_name，改成从：公共信息中获取
+    this.enterprise_name = common.getEnterpriseName(this)
+  }
+  onPullDownRefresh() {
+    if (!this.showDeparture) {
+      this.getDepartmentPerson(this.currentDepartmentId)
+      wepy.stopPullDownRefresh()
+    }
+  }
+  methods = {
+    searchOpen() {
+      if (!this.onSearch) {
+        this.onSearch = true
+        this.tmpStaffList = this.staffList
+        this.staffList = []
+      }
+      this.$apply()
+    },
+    searchClose(e) {
+      if (!e.detail.value) {
+        this.onSearch = false
+        this.staffList = this.tmpStaffList
+      }
+      this.$apply()
+    },
+    search(e) {
+      this.searchText = e.detail.value
+      if (e.detail.value) {
+        this.getDepartmentPersonByName(e.detail.value)
+      } else {
+        this.staffList = []
+      }
+    },
+    // 编辑员工
+    goEditStaff(item) {
+      // 清空缓存中的部门
+      wepy.setStorage({
+        key: 'chooseDept',
+        data: {}
+      })
+      this.$navigate(
+        `./editStaff?staff=${JSON.stringify(item)}&enterprise_id=${this.enterprise_id}&department_name=${this.currentDepratmentName === '' ? '根部门' : this.currentDepratmentName.substring(2, this.currentDepratmentName.lenght)}`
+      )
+    },
+    // 添加成员弹窗操作
+    addStaffMask(e) {
+      let that = this
+      let method = {
+        // 显示弹窗
+        maskShow() {
+          that.staffMaskHidden = false
+        },
+        // 关闭弹窗
+        maskHide() {
+          that.staffMaskHidden = true
+        },
+        // 选择成员
+        chooseStaff() {
+          that.staffMaskHidden = true
+        },
+        // 手动输入添加
+        handInput() {
+          that.staffMaskHidden = true
+          // 清空缓存中的部门
+          wepy.setStorage({
+            key: 'chooseDept',
+            data: {}
+          })
+          that.$navigate(`./addStaff?enterprise_id=${that.enterprise_id}`)
+        }
+      }
+      method[e.currentTarget.dataset.method]()
+    },
+    // 添加部门弹窗操作
+    addBranchMask(e) {
+      let that = this
+      let method = {
+        // 显示弹窗
+        maskShow() {
+          that.branchMaskHidden = false
+          that.branchName = ''
+        },
+        // 关闭弹窗
+        maskHide() {
+          that.branchMaskHidden = true
+        },
+        // 获取输入的部门名称
+        input() {
+          that.branchName = e.detail.value
+        },
+        // 点击确定
+        sure() {
+          that.branchMaskHidden = true
+          let params = {
+            enterpriseId: that.enterprise_id,
+            parentId: that.currentDepartmentId,
+            departmentName: that.branchName
+          }
+          companyApi.addDepartment(params).then(res => {
+            that.branchList.push({ id: res, name: that.branchName, num: '0' })
+            that.$apply()
+          })
+        }
+      }
+      method[e.currentTarget.dataset.method]()
+    },
+    // 部门设置弹窗操作
+    branchSetchMask(e) {
+      let that = this
+      let method = {
+        // 显示弹窗
+        maskShow() {
+          that.branchSetMaskHidden = false
+        },
+        // 关闭弹窗
+        maskHide() {
+          that.branchSetMaskHidden = true
+        },
+        // 编辑部门名称
+        edit() {
+          that.branchSetMaskHidden = true
+          let bns = that.currentDepratmentName.split(' > ')
+          let bn = ''
+          if (bns.length > 0) {
+            bn = bns[bns.length - 1]
+          }
+          that.$navigate(
+            `./branchName?enterpriseId=${that.enterprise_id}&departmentId=${that.currentDepartmentId}&branchName=` + bn
+          )
+        },
+        // 添加部门
+        add() {
+          that.branchSetMaskHidden = true
+          that.branchMaskHidden = false
+          that.branchName = ''
+        },
+        // 删除部门
+        delete() {
+          let params = {
+            enterpriseId: that.enterprise_id,
+            parentId: that.currentDepartmentId
+          }
+          wepy
+            .showModal({
+              title: '提示',
+              content: '您确定删除该部门吗？'
+            })
+            .then(res => {
+              if (res.confirm) {
+                companyApi
+                  .deleteDepartment(params)
+                  .then(
+                    res => {
+                      that.showRootDepartment()
+                    },
+                    err => {
+                      wepy.showToast({ title: err.err_msg, icon: 'none' })
+                    }
+                  )
+                  .then(function() {
+                    that.branchSetMaskHidden = true
+                    that.$apply()
+                  })
+              } else {
+                that.branchSetMaskHidden = true
+                that.$apply()
+              }
+            })
+        }
+      }
+      method[e.currentTarget.dataset.method]()
+    },
+    // 加载子部门
+    getChildDepartment(item) {
+      this.currentDepratmentName += ' > ' + item.name
+      companyApi.getDepartmentList(this.enterprise_id, item.id).then(res => {
+        this.branchList = res
+        // 隐藏“添加部门”，显示“部门设置”
+        this.addBranchHidden = true
+        this.branchSetHidden = false
+        this.chooseStaffHidden = false
+        this.currentDepartmentId = item.id
+        this.$apply()
+      })
+      this.getDepartmentPerson(item.id)
+    },
+    // 复职
+    reentry(item) {
+      let staffId = item.id
+      companyApi.reentry(staffId).then(res => {
+        this.showRootDepartment()
+      })
+    }
+  }
+  // 获取部门员工
+  getDepartmentPerson(departmentId) {
+    companyApi
+      .getDepartmentPerson(this.enterprise_id, departmentId)
+      .then(res => {
+        this.staffList = res.onJobPersonList
+        this.ready.staff = true
+        // this.departurePersonList = res.departurePersonList
+        // this.departureNum = res.departurePersonList.length
+        this.hiddenFoot = false
+        for (let i = 0; i < res.temporaryPersonList.length; i++) {
+          this.staffList.push(res.temporaryPersonList[i])
+        }
+        this.$apply()
+      })
+  }
+  getDepartmentPersonByName(name) {
+    let _this = this
+    companyApi.getDepartmentPersonByName(this.enterprise_id, name).then(res => {
+      if (_this.searchText) {
+        _this.staffList = res.onJobPersonList
+        _this.$apply()
+      }
+    })
+  }
+  getDeparturePersonList() {
+    companyApi.getDeparturePersonList(this.enterprise_id).then(res => {
+      this.departurePersonList = res.departurePersonList
+      this.departureNum = res.departurePersonList.length
+    })
+  }
+  // 显示根部门
+  showRootDepartment() {
+    companyApi.getRootDptId(this.enterprise_id).then(res => {
+      this.currentDepartmentId = res
+      this.rootDepart = res
+      this.getDepartmentPerson(res)
+      this.getDeparturePersonList(this.enterprise_id)
+      companyApi.getDepartmentList(this.enterprise_id, res).then(res => {
+        this.branchList = res
+        this.ready.depart = true
+        // 显示“添加部门”，隐藏“部门设置”
+        this.addBranchHidden = false
+        this.branchSetHidden = true
+        this.chooseStaffHidden = true
+        this.currentDepratmentName = ''
+        this.showDeparture = false
+        this.$apply()
+      })
+    })
+  }
+  // 显示离职人员
+  showDeparturePersonList() {
+    this.currentDepratmentName += ' > ' + '已离职员工'
+    this.staffList = ''
+    this.branchList = ''
+    this.departureNum = 0
+    this.showDeparture = true
+    this.showEmpty = false
+    this.hiddenFoot = true
+    this.$apply()
+  }
+  // 微信分享
+  onShareAppMessage(e) {
+    let sharename = this.$parent.getUserInfo().nickName
+    let staffInfo = this.$parent.getStaffInfo()
+    let title = `${sharename}邀请您加入"${this.enterprise_name}",快去查看吧~~~`
+    return {
+      title: title,
+      path: `/pages/contact/addContact?enterprise_id=${
+        this.enterprise_id
+      }&department_id=${this.currentDepartmentId}&employee_id=${
+        staffInfo.staffId
+      }`,
+      imageUrl: this.res_url + '/dc_share_entry_1.png',
+      // imageUrl: imageUrl
+      success: res => {
+        // 转发成功
+        this.staffMaskHidden = true
+      },
+      fail: res => {
+        // 转发失败
+      }
+    }
+  }
+}
+</script>

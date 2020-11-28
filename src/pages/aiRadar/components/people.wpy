@@ -1,0 +1,154 @@
+<style lang="scss">
+  @import '../../../assets/css/pages/radar/time.scss';
+  .down {
+    transform:rotate(90deg);
+    -ms-transform:rotate(90deg); 	/* IE 9 */
+    -moz-transform:rotate(90deg); 	/* Firefox */
+    -webkit-transform:rotate(90deg); /* Safari 和 Chrome */
+    -o-transform:rotate(90deg);
+  }
+  .detail-comment {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    padding:10rpx 30rpx 40rpx 30rpx;
+    background:#ffffff;
+  }
+  .detail-left {
+    flex: 1;
+    padding: 20rpx 20rpx;
+    font-size: 28rpx;
+  }
+  .detail-right {
+    position:relative;
+    top:32rpx;
+    flex: 2;
+    font-size: 30rpx;
+    line-height:100rpx;
+  }
+  .proportion {
+    height: 22rpx;
+  }
+  
+  .comment-people {
+    margin:0!important;
+    box-shadow: none!important;
+    border-bottom:1px solid #e8e8e8;    
+  }
+</style>
+<template>
+  <view class="contact-part">
+    <calendar calendarParams.sync="calendarParams"></calendar>
+    <view class="empty" wx:if="{{dataList.length === 0 && emptyShow}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png" style="margin:226rpx auto 16rpx;width:192rpx;height:223rpx;"/>
+      <view class="font-size-26 c-909090 ta-center">空空如也</view>
+    </view>
+    <repeat for="{{dataList}}" index="index" key="index" item="client" wx:if="{{dataList.length > 0}}">
+      <view class="comment comment-people" @tap="showMore('{{client}}','{{index}}')" style="{{index === 0 ? 'margin-top: 34rpx!important;' : ''}}">
+        <view class="left">
+          <image src="{{client.head_icon}}" class="headIcon"/>
+        </view>
+        <view class="middle">
+          <text style="margin-right:10rpx;">{{client.nick_name}}</text>跟你在名片上互动<text style="color:#e75152;padding:0 5rpx">{{client.count}}</text><text>次</text>
+        </view>
+        <view class="right">
+          <image src="/assets/images/chat/arrow.png" class="arrow" wx:if="{{!client.showMoreDeatil}}"></image>
+          <image src="/assets/images/chat/arrow.png" class="arrow down" wx:else></image>
+        </view>
+      </view>
+      <view wx:if="{{client.showMoreDeatil}}">
+        <repeat for="{{client.child}}" index="index" key="index" item="detail">
+          <view class="detail-comment" @tap="goActionDetail('{{detail.action_code}}')">
+            <view class="detail-left">{{detail.action_name}}</view>
+            <view class="detail-right">
+              <view class="proportion" style="width:{{400/client.count*detail.num > 400? 400:400/client.count*detail.num}}rpx;background:{{index%2==0?'orange':'#e75152'}}" disabled/>
+              <input value="{{detail.num}}次" disabled/>
+            </view>
+          </view>
+        </repeat>
+      </view>
+    </repeat>
+    <view class="font-size-26 c-909090 ta-center" style="line-height:100rpx;" wx:if="{{noMore}}">没有更多数据</view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {G_RES_URL} from '@/config'
+  import calendar from './calendar'
+  import { pagingMixin } from '@/mixins'
+  import { aiRadarApi } from '@/api'
+  export default class people extends wepy.component {
+    mixins = [pagingMixin];
+    components = {
+      calendar: calendar
+    }
+    data = {
+      res_url: G_RES_URL,
+      dataList: [],
+      emptyShow: false,
+      calendarParams: {
+        begin_time: '',
+        end_time: ''
+      },
+      calendarTimestamp: {
+        begin_time: '',
+        end_time: ''
+      }
+    }
+    onLoad() {
+      this.init()
+    }
+    events = {
+      'choose-data': (...args) => {
+        let event = args[args.length - 1]
+        this.calendarParams = event.source.calendarParams
+        this.calendarTimestamp = event.source.calendarTimestamp
+        this.dataList = []
+        this.getDataList()
+      }
+    }
+    // 加载数据
+    getDataList() {
+      this.addRequestParams(this.calendarTimestamp)
+      return aiRadarApi.getActionByPeople(this.params).then(res => {
+        if (res.data_list.length === 0) {
+          this.emptyShow = true
+        }
+        let tempList = res.data_list
+        // 用来控制显示更多
+        for (let i = 0; i < tempList.length; i++) {
+          tempList[i].showMoreDeatil = false
+          tempList[i].child = []
+        }
+        this.dataList = this.dataList.concat(tempList)
+        this.$apply()
+        return res
+      })
+    }
+    methods = {
+      showMore(client, index) {
+        this.dataList[index].showMoreDeatil = !this.dataList[index].showMoreDeatil
+        if (this.dataList[index].showMoreDeatil === false) {
+          return
+        }
+        this.getActionDetail(client.user_id, index)
+      },
+      // 跳转行为详情页
+      goActionDetail(code) {
+        wepy.navigateTo({url: `/pages/aiRadar/detail/actionDetail?code=${code}&begin_time=${this.calendarParams.begin_time}&end_time=${this.calendarParams.end_time}`})
+      }
+    }
+    getActionDetail(userId, index) {
+      let params = {
+        begin_time: this.calendarTimestamp.begin_time,
+        end_time: this.calendarTimestamp.end_time,
+        user_id: userId
+      }
+      aiRadarApi.getActionByPeopleDetail(params).then(res => {
+        this.dataList[index].child = res
+        this.$apply()
+      })
+    }
+  }
+</script>

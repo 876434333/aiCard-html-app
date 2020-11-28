@@ -1,0 +1,255 @@
+<style lang="scss">
+// @import '../../assets/css/pages/me/entOrg.scss';
+.mask {    
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    button{
+        padding: 0;
+        height: 101rpx;
+        line-height: 101rpx;
+        border-radius: 0;
+        border-bottom:1px solid #e8e8e8;
+        background-color: #fff;
+    }
+    button::after {        
+        border: none;
+    }
+    view {
+        height: 98rpx;
+        line-height: 98rpx;
+    }
+    view:last-child{
+        border-bottom:0;
+    } 
+}
+.mask-branch {
+    top: 50%;
+    left: 50%;
+    margin-top:-146rpx;
+    margin-left:-280rpx;
+    width:560rpx;
+    height:292rpx;
+    border-radius:20rpx; 
+    input{
+        padding-left: 24rpx;
+        margin: 0 auto;
+        width:478rpx;
+        height:66rpx;
+        line-height: 66rpx;
+        border:1px solid #d8d8d8;
+    }
+    .mask-branch-btn{   
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        margin-top:22rpx;
+        view{
+            width: 50%;
+            height: 96rpx;
+            line-height: 96rpx;
+            border-top:1px solid #e8e8e8;
+        }
+        view:nth-child(1){
+            border-right:1px solid #e8e8e8;
+        }
+        view:nth-child(2){
+            border-bottom:0;
+        }
+    }    
+}
+.weui-cell__hd image{
+  width: 38rpx !important;
+  height: 38rpx !important;
+}
+.check-part {
+  width:35rpx;
+  height:35rpx;
+  border:1px solid #d4d4d4;
+  border-radius:100%;
+}
+.foot {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  width:100%;
+  height: 112rpx;    
+  border-top:1px solid #e8e8e8;
+  overflow: hidden;
+  background: #fff;
+  .foot-btn {
+      margin-top: 32rpx;
+      width: 50%;
+      height: 48rpx;
+      line-height: 48rpx;
+      text-align: center;
+  }
+  .foot-btn:nth-child(1){
+      border-right:1px solid #e8e8e8;
+  }
+}
+</style>
+<template>
+  <view class="wrap">
+    <!-- @tap="choose" data-departmentid="{{item.departmentId}}" data-index="{{index}}" -->
+    <view class="weui-cell bord-bottom" @tap="addBranchMask" data-method="maskShow" >
+      <view class="weui-cell__hd">
+        <image src="../../../assets/images/add.png"/>
+      </view>
+      <view class="weui-cell__hd">
+        <view class="branch font-size-30 c-323232 ml-30">添加部门</view>
+      </view>
+    </view>
+
+    <view class="weui-cells weui-cells_after-title mt-20">
+      <repeat for="{{deptTree}}" key="id" index="deptIndex1" item="level1">
+        <dept :dept.sync="level1" :level.sync="1" :chooseDeptId.sync="chooseDeptId">
+          <view class="weui-cells weui-cells_after-title clearbordafter {{level1.id === showId1 && showId1State ? 'd_b':'d-n'}}" wx:if="{{level1.children.length > 0}}">
+            <block wx:for="{{level1.children}}" wx:key="id" wx:for-index="deptIndex2" wx:for-item="level2">
+              <dept :dept.sync="level2" :margin_left.sync="40" :currentIndex.sync="deptIndex2" :len.sync="level1.children.length" :level.sync="2" :chooseDeptId.sync="chooseDeptId">
+                <view class="weui-cells weui-cells_after-title clearbordafter {{level2.id === showId2 && showId2State ? 'd_b':'d-n'}}" wx:if="{{level2.children.length > 0}}">
+                  <block wx:for="{{level2.children}}" wx:key="id" wx:for-index="deptIndex3" wx:for-item="level3">
+                    <dept :dept.sync="level3" :margin_left.sync="80" :currentIndex.sync="deptIndex3" :len.sync="level2.children.length" :level.sync="3" :chooseDeptId.sync="chooseDeptId">
+                      <view class="weui-cells weui-cells_after-title clearbordafter {{level3.id === showId3 && showId3State ? 'd_b':'d-n'}}" wx:if="{{level3.children.length > 0}}">
+                        <block wx:for="{{level3.children}}" wx:key="id" wx:for-index="deptIndex4" wx:for-item="level4">
+                          <dept :dept.sync="level4" :margin_left.sync="120" :currentIndex.sync="deptIndex4" :len.sync="level3.children.length" :level.sync="4" :chooseDeptId.sync="chooseDeptId">
+                            <view class="weui-cells weui-cells_after-title clearbordafte {{level4.id === showId4 && showId4State ? 'd_b':'d-n'}}" wx:if="{{level4.children.length > 0}}">
+                              <block wx:for="{{level4.children}}" wx:key="id" wx:for-index="deptIndex5" wx:for-item="level5">
+                                <dept :dept.sync="level5" :margin_left.sync="160" :currentIndex.sync="deptIndex5" :len.sync="level4.children.length"  :level.sync="5" :chooseDeptId.sync="chooseDeptId"></dept>
+                              </block>
+                            </view>
+                          </dept>
+                        </block>
+                      </view>
+                    </dept>
+                  </block>
+                </view>
+              </dept>
+            </block>
+          </view>
+        </dept>
+      </repeat>
+    </view>
+    <!-- 添加部门弹窗 -->
+    <view class="mask-black" hidden="{{branchMaskHidden}}" @tap="addBranchMask" data-method="maskHide"></view>
+    <view class="mask mask-branch" hidden="{{branchMaskHidden}}">
+      <view class="font-size-36 c-323232 ta-center">添加部门</view>
+      <input type="text" placeholder="输入自定义部门" class="font-size-30 c-909090" @input="addBranchMask" data-method="input"/>
+      <view class="mask-branch-btn">
+        <view class="font-size-36 c-323232 ta-center" @tap="addBranchMask" data-method="maskHide">取消</view>
+        <view class="font-size-36 c-3DB8C8 ta-center" @tap="addBranchMask" data-method="sure">确定</view>
+      </view>
+    </view>
+    <view class="foot"><button class="save font-size-36 c-ffffff" @tap="confirm">确定</button></view>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import { companyApi } from '@/api'
+  import {common} from '../../../assets/js/common.js'
+  import dept from './components/dept'
+  export default class transfer extends wepy.page {
+    // 相当于page.json
+    config = {
+      navigationBarTitleText: '选择部门'
+    }
+    data = {
+      selectedHidden: true,
+      deptTree: [],
+      selected: [],
+      showId1: null,
+      showId2: null,
+      showId3: null,
+      showId4: null,
+      showId5: null,
+      showId1State: false,
+      showId2State: false,
+      showId3State: false,
+      showId4State: false,
+      showId5State: false,
+      currentId: null,
+      currentLevel: 0,
+      chooseDeptId: null,
+      branchMaskHidden: true,
+      chooseDeptName: null,
+      enterprise_id: '',
+      currentDepartmentId: '',
+      departmentName: '',
+      branchName: ''
+    }
+    components = {
+      dept: dept
+    }
+    methods = {
+      confirm() {
+        wx.setStorage({
+          key: 'chooseDept',
+          data: {deptId: this.chooseDeptId, deptName: this.chooseDeptName},
+          success: function () {
+            wx.navigateBack()
+          }
+        })
+        // wepy.navigateBack(`/pages/me/editStaff?deptId=${this.chooseDeptId}&deptName=${this.chooseDeptName}`)
+        // this.$redirect('/pages/me/editStaff?')
+      },
+      addBranchMask(e) {
+        let that = this
+        let method = {
+          // 显示弹窗
+          maskShow() {
+            that.branchMaskHidden = false
+            e.detail.value = ''
+            that.branchName = ''
+          },
+          // 关闭弹窗
+          maskHide() {
+            that.branchMaskHidden = true
+          },
+          // 获取输入的部门名称
+          input() {
+            that.branchName = e.detail.value
+          },
+          // 点击确定
+          sure() {
+            that.branchMaskHidden = true
+            let params = {
+              enterpriseId: that.enterprise_id,
+              parentId: that.chooseDeptId,
+              departmentName: that.branchName
+            }
+            wepy.showLoading({
+              title: '保存中...'
+            })
+            companyApi.addDepartment(params).then(res => {
+              wepy.setStorage({
+                key: 'updDept',
+                data: {upd: true}
+              })
+              companyApi.getDeptTree(that.enterprise_id).then(res => {
+                wepy.hideLoading()
+                that.deptTree = res
+                that.$apply()
+              })
+            }, err => {
+              if (err) {}
+              wepy.hideLoading()
+            })
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      }
+    }
+    onLoad() {
+      let enterpriseId = common.getStaffInfo(this).enterprise_id
+      this.enterprise_id = enterpriseId
+      companyApi.getDeptTree(enterpriseId).then(res => {
+        this.chooseDeptId = res[0].id
+        this.chooseDeptName = res[0].title
+        this.deptTree = res
+        this.$apply()
+      })
+    }
+  }
+</script>

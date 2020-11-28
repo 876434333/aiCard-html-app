@@ -1,0 +1,111 @@
+<style lang="scss">
+  @import '../../../assets/css/pages/me/entOrg.scss';
+  @import '../../../assets/css/pages/me/transfer.scss';
+  .weui-cell {
+    position: relative;
+    .weui-cell__hd:nth-child(1){
+      margin-left: 62rpx;
+    }
+    .check-part {
+      position: absolute;
+      left:26rpx;
+      width: 35rpx;
+      height: 35rpx;
+      z-index: 999;
+      border:1px solid #d4d4d4;
+      border-radius: 100%;
+      image {
+        // display: block;
+        width: 100%;
+        height: 100%;
+      }
+    }
+    .check {
+      border: 0;
+    }
+  }
+</style>
+<template>
+  <!-- 选择成员-移动成员 -->
+  <view class="wrap">
+    <view class="search">
+      <image src="../../../assets/images/contact/search.png"/>
+      <input type="text" placeholder="搜索" class="font-size-30 c-909090"/>
+    </view>
+    <!-- 空列表 -->
+    <view class="empty" wx:if="{{departmentList.length === 0}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+      <view class="font-size-32 ta-center c-909090">暂无成员，先去添加公司成员吧...</view>
+    </view>
+    <!-- 联系人列表 -->
+    <view class="contact-part {{departmentList.length === 0 ? 'contact-part-empty' : ''}}">
+      <repeat for="{{departmentList}}" index="index" key="index" item="item">
+        <view class="contact-list">
+          <view class="staff font-size-24 c-909090">{{item.departmentName}}</view>
+          <repeat for="{{item.staffList}}" index="index" key="index" item="staff">
+            <view class="weui-cell" @tap="choose" data-departmentid="{{item.departmentId}}" data-index="{{index}}">
+              <view class="weui-cell__hd">
+                <image src="{{staff.headIcon}}"/>
+              </view>
+              <view class="weui-cell__hd">
+                <view class="branch font-size-30 c-323232">{{staff.name}}</view>
+                <view class="count font-size-26 c-909090">{{staff.station}}</view>
+              </view>
+              <view class="check-part {{staff.selected ? 'check' : ''}}">
+                <image src="../../../assets/images/me/check.png" wx:if="{{staff.selected}}" style="display: block;"/>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </repeat>
+    </view>
+    <view class="foot"><button class="save font-size-36 c-ffffff" @tap="save">确定</button></view>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import {G_RES_URL} from '@/config'
+  export default class transfer extends wepy.page {
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '移动成员'
+    }
+    data = {
+      res_url: G_RES_URL,
+      selectedHidden: true,
+      departmentList: [],
+      selecteds: []
+    }
+    methods = {
+      // 选择转让的员工
+      choose(e) {
+        let that = this
+        let departmentId = e.currentTarget.dataset.departmentid
+        let index = e.currentTarget.dataset.index
+        let departmentList = that.departmentList
+        let selectedData = departmentList[departmentId].staffList[index]
+        let selected = selectedData.selected
+        departmentList[departmentId].staffList[index].selected = !selected
+        if (selected) {
+          that.methods.delByStaffId(selectedData.staffId, that)
+        } else {
+          that.selecteds.push(selectedData)
+        }
+        that.$apply()
+      },
+      // 删除选中的员工
+      delByStaffId(staffId, that) {
+        for (let i = 0; i < that.selecteds.length; i++) {
+          if (staffId === that.selecteds[i].staffId) {
+            that.selecteds.splice(i, 1)
+            break
+          }
+        }
+      },
+      // 点击确定
+      save() {}
+    }
+  }
+</script>

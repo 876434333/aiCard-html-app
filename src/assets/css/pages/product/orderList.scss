@@ -1,0 +1,53 @@
+$main_color: #e75152;
+.order-list {
+  background: #f2f2f2;
+  .list-content {
+    position:fixed;
+    top:80rpx;
+    left:0;
+    right:0;
+    bottom:0;
+    border-top:1rpx solid #eee;
+    .all-title {
+      .main {
+        color: #fa694a;
+        font-size: 32rpx;
+      }
+      .sub-title {
+        color: #666;
+        font-size: 28rpx;
+      }
+    }
+    .all-count {
+      background: #fff;
+      .count-num {
+        font-size: 26rpx;
+      }
+      .count-price {
+        color: #fa694a;
+        font-size: 26rpx;
+      }
+    }
+    .all-btns {
+      display:flex;
+      justify-content:flex-end;
+      align-items:center;
+      height:90rpx;
+      background: #fff;
+      overflow: hidden;
+      .light {
+        color: #fff;
+        background: #ff7f02;
+        border: none;
+      }
+      button {
+        font-size: 26rpx;
+        color: #666;
+        border: 1rpx solid #999;
+        border-radius: 10rpx;
+        margin-left: 0;
+        margin-right: 30rpx;
+      }
+    }
+  }
+}

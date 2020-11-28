@@ -1,0 +1,114 @@
+<template>
+  <!-- 公司地址 -->
+  <view class="website-components">
+    <view class="edit" wx:if="{{area == 'edit'}}">
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_input weui-cell-style">
+          <view class="weui-cell__hd">
+            <view class="weui-label weui-label-style font-lable font-size-30 c-323232">公司地址</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input font-size-30 c-909090" placeholder="公司地址" value="{{obj.data.title.value}}"  bindinput="addressTitle"/>
+          </view>
+          <view class="weui-cell__ft" style="flex:0.1">
+            <image class="component-input-del" @tap="clean" data-target="data.title.value" hidden="{{!obj.data.title.value}}" src="../../../../assets/images/website/delete_video.png"/>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell-style" style="background:#fafafa;">
+          <view class="weui-cell__hd">
+            <view class="weui-label weui-label-style font-lable font-size-30 c-323232">对齐方式</view>
+          </view>
+          <view class="weui-cell__bd icon-tools">
+            <view class="icon-item iconImg" @tap="alignLeft">
+              <image src="{{obj.data.textAlign.value == 'left' ? '/assets/images/website/align_left_check.png' : '/assets/images/website/align_left.png'}}"/>
+            </view>
+            <view class="icon-item iconImg" @tap="alignCenter">
+              <image src="{{obj.data.textAlign.value == 'center' ? '/assets/images/website/align_center_check.png' : '/assets/images/website/align_center.png'}}"/>
+            </view>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input weui-cell-style" style="padding-top:18rpx;align-items:flex-start;-webkit-align-items:flex-start;">
+          <view class="weui-cell__hd">
+            <view class="weui-label weui-label-style font-lable font-size-30 c-323232">公司地址</view>
+          </view>
+          <view class="weui-cell__bd">
+            <textarea class="weui-textarea font-size-30 c-909090" placeholder="请填写地址信息"  maxlength='500' value="{{obj.data.address.value}}" bindinput="addressTextInput" style="height:120rpx;"/>
+          </view>
+          <view class="weui-cell__ft" style="flex:0.1">
+            <image class="component-input-del" @tap="clean" data-target="data.address.value" hidden="{{!obj.data.address.value}}" src="../../../../assets/images/website/delete_video.png"/>
+          </view>
+        </view>
+        <button class="weui-btn submit-btn submit-component-btn" @tap="save" style="margin-top:34rpx;">保存</button>
+     </view>
+    </view>
+    <view class="preview" wx:if="{{area == 'preview'}}">
+      <view class="about">
+        <view class="font-size-30 c-323232 about-title" style="text-align:{{obj.data.textAlign.value}};">{{obj.data.title.value}}</view>
+        <text class="font-size-24 c-646464 about-content" style="word-break:break-all;width:90%;">{{obj.data.address.value}}</text>
+     </view>
+    </view>
+    <view class="show" wx:if="{{area == 'show'}}">
+      <view class="about">
+        <view class="font-size-30 c-323232 about-title" style="padding-bottom:0;text-align:{{obj.data.textAlign.value}};">{{obj.data.title.value}}</view>
+        <text class="font-size-24 c-646464 about-content" style="word-break:break-all;width:90%;">{{obj.data.address.value}}</text>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+export default class companyAddress extends wepy.component {
+  props = {
+    obj: {
+      type: Object,
+      default: null,
+      twoWay: true
+    },
+    area: {
+      type: String,
+      default: null,
+      twoWay: true
+    },
+    idx: {
+      type: String,
+      default: null,
+      twoWay: true
+    }
+  }
+  methods = {
+    clean(e) {
+      let k = e.currentTarget.dataset.target.split('.')
+      this.obj[k[0]][k[1]][k[2]] = ''
+    },
+    alignLeft() {
+      this.obj.data.textAlign.value = 'left'
+    },
+    alignCenter() {
+      this.obj.data.textAlign.value = 'center'
+    },
+    addressTextInput(e) {
+      this.obj.data.address.value = e.detail.value
+    },
+    addressTitle(e) {
+      this.obj.data.title.value = e.detail.value
+    },
+    save() {
+      let _this = this
+      if (!_this.obj.data.title.value) {
+        _this.obj.data.title.value = '公司地址'
+      }
+      wepy.setStorage({
+        key: 'website_plugin',
+        data: {
+          idx: _this.idx,
+          content: _this.obj,
+          save: true
+        }
+      })
+      wepy.navigateBack({
+        delta: 1
+      })
+    }
+  }
+}
+</script>

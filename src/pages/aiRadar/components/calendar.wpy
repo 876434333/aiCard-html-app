@@ -1,0 +1,201 @@
+<style lang="scss">
+  .mask-date {
+    .head {
+      position: relative;
+      padding-left: 36rpx;
+      height: 84rpx;
+      line-height: 84rpx;
+      background-color: #ffffff;
+      .calendar {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 998;
+        padding:0 40rpx;
+        image {
+          width: 35rpx;
+          height: 35rpx;
+          vertical-align:middle;
+        }
+      }
+      .head-time {
+        image {
+          position:relative;
+          top:4rpx;
+          left:26rpx;
+          width: 28rpx;
+          height: 28rpx;
+        }
+      }
+    }
+    .mask {
+      top: 50%;
+      left: 50%;
+      margin-top: -185rpx;
+      margin-left: -282rpx;
+      width: 564rpx;
+      height: 370rpx;
+      border-radius: 10rpx;
+      overflow: hidden;
+      .mask-title {
+        height: 110rpx;
+        line-height: 90rpx;
+      }
+      .mask-main {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        padding:0 28rpx;
+        height: 74rpx;
+        line-height: 74rpx;
+        justify-content:space-between;
+        .date {
+          position: relative;
+          padding-left: 18rpx;
+          width: 190rpx;
+          border:1px solid #afafaf;
+          border-radius: 10rpx;
+          image {
+            position: absolute;
+            top: 18rpx;
+            right: 10rpx;
+            width: 34rpx;
+            height: 35rpx;
+            z-index: 9999;
+          }
+        }
+      }
+      .mask-bottom{
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        margin-top: 82rpx;
+        width:100%;
+        height: 102rpx;
+        line-height: 102rpx;
+        border-top:4rpx solid #e8e8e8;
+        view {
+          width: 50%;
+        }
+        .cancel {
+          border-right:4rpx solid #e8e8e8;
+        }
+      }
+    }    
+  }
+</style>
+<template>
+  <!-- 选择时间 -->
+  <view class="mask-date">
+    <view class="font-size-24 c-909090 head">
+      <text wx:if="{{calendarParams.begin_time === '' && calendarParams.end_time === ''}}">7天内被查看的行为统计</text>
+      <view class="head-time" wx:if="{{calendarParams.begin_time || calendarParams.end_time}}">
+        {{calendarParams.begin_time}} <text wx:if="{{calendarParams.end_time}}">至</text> {{calendarParams.end_time}}
+        <image src="/assets/images/website/delete_video.png" @tap="clearTime"/>
+      </view>
+      <view class="calendar">
+        <image src="/pages/aiRadar/assets/images/calendar.png" @tap="mask" data-method="maskShow"/>
+      </view>
+    </view>
+    <!-- 选择日期弹窗 -->
+    <view class="mask-black" wx:if="{{maskShow}}" @tap="mask" data-method="maskHide"></view>
+    <view class="mask" wx:if="{{maskShow}}">
+      <view class="font-size-36 c-666666 ta-center mask-title">选择时间段</view>
+      <view class="mask-main">
+        <picker class="date font-size-24 c-666666" mode="date" @change="mask" data-method="chooseBeginTime" >
+          {{calendarParams.begin_time}}
+          <image src="/pages/aiRadar/assets/images/calendar_mask.png" />
+        </picker>
+        <view class="font-size-30 c-666666 ta-center" style="width:62rpx;">至</view>
+        <picker class="date font-size-24 c-666666" mode="date" @change="mask" data-method="chooseEndTime" >
+          {{calendarParams.end_time}}
+          <image src="/pages/aiRadar/assets/images/calendar_mask.png" />
+        </picker>
+      </view>
+      <view class="mask-bottom">
+        <view class="font-size-36 c-666666 ta-center cancel" @tap="mask" data-method="maskCancel">取消</view>
+        <view class="font-size-36 c-3DB8C8 ta-center sure" @tap="mask" data-method="maskSure">确定</view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { common } from '../../../assets/js/common.js'
+  export default class calendar extends wepy.component {
+    props = {
+      // 父组件传入的值为字符串类型
+      calendarParams: {
+        type: Object,
+        default: {
+          begin_time: '',
+          end_time: ''
+        }
+      }
+    }
+    data = {
+      maskShow: false,
+      // 传回给父组件的值为时间戳
+      calendarTimestamp: {
+        begin_time: '',
+        end_time: ''
+      }
+    }
+    onLoad() { }
+    methods = {
+      // 弹窗操作
+      mask(e) {
+        let that = this
+        let method = {
+          // 显示弹窗
+          maskShow() {
+            that.maskShow = true
+          },
+          // 隐藏弹窗
+          maskHide() {
+            that.maskShow = false
+          },
+          // 点击取消
+          maskCancel() {
+            that.calendarParams.begin_time = ''
+            that.calendarParams.end_time = ''
+            that.maskShow = false
+          },
+          // 点击确定
+          maskSure() {
+            that.maskShow = false
+            // 执行父组件的加载数据的方法
+            that.$emit('choose-data', that.calendarTimestamp)
+          },
+          // 选择开始日期
+          chooseBeginTime() {
+            that.calendarParams.begin_time = e.detail.value
+            that.calendarTimestamp.begin_time = Date.parse(new Date(that.calendarParams.begin_time + ' 00:00:01'))
+            if (that.calendarParams.end_time !== '') {
+              if (that.calendarParams.begin_time > that.calendarParams.end_time) {
+                common.tip('不能大于结束时间', 'none')
+              }
+            }
+          },
+          // 选择结束日期
+          chooseEndTime() {
+            that.calendarParams.end_time = e.detail.value
+            that.calendarTimestamp.end_time = Date.parse(new Date(that.calendarParams.end_time + ' 23:59:59'))
+            if (that.calendarParams.begin_time !== '') {
+              if (that.calendarParams.begin_time > that.calendarParams.end_time) {
+                common.tip('不能小于开始时间', 'none')
+              }
+            }
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      },
+      // 清空选中的时间
+      clearTime() {
+        this.calendarParams.begin_time = ''
+        this.calendarParams.end_time = ''
+        this.$emit('choose-data', this.calendarTimestamp)
+      }
+    }
+  }
+</script>

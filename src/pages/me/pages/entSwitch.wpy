@@ -1,0 +1,132 @@
+
+<style lang="scss">
+.newOrg {
+  margin-top: 30rpx;
+  border: solid 1rpx #e8e8e8;
+  padding: 22rpx 0 22rpx 0;
+  text-align: center;
+  background: #fff;
+  image {
+    height: 33rpx;
+    width: 33rpx;
+    vertical-align: middle;
+  }
+  view {
+    display: inline-block;
+    margin: 0 auto;
+  }
+  view:nth-child(2) {
+    margin-left: 24rpx;
+    vertical-align: middle;
+    font-size: 30rpx;
+    color: #323232;
+  }
+}
+</style>
+<template>
+  <view wx:if="{{showContent}}">
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell" wx:for="{{enterpriseList}}" wx:key="index" @tap="switchCompany('{{item}}')">
+        <view class="weui-cell__hd" style="position: relative;margin-right: 10px;">
+            <image src="{{item.head_icon === '' ? '':item.head_icon}}" style="width: 103rpx; height: 103rpx; display: block;border-radius: 10rpx;"/>
+        </view>
+        <view class="weui-cell__bd">
+            <view class="font-size-30 c-323232">{{item.name}}</view>
+            <view style="font-size: 26rpx;color: #909090;">免费版 | {{item.sale_card_num}} / {{item.money_init}} 人</view>
+        </view>
+        <!-- <icon wx:if="{{item.is_curent === 1}}" type="success_no_circle" size="23"></icon> -->
+        <image  wx:if="{{item.is_curent === 1}}" style="height:55rpx;width:55rpx" src="{{res_url}}/dc_card_check.png"/>
+      </view>
+    </view>
+    <view class="newOrg" @tap="goCardCreate">
+      <view><image wx:if="{{res_url}}" src="{{res_url}}/dc_product_upload.png"/></view>
+      <view>创建新组织</view>
+    </view>
+    <view class="ta-center pd-30">
+        <view class="c-909090 font-size-26" @tap="goCompanyExit">退出组织</view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class companySwitch extends wepy.page {
+  config = {
+    navigationBarTitleText: '切换组织'
+  }
+  components = {}
+  data = {
+    res_url: G_RES_URL,
+    openid: '',
+    enterpriseList: [],
+    showContent: false
+  }
+  onLoad() {
+    this.openid = this.$parent.getNowOpenid()
+    wepy.showLoading({
+      title: '加载中...'
+    })
+    companyApi.getEnterpriseList(this.openid).then(res => {
+      wepy.hideLoading()
+      this.showContent = true
+      this.enterpriseList = res
+      this.$apply()
+    },
+    err => {
+      console.info(err.err_msg) // 防止编译报错
+      wepy.hideLoading()
+      this.showContent = true
+    })
+  }
+  onShow() {
+    this.onLoad()
+  }
+  methods = {
+    switchCompany(item) {
+      let enterpriseListTemp = this.enterpriseList
+      this.enterpriseList = []
+      for (let enterprise of enterpriseListTemp) {
+        if (enterprise.id === item.id) {
+          enterprise.is_curent = 1
+        } else {
+          enterprise.is_curent = 0
+        }
+        this.enterpriseList.push(enterprise)
+      }
+      this.$apply()
+      wepy.showLoading({
+        title: '切换中...'
+      })
+      companyApi.switchCompany(item.id, this.openid).then(
+        res => {
+          this.$parent.saveStaffInfo(res)
+          wepy.hideLoading()
+          wepy.reLaunch({
+            url: `/pages/me/meIndex?enterprise_id=${item.id}`
+          })
+          this.$apply()
+        },
+        err => {
+          wepy.hideLoading()
+          console.info(err.err_msg) // 防止编译报错
+          wepy.showToast({
+            title: '切换企业失败'
+          })
+        }
+      )
+    },
+    goCompanyExit() {
+      this.$navigate(
+        `./entExit?enterpriseList=${JSON.stringify(
+          this.enterpriseList
+        )}`
+      )
+    },
+    goCardCreate() {
+      this.$navigate('/pages/card/subPackage/pages/create')
+    }
+  }
+}
+</script>

@@ -1,0 +1,401 @@
+<style lang="scss">
+  .top_bg {
+    width: 100%;
+    height: 50rpx;
+  }
+  .company_logo {
+    position:relative;
+    top:8rpx;
+    left:10rpx;
+    width: 103rpx;
+    height: 103rpx;
+  }
+  .level_up_img {
+    width: 18rpx;
+    height: 32rpx;
+  }
+  .card_edit_img {
+    width: 36rpx;
+    height: 30rpx;
+    margin-top: 4rpx;
+  }
+  .other_info {
+    position:relative;
+    top:4rpx;
+    width: 32rpx;
+    height: 33rpx;
+  }
+  .switch_company {
+    position:relative;
+    top:4rpx;
+    width: 44rpx;
+    height: 26rpx;
+  }
+  .head-menu .weui-cell{
+    padding:0 30rpx;
+    height:48rpx;
+  }
+
+  .mask {    
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    margin-top:-225rpx;
+    margin-left:-280rpx;
+    width:560rpx;
+    height:450rpx;
+    border-radius:20rpx; 
+    .content {
+      padding:30rpx 40rpx;
+      word-break:break-all;
+      text-align:justify;
+      view {
+        line-height: 48rpx;
+        text {
+          color: #e75152;
+        }
+      }
+    }
+    .mask-btn{
+      position:absolute;
+      bottom:0;
+      width:100%;
+      margin-top:22rpx;
+      view{
+        width: 50%;
+        height: 96rpx;
+        line-height: 96rpx;
+        border-top:1px solid #e8e8e8;
+      }
+      view:nth-child(1){
+        border-right:1px solid #e8e8e8;
+      }
+      view:nth-child(2){
+        border-bottom:0;
+      }
+    }    
+  }
+</style>
+<template>
+  <view>
+    <view style="background:#ffffff">
+      <!--头部个人描述-->
+      <view class="weui-cell bg-3DB8C8">
+          <view class="weui-cell__hd" style="position: relative;margin-right: 20rpx;">
+              <image class="default_photo circle" src="{{staff.head_icon}}"/>
+          </view>
+          <view class="weui-cell__bd ml-40">
+              <view class="font-size-36 c-ffffff">{{staff.name}}</view>
+              <view class="font-size-30 mt-20 c-ffffff">{{staff.enterprise_name}}</view>
+          </view>
+      </view>
+      <image wx:if="{{res_url}}" class="top_bg" src="{{res_url}}/dc_me_top_bg.png"/>
+
+      <!--头部菜单-->
+      <view class="head-menu weui-flex ta-center mt-40 font-size-26 c-323232">
+        <view style="width:33%;">
+          <navigator url="/pages/card/subPackage/pages/editCardMenu?userRole={{userRole}}&&shopType={{shopType}}" class="weui-cell weui-cell_access" style="margin-left:28rpx;padding-top:0;padding-right:0;" hover-class="none"> 
+              <view class="weui-cell__hd" style="margin-right: 22rpx;">
+                  <image wx:if="{{res_url}}" class="card_edit_img" src="{{res_url}}/dc_card_edit.png"/>
+              </view>
+              <view class="weui-cell__bd" style="text-align: left;">
+                  <view class="c-323232 font-size-26">编辑名片</view>
+              </view>
+          </navigator>
+        </view>
+        <view style="width:33%">
+          <navigator url="/pages/card/subPackage/pages/createEnt" class="weui-cell weui-cell_access  bord-left" style="padding-top:0" hover-class="none">
+              <view class="weui-cell__hd" style="margin-right: 18rpx;">
+                  <image wx:if="{{res_url}}" class="other_info" src="{{res_url}}/dc_me_add_org.png"/>
+              </view>
+              <view class="weui-cell__bd">
+                  <view class="c-323232 font-size-26">创建新组织</view>
+              </view>
+          </navigator>
+        </view>
+        <view style="width:33%">
+          <navigator url="/pages/me/pages/entSwitch" class="weui-cell weui-cell_access bord-left" style="padding-top:0" hover-class="none">
+              <view class="weui-cell__hd">
+                  <image wx:if="{{res_url}}" class="switch_company" src="{{res_url}}/dc_switch_company.png"/>
+              </view>
+              <view class="weui-cell__bd">
+                  <view class="c-323232 font-size-26">切换组织</view>
+              </view>
+          </navigator>
+        </view>
+      </view>
+      <view class="mt-40" style="height:1rpx;border-bottom:solid 1rpx #e8e8e8"></view>
+    </view>
+    <view>
+      <view class="weui-cells weui-cells_after-title" wx:if="{{userRole === 0 || userRole === 1}}">
+        <view class="weui-cells__title weui-flex pt-22">
+          <view class="weui-flex__item ta-left font-size-24" wx:if="{{userRole === 0}}">我是管理员</view>
+          <view class="weui-flex__item ta-left font-size-24" wx:if="{{userRole === 1}}">我是运营者</view>
+          <!-- D by PLH at 2018-11-28 for 暂时取消免费和收费的规则，待设计
+          <view class="weui-flex__item ta-right c-3DB8C8 font-size-24">
+            <view class="weui-flex">
+                <view class="weui-flex__item" style="padding-right:16rpx">
+                  <image class="level_up_img" src="{{res_url}}/dc_me_level_up.png"/>
+                </view>
+                <view>升级收费版</view>
+            </view>
+          </view>
+          -->
+        </view>
+        <view class="weui-cell" @tap="goCompanySetup">
+            <view class="weui-cell__hd" style="position: relative;margin-right: 10px;">
+                <image wx:if="{{res_url}}" class="company_logo" src="{{enterparise.head_icon == '' || enterparise.head_icon == 'null' || enterparise.head_icon == null ? res_url + '/dc_me_ent_logo.png' : enterparise.head_icon}}"/>
+            </view>
+            <view class="weui-cell__bd">
+                <view class="font-size-36 c-323232">{{enterparise.name}}</view>
+                <view class="font-size-28 c-909090">免费版 | {{enterparise.sale_card_num}} / {{enterparise.money_init}} 人</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <view class="weui-cell weui-cell_access" @tap="goStaffApproval">
+            <view class="weui-cell__hd">
+                <image wx:if="{{res_url}}" style="margin-left:8rpx;width: 34rpx;height: 36rpx;margin-bottom:-4rpx;margim-left:4rpx" src="{{res_url}}/dc_staff_approve.png"/>
+            </view>
+            <view class="weui-cell__bd">
+                <view class="c-323232 font-size-30" style="margin-left: 24rpx;">新成员加入申请<text wx:if="{{pendingPerson > 0}}" style="float:right;background:red;width:40rpx;height:40rpx;border-radius:10px;text-align:center;color:#FFF;">{{pendingPerson}}</text></view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+         <view class="weui-cell weui-cell_access" @tap="goBossIndex">
+            <view class="weui-cell__hd">
+                <image wx:if="{{res_url}}" style="margin-left:4rpx;width: 41rpx;height: 39rpx;margin-bottom:-1rpx;margim-left:4rpx" src="/assets/images/home/boss.png" />
+            </view>
+            <view class="weui-cell__bd">
+                <view class="c-323232 font-size-30" style="margin-left: 24rpx;">BOSS雷达</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+      </view>
+    </view>
+    <view style="margin-top:30rpx">
+      <view class="weui-cells weui-cells_after-title">
+        <!-- D by PLH at 2018-11-28 for 暂时取消这些功能，待后续版本逐步完善
+        <view class="weui-cell weui-cell_access">
+            <view class="weui-cell__hd ta-center">
+                <image style="width: 40rpx;height: 33rpx" src="{{res_url}}/dc_me_hsgl.png"/>
+            </view>
+            <view class="weui-cell__bd ">
+                <view class="c-323232 font-size-30" style="margin-left: 22rpx;">话术管理</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <view class="weui-cell weui-cell_access">
+            <view class="weui-cell__hd ta-center">
+                <image style="width: 40rpx;height: 33rpx" src="{{res_url}}/dc_me_setup.png"/>
+            </view>
+            <view class="weui-cell__bd">
+                <view class="c-323232 font-size-30" style="margin-left: 22rpx;">IM聊天管理</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        -->
+        <view class="weui-cell weui-cell_access" @tap="goOrderMgr">
+            <view class="weui-cell__hd ta-center">
+                <image wx:if="{{res_url}}" style="margin-left:6rpx;width: 32rpx;height: 38rpx;margin-bottom:-6rpx" src="{{res_url}}/dc_me_order.png"/>
+            </view>
+            <view class="weui-cell__bd ">
+                <view class="c-323232 font-size-30" style="margin-left: 26rpx;">订单管理</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <view class="weui-cell weui-cell_access" @tap="goUpdateLog">
+            <view class="weui-cell__hd ta-center">
+                <image wx:if="{{res_url}}" style="width: 42rpx;height: 30rpx;" src="{{res_url}}/dc_me_updting.png"/>
+            </view>
+            <view class="weui-cell__bd">
+                <view class="c-323232 font-size-30" style="margin-left:20rpx;">版本更新记录</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <view class="weui-cell weui-cell_access" @tap="useMask" data-method="maskShow">
+           <view class="weui-cell__hd ta-center">
+                <image wx:if="{{res_url}}" style="margin-left:10rpx;width: 32rpx;height: 36rpx;margin-left:6rpx;margin-bottom:-6rpx;" src="{{res_url}}/dc_me_help.png"/>
+            </view>
+            <view class="weui-cell__bd">
+                <view class="c-323232 font-size-30" style="margin-left: 24rpx;">使用教程</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <view class="weui-cell weui-cell_access" @tap="goIdea">
+            <view class="weui-cell__hd ta-center">
+                <image wx:if="{{res_url}}" style="margin-left:8rpx;width: 34rpx;height: 36rpx;margin-left:6rpx;margin-bottom:-4rpx;" src="{{res_url}}/dc_me_yijian.png"/>
+            </view>
+            <view class="weui-cell__bd">
+                <view class="c-323232 font-size-30" style="margin-left: 24rpx;">意见反馈</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+      </view>
+    </view>
+    <!-- 使用教程弹窗 -->
+    <view class="mask-black" wx:if="{{useMaskShow}}" @tap="useMask" data-method="maskHide"></view>
+    <view class="mask" wx:if="{{useMaskShow}}">
+      <view class="font-size-30 c-909090 content">
+        <view>欢迎使用深卡工作社交名片!</view>
+        <view>请使用您的手机号作为账号（缺省密码为您的手机号）登陆PC端<text @tap="useMask" data-method="copySite">"{{site}}"</text>进行文件上传操作。</view>
+        <view>有操作问题请给深卡小蜜留言。</view>
+      </view>
+      <view class="mask-btn flex">
+        <view class="font-size-36 c-323232 ta-center" @tap="useMask" data-method="maskHide">取消</view>
+        <view class="font-size-36 c-3DB8C8 ta-center" @tap="useMask" data-method="maskHide">确定</view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { common } from '@/assets/js/common'
+import {cardApi, companyApi, cardManagerApi} from '@/api'
+import {G_RES_URL} from '@/config'
+export default class meIndex extends wepy.page {
+  config = {
+    navigationBarTitleText: '我'
+  }
+  components = {}
+  data = {
+    res_url: G_RES_URL,
+    staff: {},
+    enterparise: {},
+    userRole: 2,
+    shopType: 0,
+    enterpariseId: '',
+    pendingPerson: 0,
+    useMaskShow: false,
+    site: 'http://popular.deecard.net/#/ems/login'
+  }
+  onLoad(option) {
+    this.staff = common.getStaffInfo(this)
+    if (option.enterprise_id) {
+      this.enterpriseId = option.enterprise_id
+    } else {
+      this.enterpriseId = this.staff.enterprise_id
+    }
+    this.getCurrentEnterpriseInfo()
+    this.getUserRole()
+    cardApi.getShopType(this.enterpriseId).then(res => {
+      this.shopType = res
+    })
+  }
+  onShow() {
+    this.getCurrentEnterpriseInfo()
+  }
+  methods = {
+    // 公司设置页
+    goCompanySetup() {
+      this.$navigate(
+        `/pages/me/pages/entSetMenu?enterprise_name=${this.enterparise.name}&icon=${
+          this.enterparise.head_icon
+        }&enterprise_id=${this.enterparise.id}`
+      )
+    },
+    // 新员工申请审批
+    goStaffApproval() {
+      this.$navigate('/pages/me/pages/staffApprove')
+    },
+    // 订单管理
+    goOrderMgr() {
+      // 获取商城类型，1=产品，2=商城
+      cardApi.getShopType(this.staff.enterprise_id).then(res => {
+        let type = res
+        let role = this.staff.role
+        if (type === 1 && role === 2) {
+          common.tip('该企业还未开通商城', 'none')
+        } else if (type === 2) {
+          this.$navigate('/pages/me/pages/orderMgr')
+        } else if (type !== 2 && (role === 0 || role === 1)) {
+          wepy.showModal({
+            content: '该企业还未开通商城，要去开通吗？'
+          }).then((res) => {
+            if (!res.cancel) {
+              this.$navigate(`/pages/product/shopMgr?enterprise_id=${this.staff.enterprise_id}`)
+            }
+          })
+        } else {
+          common.tip('该企业还未开通商城', 'none')
+        }
+      })
+    },
+    goUpdateLog() {
+      common.tip('敬请期待......', 'none')
+    },
+    goTutorial() {
+      // common.tip('敬请期待......', 'none')
+    },
+    goIdea() {
+      common.tip('敬请期待......', 'none')
+    },
+    // 跳转到boss雷达主页面
+    goBossIndex() {
+      let departmentId = this.$parent.getStaffInfo().department_id
+      let staffId = this.$parent.getStaffInfo().staffId
+      wepy.setStorage({
+        key: 'departmentId',
+        data: departmentId
+      }).then(res => {
+        cardManagerApi.getRadarPermissions(staffId).then(res => {
+          if (res.open_boss === 1) {
+            this.$navigate(`/pages/bossRadar/bossIndex`)
+          } else {
+            common.tip('暂无BOSS雷达权限')
+          }
+        })
+      })
+    },
+    // 使用教程弹窗操作
+    useMask(e) {
+      let that = this
+      let method = {
+        // 显示弹窗
+        maskShow() {
+          that.useMaskShow = true
+        },
+        // 隐藏弹窗
+        maskHide() {
+          that.useMaskShow = false
+        },
+        // 复制地址
+        copySite() {
+          wepy.setClipboardData({
+            data: that.site
+          }).then(() => {
+            wepy.showToast({
+              title: '已复制到系统剪贴板',
+              icon: 'none',
+              duraton: 1000
+            })
+          })
+        }
+      }
+      method[e.currentTarget.dataset.method]()
+    }
+  }
+  getUserRole() {
+    let openid = this.$parent.getNowOpenid()
+    companyApi.getUserRole(this.enterpriseId, openid).then(res => {
+      this.userRole = res
+      if (res === 0 || res === 1) {
+        this.getPendingPerson()
+      }
+      this.$apply()
+    })
+  }
+  getCurrentEnterpriseInfo() {
+    companyApi.getCurrentEnterpriseInfo(this.enterpriseId).then(res => {
+      this.enterparise = res
+      this.$apply()
+    })
+  }
+  getPendingPerson() {
+    companyApi.getPendingPerson(this.enterpriseId).then(res => {
+      this.pendingPerson = res
+      this.$apply()
+    })
+  }
+}
+</script>

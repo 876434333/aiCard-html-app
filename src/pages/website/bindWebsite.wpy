@@ -1,0 +1,177 @@
+<style lang="scss">
+  $main_color: #e75152;
+  .computer {
+    display:block;
+    margin:363rpx auto 34rpx;
+    width:203rpx;
+    height:166rpx;
+  }
+  .manager {
+    margin-left: 32rpx;
+    padding: 30rpx 0 4rpx;
+  }
+  .avatar {
+    display: block;
+    margin: 0 auto;
+    width: 103rpx;
+    height: 103rpx;
+    line-height: 101rpx;
+    font-size: 48rpx;
+    border-radius: 100%;
+    background: $main_color;
+  }
+  .weui-flex {
+    flex-wrap: wrap;
+  }
+  .staff {
+    margin-top: 20rpx;
+    margin-left: 40rpx;
+    width: 103rpx;
+    height: 160rpx;
+    text-align: center;
+    view {
+      line-height: 60rpx;
+    }
+  }
+  .weui-cell {
+    padding: 20rpx 32rpx;
+  }
+  .weui-cell:before {
+    height: 0;
+    border: 0;
+  }
+  .weui-cell {
+    border-bottom:2rpx solid #e8e8e8;
+  }
+  .transfer {
+    width: 128rpx;
+    height: 60rpx;
+    line-height: 58rpx;
+    border: 1px solid $main_color;
+    border-radius: 10rpx;
+  }
+  .manager-name {
+    margin-top: -4rpx;
+  }
+  .manager-phone {
+    margin-top: 16rpx;
+  }
+  .weui-flex {
+    padding-bottom: 30rpx;
+  }
+  .save{
+    bottom:30rpx;
+  }
+  .edit{
+    position:relative;
+    top: 38rpx;
+    left: 0;
+    bottom: 0;
+  }
+  .company_logo {
+    width: 103rpx;
+    height: 103rpx;
+  }
+</style>
+<template>
+  <!-- 绑定官网 -->
+  <view class="wrap">
+    <view wx:if="{{isCreate == 1}}">
+      <image src="../../assets/images/website/computer.png" class="computer"/>
+      <view class="font-size-30 c-646464 ta-center">您还没有创建官网</view>
+      <view class="font-size-30 c-646464 ta-center" style="padding-top:4rpx;">创建或绑定你的专属官网</view>
+      <button class="save font-size-36 c-ffffff" @tap="create">立即创建</button>
+    </view>
+    <view wx:if="{{isCreate == 2}}">
+      <view class="weui-panel__bd">
+        <view class="font-size-30 c-646464 manager">已绑定</view>
+        <repeat for="{{website}}" index="index" item="item">
+          <view class="weui-cell">
+            <view class="weui-cell__hd" style="position: relative;margin-right: 10px;">
+              <image wx:if="{{enterparise.head_icon}}" class="company_logo" src="{{enterparise.head_icon}}"/>
+              <view wx:if="{{!enterparise.head_icon}}" class="c-ffffff ta-center avatar">{{item.avatarText}}</view>
+            </view>
+            <view class="weui-cell__bd">
+              <view class="font-size-30 c-323232 manager-name">{{item.name}}</view>
+              <view class="font-size-26 c-909090 manager-phone">{{staffName}}</view>
+            </view>
+            <!-- <button hover-class="none" class="font-size-26 c-3DB8C8 ta-center transfer" @tap="unbind">解绑</button> -->
+          </view>
+        </repeat>
+      </view>
+      <button class="save font-size-36 c-ffffff edit" @tap="goEdit">去编辑</button>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { websiteApi, companyApi } from '@/api'
+  export default class bindWebsite extends wepy.page {
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '绑定官网'
+    }
+    data = {
+      isCreate: 0,
+      avatarText: '',
+      staffName: '',
+      websiteId: '',
+      website: [],
+      enterparise: {},
+      enter: ''
+    }
+    onLoad () {
+      this.enter = this.$parent.globalData.staffInfo.enterprise_id
+      this.staffName = this.$parent.globalData.staffInfo.name
+      this.methods.getWebsiteList.call(this)
+    }
+    onShow() {
+      if (this.$parent.globalData.refreshPage) {
+        this.methods.getWebsiteList.call(this)
+        this.$parent.globalData.refreshPage = false
+      }
+    }
+    onPullDownRefresh() {
+      this.methods.getWebsiteList.call(this)
+      wepy.stopPullDownRefresh()
+    }
+    methods = {
+      // 立即创建
+      getWebsiteList() {
+        let _this = this
+        wepy.showLoading({
+          title: '正在加载...',
+          mask: true
+        })
+        websiteApi.getWebsite(this.enter).then(rs => {
+          if (rs && rs.length > 0) {
+            for (var k in rs) {
+              rs[k].avatarText = rs[k].name.substr(0, 1)
+            }
+            _this.website = rs
+            _this.websiteId = rs[0].id
+            _this.isCreate = 2
+          } else {
+            _this.isCreate = 1
+          }
+          _this.$apply()
+          wepy.hideLoading()
+        })
+        companyApi.getCurrentEnterpriseInfo(this.enter).then(res => {
+          this.enterparise = res
+          _this.$apply()
+        })
+      },
+      create() {
+        this.$navigate('/pages/website/chooseWebsite')
+      },
+      // 解绑
+      // unbind() {},
+      // 去编辑
+      goEdit() {
+        this.$navigate('/pages/website/websiteIndex?id=' + this.websiteId)
+      }
+    }
+  }
+</script>

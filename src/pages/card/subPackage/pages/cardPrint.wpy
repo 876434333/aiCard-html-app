@@ -1,0 +1,134 @@
+<style lang="scss">
+  @import '../css/cardPrint.scss';
+</style>
+<template>
+  <!-- 名片码印刷 -->
+  <view class="wrap">
+    <!-- 轮播图 -->
+     <swiper  autoplay="{{swiper.autoplay}}"
+              interval="{{swiper.interval}}"
+              current="{{swiper.current}}"
+              class="swiper-part" @change="swiper" data-method="change">
+      <repeat for="{{cardPrintList}}" index="index" item="item">
+        <swiper-item class="swiper-main {{ number == index ? 'swiper-main-check' : ''}}">
+          <image wx:if="{{res_url}}" src="{{res_url}}/{{item.url}}" class="card-print"/>
+          <view class="swiper-title">
+            <view class="font-size-36 c-32323" style="height:56rpx;">{{item.title}}</view>
+            <view class="font-size-22 c-909090"><text class="c-323232">使用场景：</text>{{item.content}}</view>
+            <text style="display:none;">{{item.size}}</text>
+          </view>
+        </swiper-item>
+      </repeat>
+    </swiper>
+    
+    <view class="foot">
+      <view class="size">
+        <text class="font-size-22">尺寸</text>
+        <text class="font-size-22 c-323232 ta-center">{{size}}</text>
+      </view>
+      <view class="bottom">
+        <button class="font-size-32 c-323232 email-btn" @tap="emailMask" data-method="maskShow">发到邮箱</button>
+        <button class="font-size-32 c-ffffff save-btn" @tap="save">保存手机</button>
+      </view>
+    </view>
+    <!-- 接收邮箱弹窗 -->
+    <view class="mask-black" hidden="{{emailMaskHidden}}" @tap="emailMask" data-method="maskHide"></view>
+    <view class="mask" hidden="{{emailMaskHidden}}">
+      <view class="font-size-36 c-323232 ta-center">接收邮箱</view>
+      <input type="text" placeholder="请输入QQ邮箱" class="font-size-30 c-909090" @input="emailMask" data-method="input"/>
+      <view class="mask-btn">
+        <view class="font-size-36 c-323232 ta-center" @tap="emailMask" data-method="maskHide">取消</view>
+        <view class="font-size-36 c-3DB8C8 ta-center" @tap="emailMask" data-method="sure">确定</view>
+      </view>
+    </view>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import {common} from '@/assets/js/common.js'
+  import {G_RES_URL} from '@/config'
+  import {cardApi} from '@/api'
+  export default class cardPrint extends wepy.page {
+    // 相当于page.json
+    config = {
+      navigationBarTitleText: '名片码印刷'
+    }
+    data = {
+      res_url: G_RES_URL,
+      emailMaskHidden: true,
+      number: 1,
+      size: '80mm x 80mm',
+      swiper: {
+        autoplay: false,
+        interval: 6000,
+        current: 1
+      },
+      cardPrintList: [
+        {title: '用于名片印刷', content: '将您的名片专属小程序码印在纸质名片上， 您的客户微信扫码就可将名片信息同步至手机。', size: '80mm x 80mm', url: 'dc_card_print_1.jpeg'},
+        {title: '用于画册印刷', content: '公司画册、宣传单上印上您的名片专属小程序码，您的客户微信扫码后直接联系您并将名片信息同步至手机。', size: '200mm x 200mm', url: 'dc_card_print_2.jpeg'},
+        {title: '用于海报印刷', content: '易拉宝、海报等宣传物料上印上您的名片专属小程序码，您的客户微信扫码后直接联系您并将名片信息同步至手机。', size: '600mm x 600mm', url: 'dc_card_print_3.jpeg'},
+        {title: '用于户外广告', content: '户外广告、高速立柱等大屏广告上印上您的名片专属小程序码，您的客户微信扫码后直接联系您并将名片信息同步至手机。', size: '2400mm x 2400mm', url: 'dc_card_print_4.jpeg'}
+      ],
+      email: ''
+    }
+    methods = {
+      // 轮播图操作
+      swiper(e) {
+        let that = this
+        let method = {
+          change() {
+            that.number = e.detail.current
+            that.size = that.cardPrintList[that.number].size
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      },
+      // 发送QQ邮箱操作
+      emailMask(e) {
+        let that = this
+        let method = {
+          // 显示弹窗
+          maskShow() {
+            that.emailMaskHidden = false
+          },
+          // 隐藏弹窗
+          maskHide() {
+            that.emailMaskHidden = true
+          },
+          // 获取输入的邮箱
+          input() {
+            that.email = e.detail.value
+          },
+          // 点击确定
+          sure() {
+            let url = that.$parent.globalData.staffInfo.soft_img_url
+            let result = common.emailTest(that.email, that.emailMaskHidden)
+            if (result) {
+              wepy.showLoading({
+                title: '正在发送邮件...'
+              })
+              cardApi.sendQrCodeToEmail({'qrCode': url, 'email': that.email}).then((rs) => {
+                wepy.hideLoading()
+                if (rs === 'success') {
+                  wepy.showToast({
+                    title: '邮件已发送',
+                    icon: 'success',
+                    duration: 1000
+                  })
+                }
+              })
+            }
+            that.emailMaskHidden = result
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      },
+      // 点击保存手机按钮
+      save() {
+        let url = this.$parent.globalData.staffInfo.soft_img_url
+        common.download(url)
+      }
+    }
+  }
+</script>

@@ -1,0 +1,80 @@
+.card-type-three {
+  width: 100%;
+  background: #ffffff;
+  .card-bg {
+    position: relative;
+    margin:34rpx 0rpx 0rpx  32rpx;    
+    width:694rpx;
+    height:416rpx;
+    overflow:hidden;
+    background-size: cover;
+    .card-avatar{
+      margin-top:38rpx;
+      width: 126rpx;
+      height: 126rpx;
+      border-radius: 100%;
+    }
+    .card-type-main {
+      margin-top:64rpx;
+      padding-left: 30rpx;
+      width: 71%;
+      .enterprise-name{
+        width: 85%;
+        height:70rpx;
+        line-height:34rpx;
+        font-weight: bold;
+        color: #ab8055;
+      }
+    }
+    .name-station {
+      .station{
+        margin-left: 10rpx;
+      }
+    }
+    .card-info {
+      padding-top:12rpx;
+      line-height: 40rpx;
+      image {
+        vertical-align: middle;
+      }
+      .phone{
+        image {
+          margin:0 18rpx 0 2rpx;
+          width: 21rpx;
+          height: 29rpx;
+        }
+      }
+      .mail{
+        image {
+          margin:0 16rpx 0 0;
+          width: 26rpx;
+          height: 20rpx;
+        }
+      }
+      .address{
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        line-height:28rpx;
+        image {
+          position:relative;
+          top:12rpx;
+          margin:0 20rpx 0 4rpx;
+          width: 17rpx;
+          height: 26rpx;
+        }
+        view {
+          padding-top:12rpx;
+        }
+      }
+    }        
+    .edit {
+      position: absolute;
+      right:38rpx;
+      bottom:34rpx;
+      z-index: 999;
+      width: 44rpx;
+      height: 37rpx;
+    }
+  }
+}

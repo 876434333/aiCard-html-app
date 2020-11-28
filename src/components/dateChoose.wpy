@@ -1,0 +1,54 @@
+<style>
+.picker_group {
+  height: 80rpx;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+}
+picker {
+  flex: 1
+}
+.picker1 {
+  width: 250rpx;
+  border: 2rpx solid #aaaaaa;
+  float:right;
+}
+.picker2 {
+  width: 250rpx;
+  border: 2rpx solid #aaaaaa;
+}
+</style>
+<template>
+  <!-- 时间段 -->
+  <view class="picker_group">
+    <picker mode="date" value="{{date}}" end="{{date2}}" bindchange="bindDateChange1">
+      <input class="picker1" value="{{date1}}" disabled > </input>
+    </picker>至
+    <picker mode="date" value="{{date2}}" start="{{date}}" end="2050-01-01" bindchange="bindDateChange2" >
+      <input class="picker2"  value="{{date2}}" disabled > </input>
+    </picker>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class dataChoose extends wepy.component {
+  data = {
+    date1: '',
+    date2: ''
+  }
+  props = {
+
+  }
+  methods = {
+    // 时间段选择
+    bindDateChange1(e) {
+      this.date1 = e.detail.value
+    },
+    bindDateChange2(e) {
+      this.date2 = e.detail.value
+    }
+  }
+}
+</script>

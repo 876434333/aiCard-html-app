@@ -1,0 +1,231 @@
+<style lang="scss">
+@import './css/addStaff.scss';
+.mask {
+  top: 50%;
+  left: 50%;
+  margin-top: -171rpx;
+  margin-left: -292rpx;
+  width: 584rpx;
+  height: 340rpx;
+  border-radius: 10rpx;
+  background: #fff;
+  .transfer-title {
+    padding-top: 58rpx;
+  }
+  .staff-selected {
+    margin-bottom: 38rpx;
+    padding: 38rpx 40rpx 0 65rpx;
+    line-height: 44rpx;
+  }
+  .mask-botoom {
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    view {
+      width: 134rpx;
+      height: 50rpx;
+      line-height: 50rpx;
+    }
+    .cancel {
+      margin-left: 304rpx;
+    }
+  }
+}
+.ml-120 {
+  margin-left: 120rpx;
+}
+</style>
+<template>
+  <!-- 编辑员工资料 -->
+  <view class="wrap">
+    <view class="main">
+      <view class="info">
+        <view class="info-left">
+          <text class="font-size-30 c-323232">姓名</text>
+          <text class="font-size-30 symbol">*</text>
+        </view>
+        <input type="text" placeholder="请输入员工姓名" placeholder-style="color:909090" class="font-size-30 c-323232" @input="nameInput" value="{{staffInfo.name}}"/>
+      </view>
+      <view class="info">
+        <view class="info-left">
+          <text class="font-size-30 c-323232">手机号</text>
+          <text class="font-size-30 symbol">*</text>
+        </view>
+        <input type="text" placeholder="请输入员工手机号" placeholder-style="color:909090" class="font-size-30 c-323232" @input="phoneInput" value="{{staffInfo.phone}}" readOnly/>
+      </view>
+      <view class="info">
+        <view class="info-left">
+          <text class="font-size-30 c-323232">职位</text>
+          <text class="font-size-30 symbol">*</text>
+        </view>
+        <input type="text" placeholder="请输入职位" placeholder-style="color:909090" class="font-size-30 c-323232" @input="positionInput" value="{{staffInfo.station}}"/>
+      </view>
+    </view>
+    <view class="main">
+      <view class="info" @tap="chooseDept">
+        <text class="font-size-30 c-323232">所属部门</text>
+        <text class="font-size-30 c-909090 branch-type">{{department_name === null ? '' : department_name}}</text>
+        <image src="../../../assets/images/card/card_edit_right.png"/>
+      </view>
+      <view class="info">
+        <text class="font-size-30 c-323232">身份</text>
+        <view class="font-size-30 c-909090 identity ml-120 {{staffInfo.role == 2 ? 'identity-check' : ''}}" data-identity="2">普通成员</view>
+        <view class="font-size-30 c-909090 identity {{staffInfo.role == 1 ? 'identity-check' : ''}}" data-identity="1">运营者</view>
+        <view class="font-size-30 c-909090 identity {{staffInfo.role == 0 ? 'identity-check' : ''}}" data-identity="0">管理员</view>
+      </view>
+    </view>
+    <!-- 离职状态 -->
+    <view class="departure" hidden="{{departureStatusHidden}}"> 
+      <image src="../../../assets/images/me/circle.png"/>
+      <text class="font-size-26 c-646464">已离职</text>
+    </view>
+    <!-- 保存、离职按钮 -->
+    <view class="foot" hidden="{{departurePartHidden}}">
+      <button class="save font-size-36 c-ffffff save-btn" open-type="share" wx:if="{{staffInfo.status==2}}">邀请TA加入</button>
+      <button class="save font-size-36 c-ffffff save-btn" @tap="sure">保存</button>
+      <button class="save font-size-36 c-323232 departure-btn" @tap="departure" hidden="{{departureBtnHidden}}">离职</button>
+    </view>
+    <!-- 离职提醒弹窗 -->
+    <view class="mask-black" hidden="{{maskHidden}}" @tap="mask" data-method="maskHide"></view>
+    <view class="mask" hidden="{{maskHidden}}">
+      <view class="font-size-36 c-323232 ta-center transfer-title">离职提醒</view>
+      <view class="font-size-30 c-909090 staff-selected">是否将该员工设为离职？</view>
+      <view class="mask-botoom">
+        <view class="font-size-30 c-909090 ta-center cancel" @tap="cancel" data-method="maskHide">取消</view>
+        <view class="font-size-30 c-3DB8C8 ta-center sure" @tap="confirm" data-method="maskSure">确定</view>
+      </view>
+    </view>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+import { common } from '../../../assets/js/common'
+import {G_RES_URL} from '@/config'
+export default class addStaff extends wepy.page {
+  // 相当于page.json
+  config = {
+    navigationBarTitleText: '编辑员工资料'
+  }
+  data = {
+    res_url: G_RES_URL,
+    maskHidden: true,
+    departureStatusHidden: true,
+    departurePartHidden: false,
+    departureBtnHidden: false,
+    identity: 0,
+    department_id: '',
+    department_name: '',
+    staffInfo: {},
+    enterprise_id: ''
+  }
+  onLoad(option) {
+    this.department_name = option.department_name
+    this.staffInfo = JSON.parse(option.staff)
+    this.enterprise_id = option.enterprise_id
+    this.$apply()
+  }
+  onShow(option) {
+    let that = this
+    wx.getStorage({
+      key: 'chooseDept',
+      success: function(res) {
+        that.department_id = res.data.deptId
+        that.department_name = res.data.deptName
+        that.$apply()
+      }
+    })
+  }
+  methods = {
+    // 输入姓名
+    nameInput(e) {
+      this.staffInfo.name = e.detail.value
+    },
+    // 输入手机号
+    phoneInput(e) {
+      this.staffInfo.phone = e.detail.value
+    },
+    // 输入职位
+    positionInput(e) {
+      this.staffInfo.station = e.detail.value
+    },
+    // 选择部门
+    chooseDept(e) {
+      this.$navigate('./chooseDept')
+    },
+    // 离职
+    departure() {
+      let globalStaffInfo = this.$parent.getStaffInfo()
+      if (globalStaffInfo.staffId === this.staffInfo.id) {
+        wepy.showToast({
+          title: '自己不能离职',
+          icon: 'none'
+        })
+        return
+      }
+      this.maskHidden = false
+    },
+    // 点击保存
+    sure() {
+      let params = {
+        id: this.staffInfo.id,
+        name: this.staffInfo.name,
+        phone: this.staffInfo.phone,
+        station: this.staffInfo.station,
+        department_id: this.department_id,
+        enterprise_id: this.enterprise_id
+      }
+      if (params.name && params.phone && params.station) {
+        companyApi.updataDptPerson(params).then(res => {
+          wepy.setStorage({
+            key: 'updStaff',
+            data: {upd: true}
+          })
+          wepy.navigateBack({
+            delta: 1
+          })
+        // wepy.reLaunch({
+        //   url: `./entOrg?enterprise_id=${this.enterprise_id}`
+        // })
+        // this.$navigate(`./entOrg?enterprise_id=${this.enterprise_id}`)
+        })
+      } else {
+        common.tip('带 * 号为必填项', 'none')
+      }
+    },
+    cancel() {
+      this.maskHidden = true
+    },
+    confirm() {
+      wepy.redirectTo({
+        url: `./handover?enterprise_id=${this.enterprise_id}&staff_id=${
+          this.staffInfo.id
+        }`
+      })
+    },
+    onShareAppMessage(ops) {
+      let sharename = this.$parent.getUserInfo().nickName
+      let curStaffInfo = this.$parent.getStaffInfo()
+      let path = `/pages/me/pages/newStaffEntry?employee_id=${
+        curStaffInfo.staffId
+      }&enterprise_id=${this.enterprise_id}&invite_staff_id=${
+        this.staffInfo.id
+      }`
+      let title = `${sharename}邀请加入"${
+        curStaffInfo.enterprise_name
+      }",赶快去认领吧~~~`
+      let imageUrl = this.res_url + '/dc_share_claim.png'
+      return {
+        title: title,
+        path: path,
+        imageUrl: imageUrl,
+        success: res => {},
+        fail: res => {
+          // 转发失败
+        }
+      }
+    }
+  }
+}
+</script>

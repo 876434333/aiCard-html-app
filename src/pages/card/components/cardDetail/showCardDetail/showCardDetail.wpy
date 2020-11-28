@@ -1,0 +1,68 @@
+<style lang="scss">
+@import 'showCardDetail.scss';
+.margin48{
+  margin: 0 48rpx;
+}
+.margin0{
+  margin:0 0;
+}
+</style>
+<template>
+<view>
+  <view class="card-spt-type-two">
+
+    <view wx:if="{{showOpt}}" @tap="showDetail">收起以下名片信息
+      <!-- <icon class="iconfont icon-more-unfold"></icon> -->
+      <image wx:if="{{res_url}}" style="height:13rpx;width:22rpx" src="{{res_url}}/dc_card_up.png"/>
+    </view>
+    <view wx:else @tap="showDetail">展开全部名片信息
+      <!-- <icon class="iconfont icon-less"></icon> -->
+      <image wx:if="{{res_url}}" style="height:13rpx;width:22rpx" src="{{res_url}}/dc_card_down.png"/>
+    </view>
+  </view>
+  <view style="position:relative;display:none;margin-top:20rpx;padding-top:32rpx;{{isView == 1?'padding-right:20rpx;':'padding-right:70rpx;border-top:2rpx solid #e8e8e8;'}}{{showOpt ? 'display:block' : ''}}">
+    <view class="edit-card" style="position:absolute" @tap="editCard" wx:if="{{isView !== 1}}">
+        <view style="margin-top: 10rpx;"><image class="edit-icon" src="../../../../../assets/images/card/card_edit_1.png"/></view>
+        <view>完</view>
+        <view>善</view>
+        <view>名</view>
+        <view>片</view>
+     </view>
+    <scroll-view scroll-x class="scroll-view-x card-opt-list-type-two {{isView == 1?'margin0':'margin48'}} ">
+        <block wx:for-items="{{syncData}}" wx:key="id">
+            <view class="scroll-first" @tap="callOrCopy('{{item}}')">
+                <view style="margin-top:26rpx">
+                  <image src="{{item.icon}}"/>
+                  <text class="title">{{item.title}}</text>
+                </view>
+                <view class="connect">{{item.connect}}</view>
+            </view>
+        </block>
+    </scroll-view>
+  </view>
+</view>
+</template>
+<script>
+import wepy from 'wepy'
+import cardDetailMixin from '../../../mixins/cardDetailMixins.js'
+import {G_RES_URL} from '@/config'
+export default class ShowCardDetail extends wepy.component {
+  mixins = [cardDetailMixin]
+  data = {
+    res_url: G_RES_URL,
+    showOpt: false
+  }
+  methods = {
+    /**
+     * 显示/不显示全部个人信息
+     */
+    showDetail() {
+      this.showOpt = !this.showOpt
+    },
+    // 完善名片信息
+    editCard() {
+      this.$parent.$navigate('/pages/card/subPackage/pages/editCardInfo')
+    }
+  }
+}
+</script>

@@ -1,0 +1,232 @@
+.dyn-list {
+}
+
+.dyn-item {
+  padding: 30rpx 20rpx;
+  .dyn-avtor {
+    float: left;
+    margin-right: 20rpx;
+    image {
+      width: 86rpx;
+      height: 86rpx;
+    }
+  }
+  .dyn-main {
+    overflow: hidden;
+  }
+  .dyn-user {
+    font-size: 30rpx;
+    font-weight: bold;
+    color: #455b8a;
+  }
+  .dyn-tag {
+    padding: 6rpx 20rpx;
+    margin-left: 12rpx;
+  }
+  .dyn-share {
+    margin-right: 0;
+    border-radius: none;
+    font-size: 26rpx;
+    line-height: 40rpx;
+    float: right;
+    color:#fff;
+    &.dyn-share-spt {
+      color:#455b8a;
+      line-height: 56rpx;
+    }
+  }
+  .dyn-content {
+    line-height: 40rpx;
+    text {
+      font-size: 30rpx;
+      color:#323232;
+    }
+    &.normal {
+      font-size: 30rpx;
+      line-height: 40rpx;
+      color: #333;
+      padding-top: 10rpx;
+    }
+    &.photo {
+      background: #eee;
+      padding: 20rpx 20rpx;
+      font-size: 30rpx;
+      .text {
+        font-size: 26rpx;
+      }
+    }
+    &.big {
+      .dyn-content-img {
+        width: 100%;
+        height: 640rpx;
+      }
+      .dyn-content-text {
+        padding-top: 20rpx;
+      }
+    }
+    &.small {
+      display: flex;
+      align-items: center;
+      .dyn-content-img {
+        width: 120rpx;
+        height: 120rpx;
+      }
+      .dyn-content-text {
+        padding-left: 20rpx;
+      }
+    }
+  }
+  .dyn-photo {
+    margin: 22rpx 0 0 0;
+    overflow: hidden;
+    .dyn-photo-1 {
+      image {
+        //width: 100%;
+        max-width:60%;
+      }
+    }
+    .dyn-photo-2 {
+      display: flex;
+      margin-right: -10rpx;
+      image {
+        width: 178rpx;
+        height: 178rpx;
+        margin: 0 5rpx 10rpx;
+      }
+    }
+    .dyn-photo-3 {
+      display: flex;
+      margin-right: -10rpx;
+      image {
+        width: 178rpx;
+        height: 178rpx;
+        margin: 0 5rpx 5rpx 0;
+      }
+    }
+    .dyn-photo-4 {
+      display: flex;
+      flex-wrap: wrap;
+      margin-right: -10rpx;
+      image {
+        width: 178rpx;
+        height: 178rpx;
+        margin: 0 5rpx 5rpx 0;
+      }
+    }
+    .dyn-photo-5 {
+      display: flex;
+      flex-wrap: wrap;
+      margin-right: -10rpx;
+      image {
+        width: 178rpx;
+        height: 178rpx;
+        margin: 0 5rpx 5rpx 0;
+      }
+    }
+  }
+  .dyn-time {
+    position: relative;
+    margin: 30rpx 0 20rpx;
+    font-size: 26rpx;
+    line-height: 62rpx;
+    color: #767676;
+    .dyn-opts {
+      position: absolute;
+      top: 0;
+      right: 55rpx;
+    }
+  }
+  .dyn-opts {
+    overflow: hidden;
+    &.show {
+      .dyn-opts-container {
+        transform: translateX(0);
+      }
+    }
+    .dyn-opts-container {
+      display: flex;
+      padding: 20rpx 0;
+      border-radius: 6rpx;
+      background: #393a3f;
+      transform: translateX(105%);
+      transition: transform .2s linear;
+    }
+    .dyn-opt {
+      position: relative;
+      flex: 1;
+      padding: 0 30rpx;
+      font-size: 30rpx;
+      line-height: 40rpx;
+      color: #fff;
+      white-space: nowrap;
+      &.dyn-opt-spt::after {
+        position: absolute;
+        content: '';
+        right: 0;
+        top: 0;
+        width: 1px;
+        height: 100%;
+        background: #131313;
+      }
+      image {
+        display: inline-block;
+        vertical-align: middle;
+        width: 20rpx;
+        height: 26rpx;
+        margin-right: 10rpx;
+      }
+    }
+  }
+  .dyn-reply {
+    position: relative;
+    background: #eee;
+    &:before {
+      position: absolute;
+      content: '';
+      top: -15rpx;
+      left: 20rpx;
+      border-width: 10rpx 15rpx;
+      border-style: solid;
+      border-color: transparent transparent #eee;
+    }
+    .dyn-praise {
+      padding: 20rpx;
+      font-size: 26rpx;
+      color: #435a8a;
+      border-bottom: 1px solid #dedede;
+      image {
+        display: inline-block;
+        vertical-align: middle;
+        width: 26rpx;
+        height: 26rpx;
+        margin-right: 10rpx;
+      }
+    }
+  }
+  .dyn-comt {
+    padding: 20rpx 20rpx 10rpx 20rpx;
+    .dyn-comt-item {
+      padding: 0 0 15rpx;
+      font-size: 30rpx;
+      color: #333;
+      .dyn-comt-item-user {
+        color: #435a8a;
+      }
+    }
+  }
+}
+
+.dyn-time-comt {
+  position: absolute;
+  right: 0;
+  top: 18rpx;
+  padding: 15rpx 0 30rpx 20rpx;
+  image {
+    width: 44rpx;
+    height: 30rpx;
+  }
+}
+
+
+
+

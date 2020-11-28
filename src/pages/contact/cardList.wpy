@@ -1,0 +1,187 @@
+<style lang="scss">
+  @import '../../assets/css/pages/contact/cardList.scss';
+</style>
+<template>
+  <!-- 名片夹列表 -->
+  <view class="cardList-wrap">
+    <view class="cardList-tab">
+      <!-- 按照排序部分 -->
+      <view class="cardList-order-part " @tap="mask" wx:if="{{!searchStatus}}">
+         <repeat for="{{orderList}}" index="index" key="index" item="item">
+          <view class="cardList-order" hidden="{{number == index ? '' : orderShow }}" data-index="{{index}}">
+            <image src="{{item.image}}" class="cardList-order-time"/>
+            <text>{{item.text}}</text>
+            <image src="../../assets/images/contact/arrow_down.png" class="cardList-order-arrow" hidden="{{arrowShow}}"/>
+            <image src="../../assets/images/contact/arrow_up.png" class="cardList-order-arrow cardList-order-arrow-check" hidden="{{maskShow}}"/>
+          </view>  
+        </repeat>
+      </view>
+      <view class="cardList-search {{searchStatus ? 'cardList-len' : ''}}">
+        <image src="../../assets/images/contact/search.png"/>
+        <input placeholder="搜索" focus="{{searchStatus}}" @input="search" bindfocus="lengthen" bindblur="restore"/>
+        <view class="search-cancel" wx:if="{{searchStatus}}" @tap="restore">取消</view>
+      </view>
+    </view>
+    <view class="cardList-order-mask" hidden="{{maskShow}}">
+      <!-- 排序弹窗 -->
+      <repeat for="{{maskOrder}}" index="index" key="index" item="item">
+        <view class="cardList-order {{ number == index ? 'cardList-order-check' : ''}}" @tap="order" data-index="{{index}}">
+          <image src="{{item.image}}" class="cardList-order-time"/>
+          <image src="{{item.imageCheck}}" class="cardList-order-time cardList-order-time-check" hidden="{{imgShow}}"/>
+          <text>{{item.text}}</text>
+          <image src="../../assets/images/contact/hook.png" class="cardList-order-hook"/>
+        </view>
+      </repeat>
+    </view> 
+
+    <!-- 联系人列表 -->
+    <block wx:for="{{cardGroupList}}" wx:key="cardOrderList" wx:for-index="groupIndex">
+        <view class="cardList-time">{{item.groupName}}</view>
+        <repeat for="{{item.dataList}}" index="index" key="index" item="staff">
+        <view class="weui-cell">
+          <view class="weui-cell__hd" @tap="cardView" data-groupindex="{{groupIndex}}" data-staffindex="{{index}}">
+            <image src="{{staff.head_icon}}" class="cardList-avatar"/>
+            <view wx:if="{{staff.status === 0}}" class="status_bg" style="background-image: url({{res_url}}/dc_card_cardlist_btn_bg.png);">已离职</view>
+            <view wx:if="{{staff.enterprise_status === 0}}" class="status_bg" style="background-image: url({{res_url}}/dc_card_cardlist_btn_bg.png);">已解散</view>
+          </view>
+          <view class="weui-cell__hd" @tap="cardView" data-groupindex="{{groupIndex}}" data-staffindex="{{index}}" style="width: 90%;">
+            <view class="cardList-name">{{staff.name}}</view>
+            <view class="cardList-company">{{staff.enterprise_name}}</view>
+          </view>
+          <view class="weui-cell__hd">
+            <image src="../../assets/images/contact/tel.png" class="cardList-tel" @tap="tel" data-phone="{{staff.phone}}"/>
+          </view>
+        </view>
+      </repeat>
+    </block>
+    <!-- <view for="{{showCardOrderList}}" index="index" key="index" item="item">
+      <view class="cardList-time">{{item.orderName}}</view>
+      <repeat for="{{item.cardList}}" index="index" key="index" item="item">
+        <view class="weui-cell">
+          <view class="weui-cell__hd">
+            <image src="{{item.head_icon}}" class="cardList-avatar"/>
+          </view>
+          <view class="weui-cell__hd">
+            <view class="cardList-name">{{item.name}}</view>
+            <view class="cardList-company">{{item.enterprise_name}}</view>
+          </view>
+          <view class="weui-cell__hd">
+            <image src="../../assets/images/contact/tel.png" class="cardList-tel"/>
+          </view>
+        </view>
+      </repeat>
+    </view> -->
+    <view class="cardList-count">{{cardList.length}}位联系人</view>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import { contactApi } from '@/api'
+  import { common } from '../../assets/js/common.js'
+  import {G_RES_URL} from '@/config'
+  export default class cardList extends wepy.page {
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '名片夹列表'
+    }
+    data = {
+      res_url: G_RES_URL,
+      orderShow: true,
+      arrowShow: false,
+      maskShow: true,
+      imgShow: true,
+      number: 0,
+      count: 0,
+      orderList: [
+        {image: '../../assets/images/contact/time.png', text: '按时间'},
+        {image: '../../assets/images/contact/people.png', text: '按姓名'},
+        {image: '../../assets/images/contact/company.png', text: '按公司'}
+      ],
+      maskOrder: [
+        {image: '../../assets/images/contact/time.png', imageCheck: '../../assets/images/contact/time_check.png', text: '按时间排序'},
+        {image: '../../assets/images/contact/people.png', imageCheck: '../../assets/images/contact/people_check.png', text: '按姓名排序'},
+        {image: '../../assets/images/contact/company.png', imageCheck: '../../assets/images/contact/company_check.png', text: '按公司排序'}
+      ],
+      cardList: [],
+      cardGroupList: [],
+      searchStatus: false
+    }
+    methods = {
+      lengthen(e) {
+        this.searchStatus = true
+        this.$apply()
+      },
+      restore(e) {
+        this.searchStatus = false
+        this.$apply()
+      },
+      // 显示隐藏排序弹窗
+      mask() {
+        this.arrowShow = !this.arrowShow
+        this.maskShow = !this.maskShow
+      },
+      // 选择排序方式
+      order(e) {
+        this.number = e.currentTarget.dataset.index
+        this.maskShow = true
+        this.arrowShow = false
+        if (this.number === 0) {
+          this.cardGroupList = common.getGroupListByKey(this.cardList, 'create_time')
+        } else if (this.number === 1) {
+          this.cardGroupList = common.getGroupListByKey(this.cardList, 'first_letter')
+        } else {
+          this.cardGroupList = common.getGroupListByKey(this.cardList, 'enterprise_name')
+        }
+      },
+      // 拨打电话
+      tel(e) {
+        let phone = e.currentTarget.dataset.phone
+        common.callPhone(phone)
+      },
+      cardView(e) {
+        let groupIndex = e.currentTarget.dataset.groupindex
+        let staffIndex = e.currentTarget.dataset.staffindex
+        let staff = this.cardGroupList[groupIndex].dataList[staffIndex]
+        if (staff.status === 0) {
+          this.$navigate('/pages/card/subPackage/pages/dimission?from=1&type=1&staff=' + JSON.stringify(staff))
+        } else if (staff.enterprise_status === 0) {
+          this.$navigate('/pages/card/subPackage/pages/dimission?from=1&type=2&staff=' + JSON.stringify(staff))
+        } else {
+          this.$navigate(`/pages/card/cardView?employee_id=${staff.id}&enterprise_id=${staff.enterprise_id}&department_id=${staff.department_id}&cardHolder=cardHolder`)
+        }
+      },
+      search(e) {
+        let cond = e.detail.value
+        let searchList = []
+        let cardList = this.cardList
+        if (cond.length > 0) {
+          for (let i = 0; i < cardList.length; i++) {
+            if (cardList[i].name.toLowerCase().indexOf(cond.toLowerCase()) > -1) {
+              searchList.push(cardList[i])
+            }
+          }
+          this.cardGroupList = common.getGroupListByKey(searchList, 'department_name')
+        } else {
+          this.cardGroupList = common.getGroupListByKey(cardList, 'enterprice_name')
+        }
+        this.$apply()
+      }
+    }
+    onLoad() {
+      let openId = common.getOpenId(this)
+      this.staff = common.getStaffInfo(this)
+      contactApi.getCardList(this.staff.userId, openId).then(res => {
+        this.cardList = res
+        let arr = ['create_time', 'first_letter', 'enterprise_name']
+        this.cardGroupList = common.getGroupListByKey(this.cardList, arr[this.number])
+        this.$apply()
+      })
+    }
+    onPullDownRefresh() {
+      this.onLoad()  // 名片海报图片替换
+      wepy.stopPullDownRefresh()
+    }
+  }
+</script>

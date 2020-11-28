@@ -1,0 +1,85 @@
+{
+	"description": "客迹小程序",
+	"setting": {
+		"urlCheck": false,
+		"es6": false,
+		"postcss": false,
+		"minified": true,
+		"newFeature": true
+	},
+	"compileType": "miniprogram",
+	"appid": "wx5163714a5523f854",
+	"projectname": "%E5%AE%A2%E8%BF%B9-102",
+	"miniprogramRoot": "dist/",
+	"libVersion": "2.4.0",
+	"condition": {
+		"search": {
+			"current": -1,
+			"list": []
+		},
+		"conversation": {
+			"current": -1,
+			"list": []
+		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
+		"game": {
+			"list": []
+		},
+		"miniprogram": {
+			"current": 3,
+			"list": [
+				{
+					"id": -1,
+					"name": "cardIndex",
+					"pathName": "pagesV2/card/cardIndex",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "staffApprove",
+					"pathName": "pagesV2/me/staffApprove",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "editCardMenu",
+					"pathName": "pagesV2/card/editCardMenu",
+					"query": ""
+				},
+				{
+					"id": 3,
+					"name": "新建企业",
+					"pathName": "pages/card/createEnt",
+					"query": ""
+				},
+				{
+					"id": 5,
+					"name": "企业设置",
+					"pathName": "pagesV2/me/entSetMenu",
+					"query": ""
+				},
+				{
+					"id": 5,
+					"name": "exports",
+					"pathName": "pagesV2/website/components/exports",
+					"query": ""
+				},
+				{
+					"id": 6,
+					"name": "websiteEdit1",
+					"pathName": "pagesV2/website/websiteEdit1",
+					"query": ""
+				},
+				{
+					"id": -1,
+					"name": "websiteIndex",
+					"pathName": "pagesV2/website/websiteIndex",
+					"query": ""
+				}
+			]
+		}
+	}
+}

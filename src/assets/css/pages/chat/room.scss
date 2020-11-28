@@ -1,0 +1,467 @@
+.f {
+  flex: 1;
+}
+
+.f-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.main {
+  width: 100%;
+  height: 50%;
+}
+
+.scroll_view,
+.scroll_view_change {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 200rpx;
+  background: #eee;
+}
+
+.scroll_view_change {
+  bottom: 540rpx;
+}
+
+.message {
+  width: 92%;
+  height: auto;
+  padding: 20rpx 30rpx;
+}
+
+.time {
+  margin: 10rpx 0 30rpx;
+  text-align: center;
+}
+
+.time text {
+  display: inline-block;
+  padding: 6rpx 20rpx;
+  font-size: 26rpx;
+  color: #fff;
+  border-radius: 10rpx;
+  background-color: #ccc;
+}
+
+.user text {
+  margin: auto auto 8rpx 0;
+  font-size: 24rpx;
+  color: #dcdcdc;
+  display: block;
+}
+
+.avatar {
+  width: 64rpx;
+  height: 64rpx;
+  margin: 0 20rpx 0 0;
+  border-radius: 50%;
+  float: left;
+}
+
+.msg {
+  display: inline-block;
+  position: relative;
+  padding: 10rpx 20rpx;
+  max-width: calc(85% - 50px); 
+  font-size: 28rpx;
+  text-align: left;
+  word-break: break-all;
+  background-color: #fff;
+  color: #333;
+  border-radius: 10rpx;
+  min-height: 52rpx;
+}
+
+.msg .msg-welcome {
+  margin: 20rpx 0;
+  .welc-title {}
+  .welc-subtitle {
+    font-size: 24rpx;
+    color: #666;
+    margin-top: 20rpx;
+  }
+  .welc-opts {
+    .opts-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid #eee;
+      border-radius: 10rpx;
+      padding: 8rpx 30rpx 8rpx 40rpx;
+      margin-top: 20rpx;
+      .icon-l {
+        margin-right: 40rpx;
+        &.card {
+          width: 36rpx;
+          height: 28rpx;
+        }
+        &.compony {
+          width: 34rpx;
+          height: 29rpx;
+        }
+        &.momment {
+          width: 36rpx;
+          height: 36rpx;
+        }
+        &.my-momment {
+          width: 34rpx;
+          height: 34rpx;
+        }
+      }
+      .icon-r {
+        width: 20%;
+        text-align: right;
+        icon {
+          margin-right: -10rpx;
+          margin-top: -26rpx;
+        }
+        .phone {
+          width: 34rpx;
+          height: 34rpx;
+        }
+        .wechat {
+          width: 34rpx;
+          height: 28rpx;
+        }
+      }
+      .content {
+        width: 64%;
+      }
+    }
+  }
+}
+
+.msg text {
+  line-height: 1.5;
+}
+
+.shape-l {
+  content: " ";
+  width: 20rpx;
+  height: 20rpx;
+  transform: rotate(45deg);
+  background:#fff;
+  position:absolute;
+  left:-6rpx;
+  top:20rpx;
+}
+
+.shape {
+  position: relative;
+}
+.shape-r {
+  display: none;
+  position: absolute;
+  content: " ";
+  width: 20rpx;
+  height: 20rpx;
+  transform: rotate(45deg);
+  background: #15aefa;
+  position: absolute;
+  top:20rpx;
+  right:-6rpx;
+}
+
+.self {
+  position: relative;
+  text-align: right;
+}
+
+.self .avatar {
+  float: right;
+  margin: 0 0 0 20rpx;
+}
+
+.self .user {
+  margin: auto 4rpx 8rpx auto;
+  font-size: 24rpx;
+  color: #dcdcdc;
+}
+
+.self .msg {
+  background-color: rgba(255,127,2,0.3);
+  color: #000000;
+  line-height: 52rpx;
+  min-height: 52rpx;
+  .template {
+    .avatar {
+      float: none;
+      vertical-align: middle;
+    }
+  }
+}
+
+.self .msg :before {
+  right: inherit;
+  left: 100%;
+  border-right-color: transparent;
+  border-left-color: #b2e281;
+}
+
+.room_bar {
+  width: 100%;
+  height: auto;
+  border-top: 1px solid #CFCFCF;
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 999;
+  overflow:hidden;
+  background-color: #FFFFFF;
+}
+
+.want-do {
+  display: flex;
+  align-items: center;
+  height: 110rpx;
+  font-size: 24rpx;
+  color: #666;
+  // margin-bottom:10rpx;
+  .do-title {
+    margin-left: 30rpx;
+  }
+  .do-wechat {
+    margin-left: 30rpx;
+    border-radius: 24rpx;
+    padding: 6rpx 20rpx;
+    border: 1rpx solid #ccc;
+  }
+}
+
+.send_btn {
+  width: 90rpx;
+  height: 70rpx;
+  line-height: 70rpx;
+  font-size: 24rpx;
+  color: #000;
+  padding: 0;
+  /*display: inline-block;*/
+  /*float: right;*/
+  margin: auto 20rpx auto;
+  background-color: #fff;
+}
+
+.audio {
+  width: 4.5%;
+  height: 40%;
+  border: 1px solid rgb(135, 152, 164);
+  border-radius: 100rpx;
+  padding: 6rpx 8rpx;
+  margin-left: 20rpx;
+}
+
+.room_bar form {
+  width: 100%;
+  height: 112rpx;
+  padding: 0;
+  display: block;
+}
+
+.news {
+  width: 95%;
+  height: 68rpx;
+  border: 1px solid #CFCFCF;
+  border-radius: 10rpx;
+  font-size: 28rpx;
+  padding-left: 8rpx;
+  margin: 8rpx 4rpx 8rpx 20rpx;
+}
+
+.emoj {
+  width: 6.8%;
+  height: 60%;
+  margin-right: 20rpx;
+}
+
+.other_func {
+  display: flex;
+  flex-direction: row;
+  height: 270rpx;
+  padding:60rpx 20rpx 0 6rpx;
+  font-size: 24rpx;
+  background: #eee;
+  text-align: center;
+  &.hide {
+    display: none;
+  }
+}
+
+.other_func image {
+  width: 60rpx;
+  height: 40rpx;
+}
+
+.emoji_list {
+  // margin-top: 60rpx;
+  width: 100%;
+  height: 290rpx;
+  background-color: #dddddd;
+  padding-top: 20rpx;
+  padding-left: 3%;
+  display: none;
+}
+
+.showEmoji {
+  height: 310rpx;
+  background-color: #eeeeee;
+  padding-top: 20rpx;
+  padding-left: 3%;
+  display: block;
+}
+
+.emoji_list image,
+.showEmoji image {
+  width: 52rpx;
+  height: 52rpx;
+  margin: 10px 2%;
+}
+.msg-emoji-image {
+  width: 50rpx;
+  height: 50rpx;
+  vertical-align:middle;
+}
+
+.emoji {
+  width: 52rpx;
+  height: 52rpx;
+  margin: 0 0;
+}
+
+.emoji_item {
+  display: flex;
+  justify-content: space-around;
+  margin-right: 40rpx;
+}
+
+.template {
+  display: inline;
+}
+
+.template .message-template-image {
+  margin: 4rpx 0;
+  width: 52rpx;
+  height: 52rpx;
+  vertical-align: middle;
+}
+
+.template .message-template-text {
+  float: none;
+  margin: 4rpx 0;
+  line-height: 52rpx;
+}
+.clear-float {
+  float: none;
+}
+
+.send_image,
+.open_camera,
+.v-record {
+  margin-top: 30rpx;
+  .img-box {
+    width: 117rpx;
+    height: 117rpx;
+  }
+  .title {
+    font-size: 22rpx;
+    color:#909090;
+  }
+}
+.send_image {
+  margin-top: 0;
+  margin-left: 54rpx;
+}
+
+.open_emoji {
+  margin: auto 0 auto 20rpx;
+  width: 50rpx;
+  height: 50rpx;
+  image {
+    width: 50rpx;
+    height: 50rpx;
+  }
+}
+.open_menu {
+  margin: auto 20rpx auto;
+  width: 90rpx;
+  height: 50rpx;
+  text-align:center;
+  image {
+    width: 50rpx;
+    height: 50rpx;
+  }
+}
+
+.v-record {
+  margin-right: 30rpx;
+}
+
+.v-record .icon-record {
+  width: 18rpx;
+  height: 40rpx;
+}
+
+.icon-play {
+  width: 50rpx;
+  height: 50rpx;
+  margin: 0 20rpx;
+}
+
+.icon-mic {
+  width: 26rpx;
+  height: 50rpx;
+}
+
+.modal {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-record .modal-body {
+  width: 328rpx;
+  height: 328rpx;
+  background-color: rgba(135, 152, 164, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 6rpx;
+}
+
+.modal-record .desc {
+  color: rgb(112, 126, 137);
+  font-size: 26rpx;
+  margin-bottom: 40rpx;
+}
+
+.modal-record .dot {
+  width: 140rpx;
+  height: 140rpx;
+  border-radius: 50%;
+  background-color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.msg-fail {
+  width: 20rpx;
+  height: 20rpx;
+  margin: 22rpx;
+}
+.msg-img{
+  width: 200rpx; 
+  height: 260rpx;
+}

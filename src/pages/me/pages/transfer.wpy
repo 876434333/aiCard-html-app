@@ -1,0 +1,172 @@
+<style lang="scss">
+@import '../../../assets/css/pages/me/entOrg.scss';
+@import '../../../assets/css/pages/me/transfer.scss';
+.wrap {
+  .mask {
+    margin-top: -171rpx;
+    margin-left: -292rpx;
+    width: 584rpx;
+    height: 340rpx;
+    .transfer-title {
+      padding-top: 28rpx;
+    }
+    .staff-selected {
+      margin-bottom: 12rpx;
+      padding: 6rpx 40rpx 0 65rpx;
+      line-height: 44rpx;
+    }
+  }
+}
+</style>
+<template>
+  <!-- 管理员设置-转让 -->
+  <view class="wrap">
+    <view class="search">
+      <image src="../../../assets/images/contact/search.png"/>
+      <input type="text" placeholder="搜索" class="font-size-30 c-909090"/>
+    </view>
+    <!-- 空列表 -->
+    <view class="empty" wx:if="{{staffGroupList.length === 0}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+      <view class="font-size-32 ta-center c-909090">暂无成员，先去添加公司成员吧...</view>
+    </view>
+    <!-- 联系人列表 -->
+    <view class="contact-part {{staffGroupList.length === 0 ? 'contact-part-empty' : ''}}">
+      <repeat for="{{staffGroupList}}" index="firstIndex" key="index" item="item">
+        <view class="contact-list">
+          <view class="staff font-size-24 c-909090">{{item.groupName}}</view>
+          <repeat for="{{item.dataList}}" index="secondIndex" key="index" item="staff">
+            <view class="weui-cell" @tap="choose" data-firstIndex="{{firstIndex}}" data-secondIndex="{{secondIndex}}">
+              <view class="weui-cell__hd">
+                <image src="{{staff.head_icon}}"/>
+              </view>
+              <view class="weui-cell__hd">
+                <view class="branch font-size-30 c-323232">{{staff.name}}</view>
+                <view class="count font-size-26 c-909090">{{staff.station}}</view>
+              </view>
+              <view class="weui-cell__hd" wx:if="{{staff.selected}}">
+                <image src="../../../assets/images/contact/hook.png" class="hook"/>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </repeat>
+    </view>
+    <view class="foot"><button class="save font-size-36 c-ffffff" @tap="save">确定</button></view>
+    <!-- 转让提醒弹窗 -->
+    <view class="mask-black" hidden="{{maskHidden}}" @tap="mask" data-method="maskHide"></view>
+    <view class="mask" hidden="{{maskHidden}}">
+      <view class="font-size-36 c-323232 ta-center transfer-title">转让提醒</view>
+      <view class="font-size-30 c-909090 staff-selected">转让后，你将不能管理企业通讯录， 确定转让吗？</view>
+      <view class="mask-botoom">
+        <view class="font-size-30 c-909090 ta-center cancel" @tap="mask" data-method="maskHide">取消</view>
+        <view class="font-size-30 c-3DB8C8 ta-center sure" @tap="mask" data-method="maskSure">确定</view>
+      </view>
+    </view>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { common } from '../../../assets/js/common.js'
+import { companyApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class transfer extends wepy.page {
+  // 相当于page.json
+  config = {
+    navigationBarTitleText: '转让'
+  }
+  data = {
+    res_url: G_RES_URL,
+    maskHidden: true,
+    selecteds: [],
+    staffSelectedId: '',
+    enterpriseId: '',
+    staffGroupList: [],
+    staffId: ''
+  }
+  onLoad(option) {
+    this.enterpriseId = option.enterprise_id
+    this.staffId = option.staff_id
+
+    companyApi.getEnterpriseStaffList(this.enterpriseId).then(res => {
+      this.staffList = res
+      console.log(this.staffList)
+      this.staffGroupList = common.getGroupListByKey(res, 'first_letter')
+      console.info(JSON.stringify(this.staffGroupList))
+      this.$apply()
+    })
+  }
+  methods = {
+    // 选择转让的员工
+    choose(e) {
+      let firstIndex = e.currentTarget.dataset.firstindex
+      let secondIndex = e.currentTarget.dataset.secondindex
+      let staffGroupList = this.staffGroupList
+      for (let i = 0; i < staffGroupList.length; i++) {
+        let staffList = staffGroupList[i].dataList
+        for (let j = 0; j < staffList.length; j++) {
+          staffList[j]['selected'] = false
+        }
+      }
+      staffGroupList[firstIndex].dataList[secondIndex].selected = true
+      this.staffSelectedId = staffGroupList[firstIndex].dataList[secondIndex].id
+      this.$apply()
+    },
+    // 弹窗操作
+    mask(e) {
+      let that = this
+      let method = {
+        // 显示弹窗
+        maskShow() {
+          that.maskHidden = false
+        },
+        // 关闭弹窗
+        maskHide() {
+          that.maskHidden = true
+        },
+        // 点击确定
+        maskSure() {
+          that.maskHidden = true
+          let oldStaffId = that.staffId
+          let newStaffId = that.staffSelectedId
+          if (!newStaffId) {
+            wepy.showToast({
+              title: '请选择新的管理员',
+              icon: 'none',
+              duration: 2000
+            })
+            return
+          }
+          let params = {
+            leaveStaffId: oldStaffId, // 老管理员
+            handoverStaffId: newStaffId // 新管理员
+          }
+          companyApi.transferManager(params).then(
+            res => {
+              common.tip('转让成功', 'success')
+              setTimeout(() => {
+                wepy.reLaunch({
+                  url: `/pages/me/meIndex`
+                })
+              }, 1000)
+            },
+            err => {
+              wx.showToast({
+                title: err.err_msg,
+                icon: 'none',
+                duration: 2000
+              })
+            }
+          )
+        }
+      }
+      method[e.currentTarget.dataset.method]()
+    },
+    // 点击确定
+    save() {
+      this.maskHidden = false
+    }
+  }
+}
+</script>

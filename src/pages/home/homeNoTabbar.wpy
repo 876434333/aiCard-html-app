@@ -1,0 +1,63 @@
+<style lang="scss">
+</style>
+<template>
+  <homeComponent></homeComponent>
+</template>
+<script>
+import wepy from 'wepy'
+import homeComponent from './components/homeComponent'
+import { managerChatMixin } from '@/mixins'
+export default class homeNoTabbar extends wepy.page {
+  config = {
+    navigationBarBackgroundColor: '#ff7f02',
+    enablePullDownRefresh: true,
+    navigationBarTitleText: '主页'
+  }
+  mixins = [managerChatMixin]
+  components = {
+    homeComponent: homeComponent
+  }
+  onShow() {
+    this.$broadcast('refreshMycardList', this.onLoad)
+  }
+  // 下拉刷新
+  onPullDownRefresh() {
+    wepy.stopPullDownRefresh()
+    setTimeout(() => {
+      this.$broadcast('refreshMycardList', this.onLoad)
+    }, 500)
+  }
+  // 分享名片
+  onShareAppMessage(ops) {
+    let staffInfo = this.$parent.getStaffInfo()
+    let title = ''
+    let path = ''
+    let imageUrl
+    // 微信分享名片
+    if (staffInfo.share_setup) {
+      title = `${staffInfo.share_setup}`
+    } else {
+      title = `你好，我是${staffInfo.enterprise_name}的${staffInfo.name}，这是我的电子名片，请惠存~`
+    }
+    path = `/pages/card/cardView?employee_id=${staffInfo.staffId}&from_openid=${this.openId}&enterprise_id=${staffInfo.enterprise_id}`
+    if (staffInfo.card_img_url) {
+      imageUrl = staffInfo.card_img_url
+    }
+    return {
+      title: title,
+      path: path,
+      imageUrl: imageUrl,
+      success: function(res) { }
+    }
+  }
+  onHide() {
+    // 判断管名片是否登录IM，如果登录了，则不需要再次登录
+    let staffInfo = this.$parent.getStaffInfo()
+    let isLoginIm = this.$parent.getManagerIMLogin(staffInfo.staffId)
+    if (!isLoginIm) {
+      this.initChat(this)
+      this.$parent.setManagerIMLogin(staffInfo.staffId, true)
+    }
+  }
+}
+</script>

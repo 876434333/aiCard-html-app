@@ -1,0 +1,240 @@
+<style lang="scss">
+  @import '../../assets/css/pages/website/website.scss';
+  $main_color: #ff7f02;
+  page {
+    background-color: #ffffff;
+  }
+  .wrap{
+    // padding-bottom:196rpx;
+    padding-bottom: 124rpx;
+    overflow-y:hidden;
+    .edit-btn {
+      position: fixed;
+      top: 1034rpx;
+      right: 28rpx;
+      z-index: 10000;
+      width: 94rpx;
+      height: 94rpx;
+      line-height: 94rpx;
+      border-radius: 100%;
+      background: $main_color;
+    }
+    .component {
+      .about,
+      .about-title,
+      .about-content,
+      .about-phone,
+      .about-address {
+        border:0;
+      }
+      .contact-wrap {
+        border:0;
+        .contact-part {
+          border:0;
+        }
+      }  
+      .video-part {
+        .video-play {
+          position: absolute;
+          top: 180rpx;
+          left: 320rpx;
+          z-index: 9999;
+          width: 109rpx;
+          height: 109rpx;
+        }
+        .video {
+          width: 100%;
+          height: 100%;
+        }
+      }  
+    } 
+    .computer {
+      display:block;
+      margin:254rpx auto 34rpx;
+      width:514rpx;
+      height:511rpx;
+    }
+  } 
+</style>
+<template>
+  <!-- 官网预览 -->
+  <view class="wrap">
+    <view style="overflow:hidden;" wx:if="{{componentList.length == 0 && isReady}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_website_empty.png" class="computer"/>
+      <view class="font-size-30 c-909090 ta-center">官网暂无内容</view>
+    </view>
+    <view style="min-height:{{componentList.length > 0 ? '972rpx' : ''}}">
+      <repeat for="{{componentList}}" index="index" item="item"> 
+        <view class="component">
+          <view class="component-part">
+            <!-- 企业简介 -->
+            <companyInfo :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'companyInfo'}}"></companyInfo>
+            <!-- 公司电话 -->
+            <companyPhone :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView" wx:if="{{item.textContent.type == 'companyPhone'}}"></companyPhone>
+            <!-- 地址 -->
+            <companyAddress :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'companyAddress'}}"></companyAddress>
+            <!-- 联系我们 -->
+            <contactUs :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView" wx:if="{{item.textContent.type == 'contactUs'}}"></contactUs>
+            <!-- 标题 -->
+            <baseTitle :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'baseTitle'}}"></baseTitle>
+            <!-- 内容 -->
+            <baseContent :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'baseContent'}}"></baseContent>
+            <!-- 图片 -->
+            <view class="{{index === 0 ? '' : 'mt-24'}}" wx:if="{{item.textContent.type == 'poster'}}">
+              <poster :area.sync="area" :idx.sync="index" :obj.sync="item.textContent"></poster>
+            </view>
+            <!-- 轮播图 -->
+            <view  style="{{index === 0 ? '' : 'margin-top:24rpx;padding:0 30rpx;'}}" wx:if="{{item.textContent.type == 'swipe'}}">
+              <swipe :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView"></swipe>
+            </view>
+            <!-- 视频 -->
+            <view class="{{index === 0 ? '' : 'mt-24'}}" wx:if="{{item.textContent.type == 'playVideo'}}">
+              <playVideo :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView"></playVideo>
+            </view>
+            <!-- 占位 -->
+            <relative :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'relative'}}"></relative>
+          </view>
+        </view>
+      </repeat>
+      <tabBarTemplate :tabBar.sync="tabBarData"></tabBarTemplate>
+      <cover-view class="to-send-msg" @tap="consultProduct">
+        <cover-image wx:if="{{res_url}}" class="to-send-msg-img" src="{{res_url}}/dc_send_msg.png"/>
+        <cover-view class="text">留言</cover-view>
+      </cover-view>
+      <cover-view class="c-ffffff msg-number" wx:if="{{noReadNum > 0}}">{{noReadNum}}</cover-view>
+    </view>
+    <!-- 底部内容 -->
+    <view class="foot-copyright" wx:if="{{componentList.length > 0}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_bottom_msg.png"/>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import companyInfo from './components/modular/companyInfo'
+  import companyPhone from './components/modular/companyPhone'
+  import companyAddress from './components/modular/companyAddress'
+  import contactUs from './components/modular/contactUs'
+  import baseTitle from './components/standard/baseTitle'
+  import baseContent from './components/standard/baseContent'
+  import poster from './components/standard/poster'
+  import swipe from './components/standard/swipe'
+  import playVideo from './components/standard/playVideo'
+  import relative from './components/standard/relative'
+  import tabBarTemplate from '../../components/tabBar/tabBarTemplate'
+  import {tabBarJs} from '../../components/tabBar/tabBarJs'
+  import { websiteApi } from '@/api'
+  import {
+    getPhoneNumberMixin,
+    onticeMsgNumberMixin,
+    saveFormidMixin
+  } from '@/mixins/index.js'
+  import {G_RES_URL} from '@/config'
+  import { cardActionMap } from '@/utils'
+  export default class websiteIndex extends wepy.page {
+    mixins = [onticeMsgNumberMixin, getPhoneNumberMixin, saveFormidMixin]
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarBackgroundColor: '#ff7f02',
+      navigationBarTitleText: '官网'
+    }
+    data = {
+      res_url: G_RES_URL,
+      websiteId: '',
+      obj: {},
+      area: 'show',
+      idx: null,
+      websiteView: true,
+      // type：1.企业简介  2.电话  3.地址  4.联系我们  5.标题  6.文本  7.图片  8.轮播图  9.视频  10.占位符
+      componentList: [],
+      tabBarData: {},
+      isReady: false
+    }
+    components = {
+      companyInfo: companyInfo,
+      companyPhone: companyPhone,
+      companyAddress: companyAddress,
+      contactUs: contactUs,
+      baseTitle: baseTitle,
+      baseContent: baseContent,
+      poster: poster,
+      swipe: swipe,
+      playVideo: playVideo,
+      relative: relative,
+      tabBarTemplate: tabBarTemplate
+    }
+    onLoad(opt) {
+      let _this = this
+      _this.tabBarData = tabBarJs.selected(4, _this)
+      _this.websiteId = opt.id
+      wepy.showLoading({
+        title: '加载中'
+      })
+      if (opt.id) {
+        _this.getWebsiteInfo(_this)
+      } else {
+        _this.isReady = true
+        _this.$apply()
+        wepy.hideLoading()
+      }
+      this.seeWebSite()
+    }
+    onPullDownRefresh() {
+      if (this.websiteId) {
+        this.getWebsiteInfo(this)
+      } else {
+        this.isReady = true
+      }
+      wepy.stopPullDownRefresh()
+    }
+    // 获取官网信息
+    getWebsiteInfo(that) {
+      websiteApi.getWebsiteComponent(this.websiteId).then(rs => {
+        that.componentList = []
+        if (rs) {
+          for (let k in rs) {
+            rs[k].textContent = JSON.parse(rs[k].textContent)
+            that.componentList.push(rs[k])
+          }
+        }
+        that.isReady = true
+        that.$apply()
+        wepy.hideLoading()
+      })
+    }
+    // 咨询
+    consultProduct() {
+      let sellerInfo = this.$parent.getCurSellerInfo()
+      let userInfo = this.$parent.getUserInfo()
+      let chatUserInfo = this.$parent.getChatUserInfo()
+      let friendId = this.$parent.getEmployeeChatUser(sellerInfo.staffId)
+      let loginInfo = {
+        name: chatUserInfo.identifier,
+        nickName: userInfo.nickName,
+        avtor: userInfo.avatarUrl
+      }
+      let friend = {
+        name: friendId,
+        avtor: sellerInfo.head_icon,
+        nickName: sellerInfo.name
+      }
+      // this.recordClickAction(cardActionMap.consultProduct)
+      this.$parent.goChatRoom(loginInfo, friend)
+    }
+    // 查看官网
+    seeWebSite() {
+      // 查看官网
+      this.recordClickAction(cardActionMap.seeCompany)
+    }
+    // 点击行为
+    recordClickAction(action, callbackSuc, callbackFail) {
+      let sellerInfo = this.$parent.getCurSellerInfo()
+      let params = {
+        action_code: action,
+        employee_id: sellerInfo.staffId
+      }
+      this.$parent.recordClickAction(params, callbackSuc, callbackFail)
+    }
+  }
+</script>

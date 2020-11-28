@@ -1,0 +1,655 @@
+<style lang="scss">
+$main_color: #e75152;
+.weui-label {
+  color: #323232;
+}
+.weui-label > span {
+  color: #e83d39;
+}
+.weui-select {
+  padding-left: 0px;
+  margin-right: -16px;
+  min-height:auto;
+  height:auto;
+}
+.vcode {
+  font-size: 24rpx;
+  color: $main_color;
+  border-left:1px solid $main_color;
+  padding-left:20rpx;
+
+}
+.flex-start {
+  align-items: flex-start;
+}
+.flex-start > view {
+  padding-top: 32rpx;
+}
+.head-group > view:last-child {
+  flex-grow: 3;
+}
+button[type='default'].default-btn {
+  color: $main_color;
+  border: 1px solid $main_color;
+}
+.weui-input,
+.weui-label {
+  font-size: 30rpx;
+}
+.weui-cell {
+  padding-left: 36rpx;
+}
+
+.commodity_screen {
+  width: 100%;
+  height: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background: #000;
+  opacity: 0.2;
+  overflow: hidden;
+  z-index: 99999;
+  color: #fff;
+}
+/*对话框 */
+.commodity_attr_box {
+  height: 800rpx;
+  width: 100%;
+  overflow: hidden;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 999999;
+  background: #ffffff;
+  padding-top: 0rpx;
+  text-align: center;
+  .more-scren {
+    font-size: 24rpx;
+    padding: 27rpx;
+    color: #323232;
+  }
+  .close-more-play {
+    color: #fff;
+    border-radius: 10rpx;
+    height: 92rpx;
+    width: 688rpx;
+    font-size: 36rpx;
+    background: $main_color;
+    line-height: 92rpx;
+    position: absolute;
+    text-align: center;
+    margin: 30rpx 30rpx;
+    bottom: 0;
+  }
+}
+.same-company {
+  border: solid #aaaaaa 2rpx;
+  border-radius: 10rpx;
+  margin: 0 28rpx 20rpx;
+  padding: 25rpx 26rpx;
+  text-align: left;
+  box-shadow: #aaaaaa 0 0 10rpx;
+  .company-text {
+    display: inline-block;
+    .company-name {
+      font-size: 30rpx;
+      color: $main_color;
+      text-align: left;
+    }
+    .company-info {
+      text-align: left;
+      margin-top: 20rpx;
+      color: #909090;
+      font-size: 24rpx;
+    }
+    .company-no {
+      font-size: 30rpx;
+      color: #323232;
+      text-align: left;
+    }
+  }
+  image {
+    height: 50rpx;
+    width: 50rpx;
+    float: right;
+    margin: 20rpx 0;
+  }
+}
+.triangle-topright {
+  border: solid $main_color 2rpx;
+  /* box-shadow: 0rpx -3rpx 0rpx 0rpx $main_color, -3rpx 0rpx 0rpx 0rpx $main_color,
+    3rpx 0rpx 0rpx 0rpx $main_color, 0rpx 3rpx 0rpx 0rpx $main_color; */
+  box-shadow: $main_color 0 0 15rpx;
+}
+.getPhoneNumber {
+  font-size:24rpx;
+  color:$main_color;
+  border-left:1px solid $main_color;
+  padding-left:20rpx;
+  background:#ffffff;
+  border-radius:0rpx;
+  height:30rpx;
+  line-height:30rpx;
+}
+.arrow {
+  padding:24rpx 28rpx;
+  width:16rpx;
+  height:29rpx;
+  vertical-align:middle;
+}
+</style>
+<template>
+  <view>
+    <form bindsubmit="save">
+        <view class="weui-cells weui-cells_after-title clearbordafter">
+            <view class="weui-flex head-group">
+                <view class="weui-flex__item ta-center">
+                  <image wx:if="{{res_url}}" class="weui-article__img" src="{{userInfo.avatarUrl ? userInfo.avatarUrl : (res_url + '/dc_user_default_logo.png')}}" style="width:120rpx;height:120rpx;margin-top:20rpx;border-radius:100%;" mode="aspectFit" />
+                </view> 
+                <view class="weui-flex__item">
+                    <view class="weui-cell weui-cell_input">
+                        <view class="weui-cell__bd">
+                            <input class="weui-input" name="name" placeholder="请输入用户名(必填)"/>
+                        </view>
+                    </view>
+                    <view class="weui-cell weui-cell_input">
+                        <view class="weui-cell__bd">
+                            <input class="weui-input" type="number" name="phone" placeholder="请输入手机号" value="{{phone}}" bindinput="getPhone" disabled="{{isReadOnly}}"/>
+                        </view>
+                        <view class="weui-cell__ft">
+                            <!-- bindgetphonenumber="" -->
+                            <button wx:if="{{getPhone}}" class="getPhoneNumber" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">快速获取手机号</button>
+                            <view wx:if="{{getVilicode}}" class="vcode" @tap="getPhoneNum">获取验证码</view>
+                        </view>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="weui-cells weui-cells_after-title">
+            <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">组织<span>*</span></view>
+                </view>
+                <view class="weui-cell__bd">
+                    <input class="weui-input" name="enterpriseName" placeholder="请输入组织/公司名称"/>
+                </view>
+                <view class="weui-cell__ft" @tap="showHelp">
+                    <image class="weui-article__img" src="/assets/images/card/help.png" style="margin-top:10rpx;width:30rpx;height:30rpx;" />
+                </view>
+            </view>
+            <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">职务<span>*</span></view>
+                </view>
+                <view class="weui-cell__bd">
+                    <input class="weui-input" name="postName" placeholder="请输入职务"/>
+                </view>
+            </view>
+            <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">Email</view>
+                </view>
+                <view class="weui-cell__bd">
+                    <input class="weui-input" type="email" name="email" placeholder="请输入邮箱"/>
+                </view>
+            </view>
+            <view class="weui-cell weui-cell_input">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">微信号</view>
+                </view>
+                <view class="weui-cell__bd">
+                    <input class="weui-input" name="wechatno" placeholder="请输入微信号"/>
+                </view>
+            </view>
+            <view class="weui-cell weui-cell_input" style="padding-right:0;">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">地址</view>
+                </view>
+                <view class="weui-cell__bd words-break {{locationSelected ? '' : 'hint'}}">
+                    <input class="weui-input" name="address" placeholder="请选择地址" value="{{location}}" style="display:inline-block;width:85%;vertical-align:middle;"/>
+                    <image src="/assets/images/card/card_edit_right.png" class="arrow" @tap="getLocation"/>
+                </view>
+            </view>
+            <view class="weui-cell weui-cell_input" style="padding-right:0;">
+                <view class="weui-cell__hd">
+                    <view class="weui-label">地区<span>*</span></view>
+                </view>
+                <view class="weui-cell__bd">
+                    <view class="weui-cell__bd font-size-30 {{regionSelected ? '' : 'hint'}}">
+                        <picker mode="region" bindchange="bindRegionChange" value="{{region}}" style="display:inline-block;width:85%;">
+                            <view class="picker">
+                                {{region[0]}} {{region[1]}} {{region[2]}}
+                            </view>
+                        </picker>
+                        <image src="/assets/images/card/card_edit_right.png" class="arrow"/>
+                    </view>
+                </view>
+            </view>
+        </view>
+        <view class="weui-cells" wx:if="{{showTextArea}}">
+            <view class="weui-cell">
+              <view class="weui-cell__hd">
+                  <view class="weui-label font-size-30">个人简介</view>
+              </view>
+            </view>
+            <view style="padding-left:36rpx;padding-right:36rpx">
+                <textarea class="weui-textarea font-size-30" placeholder="请输入您的个人简介，让您的客户更了解您" maxlength="1000" @input="bindSelf_introduction" name="self_introduction" value="{{self_introduction}}" style="height: 7em;" />
+            </view>
+        </view>
+        
+        <view style="position:absolute;top:0;left:0;right:0;bottom:0;" wx:if="{{tip}}">
+            <view class="" style="background-color:#FAFAFA;color:#767676;padding: 20px 10px;font-size:13px;border-radius: 7px;box-shadow:0px 0px 10px 4px #EBEBEB;position:fixed;z-index:9999;width: 82%;right: 24px; top:120px;">
+                知识小贴士 : 什么是组织名称
+                <view style="text-indent:25px;padding-top:15px;">首次使用深卡人工智能名片系统，创建您的个人名片，您所属的组织团队名称:</view>
+                <view>1. 如果您是创建公司团队, 请输入您的公司名称</view>
+                <view>2. 如果您是虚拟组织团队, 请输入您的组织团队名称</view>
+                <view>3. 如果您是临时体验, 您可以随意输入公司名称</view>
+                <view style="padding-top:15px;">创建成功后，您可以在组织设置中继续修改您的组织名称</view>
+                <view style="margin: 0 20%;padding-top:15px;">
+                    <button class="weui-btn default-btn" @tap="hideHelp" style="line-height:2;" type="default">我知道了</button>
+                </view>
+            </view>
+        </view>
+        <modal @getCherckResult.user="getCherckResult"></modal>
+        <button class="weui-btn submit-btn font-size-36 saveBtn" formType="submit">保存</button>
+    </form>
+    <!--隐藏区域  更多玩法 -->
+    <view class='commodity_screen' wx:if="{{actionSheetHidden}}" @tap="closeSameCompany"></view>
+    <view class='commodity_attr_box' wx:if="{{actionSheetHidden}}" animation='{{animationData}}'>
+        <view class="more-scren">已有{{sameCompanyList.length}}个同名企业，请选择加入或者创建新企业</view>
+         <scroll-view style="height:580rpx;" scroll-y="true">
+           <repeat for="{{sameCompanyList}}" key="index" index="index" item="item">
+            <view class="same-company {{choseCompanyIndex === index?'triangle-topright':''}}" @tap="choseCompany({{index}})">
+              <view class="company-text">
+                <view class="company-name">{{item.name}}</view>
+                <view class="company-info">由{{item.managerName}}创建，{{item.saleCardNum}}位同事已加入</view>
+              </view>
+              <image wx:if="{{choseCompanyIndex === index}}" src="{{res_url}}/dc_card_check.png"/>
+            </view>
+           </repeat>
+          <view class="same-company {{choseCompanyIndex == -1?'triangle-topright':''}}" @tap="choseCompany(-1)">
+            <view class="company-text">
+              <view class="company-no">没有找到要加入的企业？</view>
+              <view class="company-info">创建新的“{{companyName}}”</view>
+            </view>
+            <image  wx:if="{{choseCompanyIndex == -1}}" src="{{res_url}}/dc_card_check.png"/>
+          </view>
+        </scroll-view>
+        <view class="close-more-play" @tap='makeSure'>确定</view>
+    </view>
+   </view> 
+</template>
+<script>
+import wepy from 'wepy'
+import Modal from '@/components/modal/modal'
+import { companyApi } from '@/api'
+import { mobileValidator } from '@/assets/js/asyncValidator/validators/index.js'
+import {G_RES_URL} from '@/config'
+import { common } from '@/assets/js/common.js'
+export default class Create extends wepy.page {
+  data = {
+    res_url: G_RES_URL,
+    tip: false,
+    locationSelected: false,
+    location: '',
+    openid: '',
+    regionSelected: false,
+    region: ['请选择地区', '', ''],
+    customItem: '全部',
+    index: 0,
+    getPhone: true,
+    getVilicode: false,
+    phone: '',
+    isReadOnly: false,
+    self_introduction: '',
+    actionSheetHidden: false,
+    animationData: {},
+    sameCompanyList: [],
+    choseCompanyIndex: -1,
+    companyName: '',
+    params: {},
+    userInfo: '',
+    showTextArea: true, // 用于显示底部菜单时隐藏输入框
+    isViliPhone: false,
+    sendVilecodeTime: '' // 发送验证码时间戳
+  }
+  components = {
+    modal: Modal
+  }
+  config = {
+    navigationBarTitleText: '新建名片'
+  }
+  onLoad() {
+    this.openid = this.$parent.getNowOpenid()
+    this.userInfo = this.$parent.getUserInfo()
+  }
+  methods = {
+    showHelp() {
+      this.tip = true
+      this.showTextArea = false
+    },
+    hideHelp() {
+      this.tip = false
+      this.showTextArea = true
+    },
+    bindRegionChange: function(e) {
+      this.region = e.detail.value
+      this.regionSelected = true
+    },
+    bindSelf_introduction: function(e) {
+      this.self_introduction = e.detail.value
+    },
+    getLocation() {
+      wepy.authorize({
+        scope: 'scope.userLocation'
+      }).then(() => {
+        let _this = this
+        wepy.getSetting().then(rs => {
+          if (rs.authSetting['scope.userLocation'] === false) {
+            wepy.openSetting().then(e => {
+              if (e.authSetting['scope.userLocation']) {
+                wepy.chooseLocation().then(res => {
+                  _this.location = res.name
+                  _this.locationSelected = true
+                  _this.methods.setArea.call(_this, res)
+                  _this.$apply()
+                })
+              }
+            })
+          } else {
+            wepy.chooseLocation().then(res => {
+              _this.location = res.name
+              _this.locationSelected = true
+              _this.methods.setArea.call(_this, res)
+              _this.$apply()
+            })
+          }
+        })
+      })
+    },
+    setArea(result) {
+      if (result.poiid === 'City') {
+        return
+      }
+      let address = result.address
+      if (address.indexOf('省') !== -1) {
+        this.region[0] = address.substring(0, address.indexOf('省') + 1)
+        this.region[1] = address.substring(address.indexOf('省') + 1, address.indexOf('市') + 1)
+        if (address.indexOf('区') !== -1) {
+          this.region[2] = address.substring(address.indexOf('市') + 1, address.indexOf('区') + 1)
+        }
+      } else if (address.indexOf('北京') !== -1 || address.indexOf('上海') !== -1 || address.indexOf('重庆') !== -1) {
+        this.region[0] = address.substring(0, address.indexOf('市') + 1)
+        this.region[1] = address.substring(0, address.indexOf('市') + 1)
+        if (address.indexOf('区') !== -1) {
+          this.region[2] = address.substring(address.indexOf('市') + 1, address.indexOf('区') + 1)
+        }
+      } else if (address.indexOf('自治区') !== -1) {
+        this.region[0] = address.substring(0, address.indexOf('自治区') + 3)
+        this.region[1] = address.substring(address.indexOf('自治区') + 3, address.indexOf('市') + 1)
+        if (address.indexOf('区') !== -1) {
+          this.region[2] = address.substring(address.indexOf('市') + 1, address.indexOf('区') + 1)
+        }
+      }
+    },
+    getPhone(e) {
+      this.phone = e.detail.value
+      if (mobileValidator(this.phone)) {
+        this.getVilicode = true
+        this.getPhone = false
+        this.$apply()
+      } else {
+        this.getVilicode = false
+        this.getPhone = true
+        this.$apply()
+      }
+    },
+    getPhoneNum() {
+      if (!mobileValidator(this.phone)) {
+        wepy.showToast({
+          title: '请输入正确的手机号',
+          icon: 'none'
+        })
+        return
+      }
+      let that = this
+      // 判断是否重复发送验证码
+      if (that.sendVilecodeTime) {
+        let secondSendTime = Date.parse(new Date())
+        if (secondSendTime - that.sendVilecodeTime < 120 * 1000) {
+          that.$apply()
+          that.$invoke('modal', 'openDialog', { msg: 'msg', phone: that.phone })
+          return
+        }
+      }
+      companyApi.sendMsg(that.phone).then(
+        res => {
+          that.showTextArea = false
+          that.sendVilecodeTime = Date.parse(new Date())
+          that.$apply()
+          that.$invoke('modal', 'openDialog', { msg: 'msg', phone: that.phone })
+        },
+        err => {
+          wepy.showModal({
+            title: '提示',
+            showCancel: false,
+            content: err.err_msg
+          })
+        }
+      )
+    },
+    getCherckResult() {
+      this.isReadOnly = true
+      this.getVilicode = false
+      this.showTextArea = true
+      this.isViliPhone = true
+      wepy.showToast({
+        icon: 'none',
+        title: '手机验证成功'
+      })
+      this.$apply()
+    },
+    save(e) {
+      if (!this.isViliPhone) {
+        wepy.showToast({
+          title: '请获取验证码,验证手机号',
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
+      let formData = e.detail.value
+      let params = {
+        address: formData.address,
+        area_code: this.region[2],
+        city_code: this.region[1],
+        province_code: this.region[0],
+        create_scene: 1,
+        email: formData.email,
+        enterprise_name: formData.enterpriseName,
+        phone: formData.phone,
+        self_introduction: formData.self_introduction,
+        weixin: formData.wechatno,
+        openid: this.openid,
+        position: formData.postName,
+        people_name: formData.name,
+        head_icon: this.userInfo.avatarUrl
+      }
+      this.params = params // 记录全部所填的参数
+      let hint = ''
+      if (!formData.name) {
+        hint = '请填写您的姓名'
+      } else if (!formData.phone) {
+        hint = '请填写您的手机号码'
+      } else if (!formData.enterpriseName) {
+        hint = '请填写您的组织/公司名称'
+      } else if (!formData.postName) {
+        hint = '请填写您的职务'
+      } else if (!this.region[1]) {
+        hint = '请选择您所在的地区'
+      } else if (common.countTextNum(formData.enterpriseName) > 26) {
+        hint = '组织名字数不能超过100个'
+      }
+      if (hint) {
+        wepy.showToast({
+          title: hint,
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
+      // 判断是否有同名企业
+      this.companyName = formData.enterpriseName
+      let sameParams = {
+        enterpriseName: this.companyName
+      }
+      companyApi.getSameCompanyNameList(sameParams).then(res => {
+        if (res.length > 0) {
+          this.showTextArea = false
+          this.sameCompanyList = res
+          // 显示隐藏的菜单
+          this.showSameCompany()
+        } else {
+          // 直接创建企业
+          this.createCompany(params)
+        }
+      })
+    },
+    choseCompany(index) {
+      this.choseCompanyIndex = index
+      this.$apply()
+    }
+  }
+
+  getPhoneNumber(e) {
+    if (e.detail.encryptedData && e.detail.iv) {
+      // 同意授权
+      let params = {
+        iv: e.detail.iv,
+        openid: this.openid,
+        phone: e.detail.encryptedData
+      }
+      // 后台解密获取手机号
+      companyApi.getPhone(params).then(res => {
+        // 从微信获取手机号成功，不需要手机验证
+        this.phone = res
+        this.getPhone = false
+        this.getVilicode = false
+        this.isReadOnly = true
+        this.isViliPhone = true
+        this.$apply()
+      })
+    } else {
+      this.getPhone = true
+      this.getVilicode = false
+      this.isReadOnly = false
+      this.$apply()
+    }
+  }
+  /**
+   * 更多玩法
+   */
+  showSameCompany() {
+    var that = this
+    // 创建一个动画实例
+    var animation = wepy.createAnimation({
+      // 动画持续时间
+      duration: 200,
+      // 定义动画效果，当前是匀速
+      timingFunction: 'linear'
+    })
+    // 将该变量赋值给当前动画
+    that.animation = animation
+    // 先在y轴偏移，然后用step()完成一个动画
+    animation.translateY(0).step()
+    // 通过export()方法导出数据
+    that.animationData = animation.export()
+    that.actionSheetHidden = true
+    that.$apply()
+  }
+  // 关闭更多玩法模态框
+  closeSameCompany() {
+    var that = this
+    var animation = wepy.createAnimation({
+      duration: 200,
+      timingFunction: 'linear'
+    })
+    that.animation = animation
+    animation.translateY(200).step()
+    that.animationData = animation.export()
+    that.actionSheetHidden = false
+    this.showTextArea = true
+  }
+  createCompany(params) {
+    wepy.showLoading({
+      title: '创建中...'
+    })
+    companyApi.companyAdd(params).then(
+      res => {
+        wepy.hideLoading()
+        let openid = this.$parent.getNowOpenid()
+        this.$parent.getStaffInfoFromBack(openid).then(res => {
+          wepy.reLaunch({
+            url: `/pages/card/cardIndex`
+          })
+        })
+      },
+      err => {
+        wepy.hideLoading()
+        wepy.showModal({
+          title: '提示',
+          showCancel: false,
+          content: '创建企业失败:' + err.err_msg
+        })
+      }
+    )
+  }
+
+  addStaffBySearch(params) {
+    let _this = this
+    wepy.showLoading({
+      title: '加入中...'
+    })
+    let enterpriseName = this.sameCompanyList[this.choseCompanyIndex].name
+    let managerName = this.sameCompanyList[this.choseCompanyIndex].managerName
+    companyApi.addStaffBySearch(params).then(
+      res => {
+        wepy.hideLoading()
+        let openid = this.$parent.getNowOpenid()
+        this.$parent.getStaffInfoFromBack(openid).then(res => {
+          _this.closeSameCompany()
+          wepy.showToast({
+            title: '已发送申请',
+            icon: 'success',
+            duration: 1000
+          })
+          wepy.reLaunch({
+            url: `./join?enterpriseName=${enterpriseName}&managerName=${managerName}`
+          })
+        })
+      },
+      err => {
+        wepy.hideLoading()
+        wepy.showModal({
+          title: '提示',
+          showCancel: false,
+          content: '加入企业失败:' + err.err_msg
+        })
+      }
+    )
+  }
+  makeSure() {
+    this.closeSameCompany()
+    this.showTextArea = true
+    if (this.choseCompanyIndex > -1) {
+      // 加入企业
+      this.params.id = this.sameCompanyList[this.choseCompanyIndex].id
+      this.addStaffBySearch(this.params)
+    } else {
+      // 创建企业
+      this.createCompany(this.params)
+    }
+  }
+}
+</script>

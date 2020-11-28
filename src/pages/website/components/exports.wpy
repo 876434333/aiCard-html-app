@@ -1,0 +1,104 @@
+<style lang="scss">
+page{
+  height: 100%;
+  .export-content {
+    height: 100%;
+  }
+  .bg-white{
+    background: #fff;
+  }
+}
+</style>
+<template>
+  <view class="export-content {{whiteBg ? 'bg-white' : ''}}">
+    <!-- 企业简介 -->
+    <companyInfo :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'companyInfo'}}"></companyInfo>
+    <!-- 公司电话 -->
+    <companyPhone :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'companyPhone'}}"></companyPhone>
+    <!-- 地址 -->
+    <companyAddress :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'companyAddress'}}"></companyAddress>
+    <!-- 联系我们 -->
+    <contactUs :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'contactUs'}}"></contactUs>
+    <!-- 标题 -->
+    <baseTitle :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'baseTitle'}}"></baseTitle>
+    <!-- 内容 -->
+    <baseContent :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'baseContent'}}"></baseContent>
+    <!-- 图片 -->
+    <poster :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'poster'}}"></poster>
+    <!-- 轮播图 -->
+    <swipe :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'swipe'}}"></swipe>
+    <!-- 视频 -->
+    <playVideo :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'playVideo'}}"></playVideo>
+    <!-- 占位 -->
+    <relative :area.sync="area" :idx.sync="idx" :obj.sync="obj" wx:if="{{type == 'relative'}}"></relative>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import companyInfo from './modular/companyInfo'
+  import companyPhone from './modular/companyPhone'
+  import companyAddress from './modular/companyAddress'
+  import contactUs from './modular/contactUs'
+  import baseTitle from './standard/baseTitle'
+  import baseContent from './standard/baseContent'
+  import poster from './standard/poster'
+  import swipe from './standard/swipe'
+  import playVideo from './standard/playVideo'
+  import relative from './standard/relative'
+  export default class exports extends wepy.page {
+    config = {
+      navigationBarTitleText: ''
+    }
+    components = {
+      companyInfo: companyInfo,
+      companyPhone: companyPhone,
+      companyAddress: companyAddress,
+      contactUs: contactUs,
+      baseTitle: baseTitle,
+      baseContent: baseContent,
+      poster: poster,
+      swipe: swipe,
+      playVideo: playVideo,
+      relative: relative
+    }
+    data = {
+      idx: null,
+      type: '',
+      obj: {},
+      area: 'edit',
+      status: 0,
+      whiteBg: false
+    }
+    onLoad(opt) {
+      let _this = this
+      if (opt.status) {
+        this.status = opt.status
+      }
+      wepy.getStorage({key: 'website_plugin'}).then(res => {
+        _this.idx = res.data.idx
+        _this.type = res.data.type
+        _this.obj = res.data.content
+        if (_this.type === 'playVideo') {
+          _this.whiteBg = true
+        }
+        _this.$apply()
+      })
+      wepy.setNavigationBarTitle({
+        title: opt.title
+      })
+    }
+    onShow() {
+      let _this = this
+      wepy.getStorage({key: 'chooseContact'}).then(res => {
+        if (res) {
+          _this.obj.data.employee.value = []
+          for (let key in res.data) {
+            _this.obj.data.employee.value.push(res.data[key])
+          }
+        }
+        _this.$apply()
+      })
+      wepy.removeStorage({key: 'chooseContact'})
+    }
+  }
+</script>

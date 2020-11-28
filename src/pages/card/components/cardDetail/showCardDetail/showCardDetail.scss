@@ -1,0 +1,102 @@
+.card-spt-type-two {
+  font-size: 26rpx;
+  color: #999;
+  text-align: center;
+}
+
+.card-opt-list-type-two {
+  .card-opt-item {
+    min-height: 42rpx;
+    margin-bottom: 30rpx;
+    overflow: hidden;
+
+    .card-opt-label {
+      width: 60rpx;
+      overflow: hidden;
+      font-size: 28rpx;
+      color: #999999;
+      float: left;
+      margin-right: 20rpx;
+    }
+
+    .card-opt-text {
+      padding-right: 20rpx;
+      font-size: 28rpx;
+      color: #333333;
+    }
+  }
+}
+.edit-icon {
+  width: 20rpx;
+  height: 22rpx;
+}
+.edit-card {
+  height: 124rpx;
+  width: 30rpx;
+  display: inline-block;
+  border: solid #e8e6e9 1px;
+  border-left:0;
+  border-radius: 0 10rpx 10rpx 0;
+  text-align: center;
+  padding: 0 8rpx;
+  vertical-align: top;
+  view {
+    font-size: 18rpx;
+    margin-top: -7rpx;
+    color:#646464;
+  }
+}
+.scroll-view-x {
+
+  background-color: #fff;
+  white-space: nowrap;
+
+  .scroll-first {
+    height: 124rpx;
+    display: inline-block;
+    margin-left: 21rpx;
+    border: solid #e8e6e9 1px;
+    border-radius: 10rpx;
+    text-align: center;
+    padding: 0 25rpx;
+    image {
+      display: inline-block;
+      width: 20rpx;
+      height: 28rpx;
+    }
+    .title {
+      display: inline-block;
+      position:relative;
+      top:-6rpx;
+      font-size: 24rpx;
+      color: #646464;
+      margin-left: 14rpx
+    }
+    .connect {
+      position:relative;
+      top:-4rpx;
+      font-size: 24rpx;
+      color: #323232;
+    }
+  }
+  .scroll-first:nth-child(2) {
+    image {
+      width: 34rpx;
+      height: 28rpx;
+    }
+  }
+  .scroll-first:nth-child(3) {
+    image {
+      position:relative;
+      top:-4rpx;
+      width: 32rpx;
+      height: 24rpx;
+    }
+  }
+  .scroll-first:nth-child(4) {
+    image {
+      width: 22rpx;
+      height: 28rpx;
+    }
+  }
+}

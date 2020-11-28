@@ -1,0 +1,71 @@
+<style lang="scss">
+  $main_color: #e75152;
+  page {
+    background-color: #ffffff;
+  }
+  .join{
+    display: block;
+    margin:272rpx auto 0;
+    width: 179rpx;
+    height: 200rpx;
+  }
+  .content {
+    margin:40rpx auto 0;
+    width: 616rpx;
+    line-height: 36rpx;
+    text-align: justify;
+    text {
+      color: $main_color;
+    }
+  }
+  .view-btn {
+    bottom: 148rpx;
+  }
+  .create-btn {
+    border: 2rpx solid $main_color;
+    bottom: 30rpx;
+    background: #ffffff;
+  }
+</style>
+<template>
+  <view class="wrap">
+    <image wx:if="{{res_url}}" src="{{res_url}}/dc_card_join.png" class="join"/>
+    <view class="font-size-24 c-909090 content">
+      您的<text>"{{enterpriseName}}"</text>的加入申请已经递交，请等待或联系企业管理员<text>"{{managerName}}"</text>审批，通过后，您的微信将会收到服务通知，请您密切关注，耐心等待... 
+    </view>
+    <button class="font-size-36 c-ffffff save view-btn" @tap="gotoHome">进入主页</button>
+    <button class="font-size-36 c-3DB8C8 save create-btn" @tap="create">继续创建</button>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import {G_RES_URL} from '@/config'
+  export default class join extends wepy.page {
+    config = {
+      navigationBarTitleText: '加入申请通知'
+    }
+    data = {
+      res_url: G_RES_URL,
+      enterpriseName: '',
+      managerName: ''
+    }
+    onLoad(option) {
+      this.enterpriseName = option.enterpriseName
+      this.managerName = option.managerName
+    }
+    method = {
+    }
+    // 进入主页
+    gotoHome () {
+      wepy.reLaunch({
+        url: `/pages/home/homeIndex`
+      })
+    }
+    // 继续创建
+    create () {
+      wepy.reLaunch({
+        url: `./create`
+      })
+    }
+  }
+</script>

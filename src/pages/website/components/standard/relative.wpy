@@ -1,0 +1,189 @@
+<style lang="scss">
+  $main_color: #e75152;
+  .edit {
+    overflow: hidden;
+    .relative-head{ 
+      border-bottom:2rpx solid #e8e8e8;
+      background: #ffffff;
+      .website-title {
+        margin-left: 30rpx;
+        padding:22rpx 0;
+        border-bottom:2rpx solid #e8e8e8;
+      }
+      .relative-height {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        margin-left: 30rpx;
+        height: 98rpx;
+        align-items:center;
+        .slider {
+          margin:0 60rpx 0 60rpx;
+          width: 316rpx;
+        }
+        .relative-head-right {
+          display:-webkit-box;
+          display: -webkit-flex;
+          display: flex;
+          height: 38rpx;
+          line-height: 38rpx;
+          border:2rpx solid #d8d8da;
+          border-left:0;
+          border-radius: 5rpx;
+          text {
+            width: 45rpx;
+            color:#d8d8da;
+            border-left:2rpx solid #d8d8da;
+          }
+          input {
+            width: 68rpx;
+            height: 38rpx;
+            min-height: auto;
+            border-left:2rpx solid #d8d8da;
+          }
+        }   
+      } 
+    }
+    .relative {
+      margin-top: 20rpx;
+      border:2rpx solid $main_color;
+      background: #ffffff;
+    }
+  }
+</style>
+<template>
+  <!-- 占位 -->
+  <view class="website-components">
+    <view class="edit" wx:if="{{area == 'edit'}}">
+      <view class="relative-head">
+        <view class="website-title font-size-30 c-323232">占位</view>
+        <view class="relative-height">
+          <text class="font-size-30 c-909090">高度</text>
+          <slider class="slider" max="500" backgroundColor="#e4e7ed" activeColor="#e75152" value="{{obj.data.style.value.height.value == '' ? sliderValue : obj.data.style.value.height.value}}" block-size="11" @changing="slider" data-method="slide"/>
+          <view class="relative-head-right">
+            <text class="font-size-40 ta-center" @tap="slider" data-method="minus">-</text>
+            <input type="number" maxlength="3" class="font-size-20 c-909090" value="{{obj.data.style.value.height.value == '' ? sliderValue : obj.data.style.value.height.value}}" @input="slider" data-method="input"/>
+            <text class="font-size-24 ta-center" @tap="slider" data-method="add">+</text>
+          </view>
+        </view>
+      </view>
+      <view class="relative" style="height:{{obj.data.style.value.height.value == '' ? sliderValue : obj.data.style.value.height.value}}rpx;"></view>
+      <button class="weui-btn submit-btn" @tap="save">保存</button>
+    </view>
+
+    <view class="preview" wx:if="{{area == 'preview'}}">
+      <view class="font-size-30 c-323232 placeholder" style="height:{{obj.data.style.value.height.value == '' ? sliderValue : obj.data.style.value.height.value}}rpx;"></view>
+    </view>
+    <view class="show" wx:if="{{area == 'show'}}">
+      <view class="font-size-30 c-323232 placeholder" style="height:{{obj.data.style.value.height.value == '' ? sliderValue : obj.data.style.value.height.value}}rpx;"></view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import {common} from '../../../../assets/js/common.js'
+export default class relative extends wepy.component {
+  props = {
+    obj: {
+      type: Object,
+      default: null,
+      twoWay: true
+    },
+    area: {
+      type: String,
+      default: null,
+      twoWay: true
+    },
+    idx: {
+      type: String,
+      default: null,
+      twoWay: true
+    }
+  }
+  data = {
+    sliderValue: 90
+  }
+  methods = {
+    alignLeft() {
+      this.obj.data.textAlign.value = 'left'
+    },
+    alignCenter() {
+      this.obj.data.textAlign.value = 'center'
+    },
+    introTextInput(e) {
+      this.obj.data.content.value = e.detail.value
+    },
+    // 滑块操作
+    slider(e) {
+      let _this = this
+      let method = {
+        // 拖动滑块
+        slide() {
+          _this.obj.data.style.value.height.value = e.detail.value
+        },
+        // 点击+
+        add() {
+          if (_this.obj.data.style.value.height.value) {
+            _this.sliderValue = _this.obj.data.style.value.height.value
+          }
+          _this.sliderValue = _this.sliderValue + 1
+          if (_this.sliderValue >= 500) {
+            common.tip('最大高度为 500', 'none')
+            _this.sliderValue = 500
+          }
+          _this.obj.data.style.value.height.value = _this.sliderValue
+        },
+        // 点击-
+        minus() {
+          if (_this.obj.data.style.value.height.value) {
+            _this.sliderValue = _this.obj.data.style.value.height.value
+          }
+          _this.sliderValue = _this.sliderValue - 1
+          if (_this.sliderValue <= 0) {
+            common.tip('最小高度为 1', 'none')
+            _this.sliderValue = 1
+          }
+          _this.obj.data.style.value.height.value = _this.sliderValue
+        },
+        // 输入高度
+        input() {
+          let inputNum
+          if (e.detail.value === '') {
+            // e.detail.value = 0
+          } else {
+            inputNum = e.detail.value
+          }
+          if (inputNum <= 0) {
+            common.tip('最小高度为1', 'none')
+            inputNum = 1
+          }
+          if (inputNum > 500) {
+            common.tip('最大只能输入500', 'none')
+            inputNum = 500
+          }
+          _this.obj.data.style.value.height.value = inputNum
+        }
+      }
+      method[e.currentTarget.dataset.method]()
+    },
+    save() {
+      let _this = this
+      _this.isSave = true
+      if (_this.obj.data.style.value.height.value === '' || _this.obj.data.style.value.height.value <= 0) {
+        _this.obj.data.style.value.height.value = 90
+      }
+      wepy.setStorage({
+        key: 'website_plugin',
+        data: {
+          idx: _this.idx,
+          content: _this.obj,
+          save: true
+        }
+      })
+      wepy.navigateBack({
+        delta: 1
+      })
+    }
+  }
+}
+</script>

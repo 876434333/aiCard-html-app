@@ -1,0 +1,55 @@
+.type-one {
+  width: 674rpx;
+  height: 818rpx;
+  margin: 39rpx 0 0 38rpx ;
+  border-radius: 20rpx;
+  box-shadow: 0 0 5rpx 5rpx #e1e1e1;
+  padding: 0 0 20rpx;
+  .type-one-top {
+    .top-header-image {
+      width: 100%;
+      height: 674rpx;
+      border-top-left-radius: 10rpx;
+      border-top-right-radius: 10rpx;
+      display: inline-block;
+      vertical-align: top;
+    }
+  }
+
+  .card-info {
+    margin-top: 22rpx;
+    .card-info-top {
+      margin-left: 45rpx;
+      .card-info-name {
+        font-size: 36rpx;
+        color:#323232;
+      }
+      .card-info-station {
+        margin-left: 20rpx;
+        font-size: 24rpx;
+        color:#323232;
+      }
+      image {
+        margin-top:16rpx;
+        width: 44rpx;
+        height: 37rpx;
+        display: block-inline;
+        float: right;
+        margin-right: 20rpx;
+      }
+    }
+    .card-info-middle {
+      margin-left: 45rpx;
+      font-size: 28rpx;
+      color: #909090;
+    }
+    .card-info-bottom {
+      margin-top:-12rpx;
+      font-size: 22rpx;
+      color: #909090;
+      text-align: right;
+      margin-right: 18rpx;
+      margin-bottom: 20rpx;
+    }
+  }
+}

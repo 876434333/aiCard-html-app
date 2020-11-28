@@ -1,0 +1,284 @@
+<style lang="scss">
+@import '../../assets/css/pages/contact/addContact.scss';
+</style>
+<template>
+  <!-- 一键邀请新同事加入 -->
+  <view class="wrap" wx:if="{{showAllPage}}">
+    <view class="head">
+      <image src="{{inviterHeadIcon}}"/>
+      <text class="font-size-30 c-323232">{{inviterName}}邀请你加入：</text>
+    </view>
+    <view class="font-size-40 c-3DB8C8 ta-center ent">{{enterpriseName}}</view>
+    <view class="line"></view>
+    <view class="font-size-30 c-646464 ta-center creat">创建人：{{createName}}</view>
+    <button class="font-size-30 c-ffffff ta-center view-btn" open-type="getPhoneNumber" bindgetphonenumber="getPhoneNumber">加入</button>
+    <view class="contact-list">
+     <repeat for="{{headIconList}}" key="index" index="index" item="item" wx:if="{{index < 4}}">
+      <image src="{{item == null || item == '' ? '../../assets/images/contact/avatar_empty.png' : item}}"/>
+     </repeat>
+    </view>
+    <view class="font-size-26 c-646464 ta-center">{{inviterName}}等{{headIconList.length}}位同事已加入，就差你啦！</view>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { authorizeFromMap } from '@/constants/pageMap'
+import { loginApi, companyApi } from '@/api'
+export default class transfer extends wepy.page {
+  // 相当于page.json
+  config = {
+    enablePullDownRefresh: true,
+    navigationBarTitleText: '邀请详情'
+  }
+  data = {
+    showAllPage: false,
+    inviterName: '',
+    inviterHeadIcon: '',
+    enterpriseName: '',
+    createName: '',
+    contactCount: 0,
+    headIconList: [],
+    enterprise_id: '',
+    department_id: '',
+    staff_id: '',
+    openid: '',
+    userInfo: null,
+    userRole: '',
+    oi: {}
+  }
+  onLoad(option) {
+    this.enterprise_id = option.enterprise_id
+    this.department_id = option.department_id
+    this.staff_id = option.employee_id
+    this.userRole = option.userRole
+    // this.enterprise_id = 'fdd5c1ec-0e39-4a1e-8c06-611e477d567b'
+    // this.department_id = '266'
+    // this.staff_id = '1a6dde4b8909456dbcc8095a5763411e'
+    this.userInfo = this.$parent.getUserInfo()
+    // 点链接进来会执行getOpenid,从授权界面过来不会执行
+    if (!this.userInfo) {
+      this.getOpenId(this.enterprise_id)
+    } else {
+      this.showAllPage = true
+      this.getInviterInfo(this.staff_id, this.enterprise_id)
+    }
+  }
+  // 获取openid
+  getOpenId(enterpriseId) {
+    let promise = new Promise((resolve, reject) => {
+      // 获取code
+      wepy.login().then(loginDate => {
+        if (loginDate.code) {
+          // 获取openid
+          let param = {
+            code: loginDate.code,
+            enterprise_id: enterpriseId
+          }
+          loginApi.getOpenidAndCheck(param).then(
+            res => {
+              this.$parent.saveOpenid(res.openid)
+              if (res.status === '0') {
+                // 此openid在数据库没记录
+                this.whetherAuthorize()
+              } else {
+                this.showAllPage = true
+
+                let userInfo = {
+                  nickName: res.nickName,
+                  avatarUrl: res.headIcon
+                }
+                this.$parent.saveUserInfo(userInfo)
+                this.getInviterInfo(this.staff_id, this.enterprise_id)
+                this.$apply()
+                this.oi = res
+              }
+            },
+            err => {
+              wepy.showModal({
+                title: '提示',
+                content: '获取身份失败',
+                showCancel: false
+              })
+              this.hideLoading()
+              setTimeout(() => {
+                reject(err)
+              }, 1000)
+            }
+          )
+        }
+      })
+    })
+    return promise
+  }
+  // 获取邀请界面信息
+  getInviterInfo(staffId, enterpriseId) {
+    let params = {
+      inviteId: staffId,
+      enterpriseId: enterpriseId
+    }
+    companyApi.getInviteInfo(params).then(res => {
+      this.inviterName = res.inviteName
+      this.inviterHeadIcon = res.inviteHeadIcon
+      this.enterpriseName = res.enterpriseName
+      this.createName = res.createName
+      this.headIconList = res.headIconList
+      this.$apply()
+    },
+    err => {
+       // err_code=-1 为检查性错误
+      if (err.err_code === -1) {
+        wepy.showToast({
+          title: err.err_msg,
+          icon: 'none',
+          duration: 2000
+        })
+      }
+    })
+  }
+
+  /**
+   * 检查是否授权
+   */
+  whetherAuthorize() {
+    // 判断用户是否授权
+    return wepy.getSetting().then(
+      res => {
+        let data = {
+          from: authorizeFromMap.addContact,
+          employee_id: this.staff_id,
+          enterprise_id: this.enterprise_id,
+          department_id: this.department_id
+        }
+        this.$parent.toAuthorize(data)
+      },
+      () => {}
+    )
+  }
+  getPhoneNumber(e) {
+    this.openid = this.$parent.getNowOpenid()
+    if (e.detail.encryptedData && e.detail.iv) {
+      // 同意授权
+      let params = {
+        iv: e.detail.iv,
+        openid: this.openid,
+        phone: e.detail.encryptedData
+      }
+      // 后台解密获取手机号
+      companyApi.getPhone(params).then(res => {
+        this.addStaff(res)
+      })
+    } else {
+      wepy.showToast({
+        title: '请授权手机号，否则无法加入企业',
+        icon: 'none',
+        duration: 2000
+      })
+    }
+  }
+  methods = {
+    addStaffByShare(params) {
+      companyApi.addStaffByshare(params).then(res => {
+        wepy.showToast({
+          title: '添加成功',
+          icon: 'none',
+          duration: 2000
+        })
+        setTimeout(() => {
+          wepy.hideLoading()
+          this.$parent.getStaffInfoFromBack(this.openid).then(res => {
+            wepy.reLaunch({
+              url: `/pages/card/cardIndex`
+            })
+          })
+        }, 2000)
+      },
+      err => {
+        wepy.hideLoading()
+        wepy.showToast({
+          title: err.err_msg,
+          icon: 'none',
+          duration: 2000
+        })
+        // err_code=-1 为检查性错误
+        if (err.err_code === -1) {
+          setTimeout(() => {
+            this.$parent.getStaffInfoFromBack(this.openid).then(res => {
+              if (res.loginType === 2) {
+                wepy.reLaunch({
+                  url: `/pages/card/cardView`
+                })
+              } else if (res.loginType === 3) {
+                wepy.reLaunch({
+                  url: `/pages/card/cardIndex`
+                })
+              }
+            })
+          }, 2000)
+        }
+      })
+    },
+    addStaffBySearch(params) {
+      // let _this = this
+      params.id = params.enterpriseId
+      companyApi.addStaffBySearch(params).then(
+        res => {
+          wepy.hideLoading()
+          wepy.showToast({
+            title: '已发送申请',
+            icon: 'success',
+            duration: 1000
+          }).then(() => {
+            wepy.reLaunch({
+              url: `/pages/card/subPackage/pages/join?enterpriseName=${this.enterpriseName}&managerName=${this.createName}`
+            })
+          })
+        },
+        err => {
+          wepy.hideLoading()
+          wepy.showModal({
+            title: '提示',
+            content: '加入企业失败:' + err.err_msg
+          })
+        }
+      )
+    }
+  }
+  addStaff(phone) {
+    let userInfo = this.$parent.getUserInfo()
+    let params = {}
+    if (userInfo) {
+      params = {
+        enterpriseId: this.enterprise_id,
+        departmentId: this.department_id,
+        staffId: this.staff_id,
+        openid: this.openid,
+        avatarUrl: userInfo.avatarUrl ? userInfo.avatarUrl : '',
+        sex: userInfo.gender ? userInfo.gender : '',
+        nickName: userInfo.nickName ? userInfo.nickName : '',
+        phone: phone,
+        people_name: userInfo.nickName ? userInfo.nickName : '',
+        head_icon: userInfo.avatarUrl ? userInfo.avatarUrl : ''
+      }
+    } else {
+      params = {
+        enterpriseId: this.enterprise_id,
+        departmentId: this.department_id,
+        staffId: this.staff_id,
+        openid: this.openid,
+        head_icon: this.oi.headIcon,
+        people_name: this.oi.nickName,
+        phone: phone
+      }
+    }
+    wepy.showLoading({
+      title: '加载中...'
+    })
+    if (this.userRole === '2') {
+      this.methods.addStaffBySearch.call(this, params)
+    } else {
+      this.methods.addStaffByShare.call(this, params)
+    }
+  }
+}
+</script>

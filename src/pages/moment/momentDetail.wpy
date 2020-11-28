@@ -1,0 +1,493 @@
+<style lang="scss">
+  @import '../../assets/css/pages/product/mod.scss';
+  @import '../../assets/css/pages/moment/momentIndex.scss';
+  @import '../../assets/css/pages/moment/momentDetail.scss';
+  .dyn-item {
+    border: 0;
+  }
+  .momt-user {
+    .momt-user-container {
+      .momt-avtor {
+        margin-top:10rpx;
+      }
+    }
+  }
+  .momt-user {
+    height:156rpx;
+  }
+  .momt-user-name {
+    height:52rpx;
+  }
+  .momt-user-station{
+    height:40rpx;
+  }
+  .momt-user {
+    .momt-user-container {
+      .to-card {
+        margin-top:14rpx;
+      }
+    }
+  } 
+</style>
+<style lang="less">
+  @import '../../assets/wxParse/wxParse/wxParse.wxss';
+</style>
+<template>
+  <view>
+    <noticemsg></noticemsg>
+    <view wx:if="{{releaseShow}}">
+      <release :entity.sync="releaseData" @submit-input.user="submitInput"></release>
+    </view>
+    <view class="momt-user" wx:if="{{fromScence !== 1}}">
+      <view class="momt-user-container">
+        <image src="{{sellerInfo.head_icon}}"
+               class="momt-avtor" />
+        <view class="to-card" @tap="toCardPage">
+          TA的名片
+        </view>
+        <view class="momt-user-main">
+          <view class="momt-user-name ellipse">{{sellerInfo.name}}</view>
+          <view class="momt-user-station ellipse">{{sellerInfo.station}}</view>
+        </view>
+      </view>
+    </view>
+    <view class="dyn-list {{fromScence !== 1 ? 'bottom' : ''}}" wx:if="{{type === 0}}">
+      <view class="dyn-item">
+        <view @tap="inputOnBlur" class="dyn-avtor">
+          <image src="{{circleDetail.head_icon}}" />
+        </view>
+        <view class="dyn-main">
+          <view @tap="inputOnBlur" class="dyn-user">
+            <text class="dyn-user">{{circleDetail.name}}</text>
+            <text class="zan-tag zan-tag--primary zan-tag--plain zan-tag--disabled dyn-tag font-size-24 c-909090"
+                  wx:if="{{circleDetail.flag === 1}}">公司</text>
+          </view>
+          <view @tap="inputOnBlur" class="dyn-content normal">
+            <text sapce="nbsp"
+                  decode
+                  selectable class="font-size-30 c-323232">{{circleDetail.content}}</text>
+          </view>
+          <view @tap="inputOnBlur" class="dyn-photo" wx:if="{{circleDetail.circle_imgs.length > 0}}">
+            <view class="dyn-photo-{{circleDetail.circle_imgs.length > 3 ? 4 : circleDetail.circle_imgs.length}}">
+              <repeat for="{{circleDetail.circle_imgs}}" index="idx" key="idx" item="it">
+                <image src="{{it}}"
+                       data-idx="{{idx}}"
+                       mode="aspectFill"
+                       lazy-load="true"
+                       @tap="previewImage({{idx}})"
+                       wx:if="{{circleDetail.circle_imgs.length > 1}}" />
+                <image src="{{it}}"
+                       data-idx="{{idx}}"
+                       mode="widthFix"
+                       lazy-load="true"
+                       @tap="previewImage({{idx}})"
+                       wx:elif="{{circleDetail.circle_imgs.length === 1}}" />
+              </repeat>
+            </view>
+          </view>
+          <view class="dyn-time">
+            {{circleDetail.create_time}}
+            <view class="dyn-opts {{menuShow ? 'show' : ''}}">
+              <view class="dyn-opts-container">
+                <view wx:if="{{circleDetail.is_zan === 1}}" class="dyn-opt dyn-opt-spt" @tap="praise">
+                  <image src="../../assets/images/moment/praise_white.png" /> 取消赞
+                </view>
+                <view wx:else class="dyn-opt dyn-opt-spt" @tap="praise">
+                  <image src="../../assets/images/moment/praise_white.png"/> 赞
+                </view>
+                <view class="dyn-opt" @tap="comt">
+                  <image src="../../assets/images/moment/comment_white.png"/> 评论
+                </view>
+                <view class="dyn-opt dyn-opt-spt">
+                  <button class="dyn-share" open-type="share" plain="true" hover-class="none">
+                    <image src="../../assets/images/moment/forward.png"/> 转发
+                  </button>
+                </view>
+              </view>
+            </view>
+            <form report-submit="true" bindsubmit="formSubmit">
+              <button form-type="submit" 
+                      plain="true"
+                      over-class="none"
+                      class="button-plain-hidden-form dyn-time-comt"
+                      open-type="getPhoneNumber"
+                      @getphonenumber="getPhoneNumber"
+                      data-method="showMenu"
+                      data-circle-Id="{{circleDetail.circle_id}}"
+                      wx:if="{{!phoneNumberAuth}}">
+                <image src="../../assets/images/moment/comment.png" />
+              </button>
+              <button form-type="submit" 
+                      plain="true"
+                      over-class="none"
+                      class="button-plain-hidden-form dyn-time-comt"
+                      @tap="showMenu"
+                      data-circle-Id="{{circleDetail.circle_id}}"
+                      wx:else >
+                <image src="../../assets/images/moment/comment.png" />
+              </button>
+            </form>
+            <!-- <image src="../../assets/images/comment.png"
+                   class="dyn-time-comt"
+                   data-circle-Id="{{circleDetail.circle_id}}"
+                   @tap="showMenu" /> -->
+          </view>
+          <view class="dyn-reply" @tap="inputOnBlur" wx:if="{{circleDetail.circle_zan_logs.length > 0 || circleDetail.circle_comment_logs.length > 0}}">
+            <view class="dyn-praise" wx:if="{{circleDetail.circle_zan_logs.length > 0}}">
+              <image src="../../assets/images/moment/praise.png" />
+              <repeat for="{{circleDetail.circle_zan_logs}}" index="idxZan" item="itZan">
+                <text data-user-id="itZan.user_id">{{itZan.user_name}}{{idxZan === circleDetail.circle_zan_logs.length - 1 ? '': ', '}}</text>
+              </repeat>
+            </view>
+            <view class="dyn-comt" wx:if="{{circleDetail.circle_comment_logs.length > 0}}">
+              <repeat for="{{circleDetail.circle_comment_logs}}" index="idxCmt" item="itCmt">
+                <view class="dyn-comt-item" data-id="itCmt.id">
+                  <text class="dyn-comt-item-user" data-user-id="itCmt.user_id">{{itCmt.user_name}}：</text>
+                  <text class="dyn-comt-item-text">{{itCmt.content}}</text>
+                </view>
+              </repeat>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="dyn-list momt-rich-text {{fromScence !== 1 ? 'bottom' : ''}}" wx:else>
+      <view class="rich-title">{{title}}</view>
+      <import src="../../assets/wxParse/wxParse/wxParse.wxml" />
+      <template is="wxParse" data="{{wxParseData: richText && richText.nodes || []}}"></template>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import WxParse from '@/assets/wxParse/wxParse/wxParse'
+  import {authorizeFromMap} from '@/constants/pageMap'
+  import {cardActionMap, momentFormDate} from '@/utils'
+  import {cardApi, momentApi} from '@/api'
+  import Release from '../../components/release'
+  import {detailMixin, getPhoneNumberMixin} from '@/mixins/index.js'
+  import NoticeMsg from '@/components/noticeMsg'
+  // import {CARD_LIST, CARD_DETAIL} from '@/router'
+  import momentContChange from '@/assets/js/transformSpc/momentContChange'
+  import {G_RES_URL} from '@/config'
+  export default class momentDetail extends wepy.page {
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '动态详情页'
+    }
+    data = {
+      res_url: G_RES_URL,
+      circleId: '',
+      staffId: '',
+      enterpriseId: '',
+      departmentId: '',
+      circleDetail: '',
+      menuShow: false,
+      releaseShow: false,
+      releaseData: {
+        id: '',
+        name: '',
+        content: ''
+      },
+      type: 0,
+      item: {
+        companyName: '',
+        mobile: '',
+        address: '',
+        lng: 119.296671,
+        lat: 26.099022,
+        photo: '',
+        content: ''
+      },
+      title: ''
+    }
+    components = {
+      release: Release,
+      noticemsg: NoticeMsg
+      // htmlParser: htmlParser
+    }
+    mixins = [
+      detailMixin,
+      getPhoneNumberMixin
+    ]
+    computed = {
+      nodes() {
+        /**
+        * WxParse.wxParse(bindName , type, data, target,imagePadding)
+        * 1.bindName绑定的数据名(必填)
+        * 2.type可以为html或者md(必填)
+        * 3.data为传入的具体数据(必填)
+        * 4.target为Page对象,一般为this(必填)
+        * 5.imagePadding为当图片自适应是左右的单一padding(默认为0,可选)
+        */
+        WxParse.wxParse('richText', 'html', this.item.content, this, 50)
+      }
+    }
+    methods = {
+      previewImage(idx) {
+        let urls = this.circleDetail.circle_imgs
+        wepy.previewImage({
+          current: urls[idx],
+          urls: urls
+        })
+      },
+      wxParseImgLoad(e) {
+        this.wxParseImgLoad(e)
+      },
+      // 提交formid
+      formSubmit(e) {
+        let formId = e.detail.formId
+        let sessionId = this.$parent.getSessionId()
+        cardApi.sendFormId(formId, sessionId)
+      },
+      // 点赞
+      praise() {
+        let oldStatus = this.circleDetail.is_zan
+        let newStatus = this.circleDetail.is_zan === 0 ? 1 : 0
+        this.circleDetail.is_zan = newStatus
+        let param = {
+          circle_id: this.circleId
+        }
+        let sessionId = this.$parent.getSessionId()
+        let userId = this.$parent.getUserId()
+        if (newStatus === 1) {
+          // 点赞
+          this.addPraise(userId, newStatus)
+        } else {
+          // 取消赞
+          this.cancelPraise(userId, newStatus)
+        }
+        this.$apply()
+        momentApi.clickPraise(param, sessionId).then((res) => {
+          wepy.showToast({
+            title: '操作成功',
+            icon: 'none',
+            duration: 1000
+          }).then(() => {
+            this.menuShow = false
+            if (newStatus === 1) {
+              this.recordClickAction(cardActionMap.praiseMoment)
+            }
+            this.$apply()
+          })
+        }, () => {
+          wepy.showToast({
+            title: '操作失败',
+            icon: 'none',
+            duration: 1000
+          })
+          // 重置状态
+          if (newStatus === 1) {
+            this.cancelPraise(userId, oldStatus)
+          } else {
+            this.addPraise(userId, oldStatus)
+          }
+          this.circleDetail.is_zan = oldStatus
+          this.$apply()
+        })
+      },
+      // 评论
+      comt() {
+        this.menuShow = false
+        this.releaseShow = true
+        this.releaseData = {
+          id: this.circleId,
+          name: this.sellerInfo.name,
+          content: ''
+        }
+      },
+      inputOnBlur() {
+        this.hiddenInput()
+      },
+      /**
+       * 提交评论
+       * @param  {[type]} text 内容
+       */
+      submitInput(text) {
+        let sessionId = this.$parent.getSessionId()
+        this.circleDetail['circle_comment_logs'].push({
+          user_id: sessionId,
+          user_name: this.$parent.globalData.userInfo.nickName,
+          content: text
+        })
+        this.$apply()
+        this.hiddenInput()
+        this.recordClickAction(cardActionMap.comtMoment)
+      }
+    }
+
+    onLoad(option, data) {
+      // 获取朋友圈id
+      this.circleId = option.circle_id
+      let type = parseInt(option.t)
+      if (type >= 0 && type !== this.type) {
+        this.type = type
+      }
+      this.init()
+    }
+
+    /**
+     * 分享
+     * @param  {[type]} res [description]
+     */
+    onShareAppMessage(res) {
+      if (res.from === 'button') {
+        // 来自页面内转发按钮
+        let path = `/pages/moment/momentDetail?circle_id=${this.circleId}&employee_id=${this.staffId}&enterprise_id=${this.enterpriseId}&department_id=${this.departmentId}&t=${this.type}`
+        let imageUrl = this.circleDetail.circle_imgs[0]
+        return {
+          title: '公司动态',
+          path: path,
+          imageUrl: imageUrl,
+          success: (res) => {
+            // 转发成功
+            this.recordClickAction(cardActionMap.forwardMoment)
+          },
+          fail: (res) => {
+            // 转发失败
+          }
+        }
+      }
+    }
+
+    /**
+     * 从分享进入的
+     * @param  {object} params url参数
+     */
+    fromShare(params) {
+      let data = {
+        from: authorizeFromMap.momentDetail,
+        circle_id: this.circleId,
+        t: this.type,
+        employee_id: this.staffId,
+        enterprise_id: this.enterpriseId,
+        department_id: this.departmentId
+      }
+      this.whetherAuthorize(data)
+    }
+
+    /**
+     * 从列表进入的
+     * @param  {object} params url参数
+     */
+    formList(params) {
+      this.getMomentDetail()
+      // this.getSellerInfo()
+    }
+
+    // 登录完之后
+    loginAfter(openid) {
+      this.$parent.getUserChatLoginInfo(openid)
+      this.getMomentDetail()
+    }
+    /**
+     * 获取朋友圈详情
+     */
+    getMomentDetail() {
+      momentApi.getMomentDetail(this.circleId).then((data) => {
+        data.create_time = momentFormDate(data.create_time)
+        if (data.type === 0) {
+          data.content = momentContChange(data.content)
+        }
+        this.circleDetail = data
+        if (this.type !== data.type) {
+          this.type = data.type
+        }
+        if (data.type > 0) {
+          this.title = data.title
+          this.item.content = data.content
+        }
+        this.$apply()
+      }, (err) => {
+        this.isInvalidMoment(err)
+      })
+    }
+    /**
+     * 取消点赞
+     * @param  {[type]} userId 用户id
+     * @param  {[type]} newStatus 要变成的状态
+     */
+    cancelPraise(userId, newStatus) {
+      this.circleDetail['circle_zan_logs'].some((val, idx) => {
+        if (val.flag === 2 && val.user_id === userId) {
+          this.circleDetail['circle_zan_logs'].splice(idx, 1)
+          return true
+        }
+      })
+      this.circleDetail.is_zan = newStatus
+      this.$apply()
+    }
+    /**
+     * 添加赞
+     * @param  {string} userId 用户id
+     * @param  {int} newStatus 要变成的状态
+     */
+    addPraise(userId, newStatus) {
+      let newObj = {
+        flag: 2,
+        user_id: userId,
+        user_name: this.$parent.globalData.userInfo.nickName
+      }
+      this.circleDetail['circle_zan_logs'].push(newObj)
+      this.circleDetail.is_zan = newStatus
+      this.$apply()
+    }
+    /**
+     * 显示菜单
+     */
+    showMenu() {
+      this.menuShow = !this.menuShow
+    }
+    hiddenInput() {
+      this.releaseShow = false
+      this.releaseData = {
+        id: '',
+        name: '',
+        content: ''
+      }
+      this.$apply()
+    }
+    // 点击行为
+    recordClickAction(action) {
+      let params = {
+        action_code: action,
+        employee_id: this.staffId,
+        enterprise_id: this.enterpriseId,
+        department_id: this.departmentId
+      }
+      this.$parent.recordClickAction(params)
+    }
+    /**
+     * 已删除
+     */
+    isInvalidMoment(err) {
+      if (err.err_code === 1000) {
+        this.$parent.showToast({
+          title: '该资讯已经失效',
+          mask: true
+        })
+        setTimeout(() => {
+          this.toHomeIndex()
+        }, 1000)
+      }
+    }
+    /**
+     * 前往名片详情
+     */
+    toCardPage() {
+      let path = `/pages/card/cardView?employee_id=${this.staffId}&enterprise_id=${this.enterpriseId}&department_id=${this.departmentId}`
+      wepy.reLaunch({
+        url: path
+      })
+    }
+    /**
+     * 前往名片列表
+     */
+    toHomeIndex() {
+      wepy.reLaunch({
+        url: `/pages/home/homeIndex`
+      })
+    }
+  }
+</script>

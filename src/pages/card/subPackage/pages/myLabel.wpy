@@ -1,0 +1,244 @@
+<style>
+.mylabel {
+  margin: 10rpx;
+  padding: 15rpx 15rpx;
+  text-align: center;
+  background-color: #e2fdff;
+  color: #909090;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  width: auto;
+  float: left;
+  position: relative;
+}
+.mylabel_add {
+  background-color: #f2f2f2;
+  border: solid 1px #c3c3c3;
+  width: 150rpx;
+}
+.refer_label_default {
+  color: #323232;
+  background-color: #f7f7f7;
+}
+.refer_label_selected {
+  color: #b1b1b1;
+  background-color: #f7f7f7;
+}
+</style>
+<template>
+<view class="mainbody">
+    <view class="weui-flex mt-40">
+        <view class="weui-flex__item ta-left font-size-30 c-323232">我的标签</view>
+        <view class="weui-flex__item ta-right font-size-24 c-909090">{{label.myLabels.length}}/10</view>
+    </view>
+    <view class="mt-20">
+        <block wx:for="{{label.myLabels}}" wx:key="myLabels">
+            <view class="mylabel">
+                <view>{{item.label_name}}</view>
+                <image src="/assets/images/card/close.png" class="close" bindtap="labelOperate" data-method="del" data-index="{{index}}"/>
+            </view>
+        </block>
+        <view wx:if="{{label.myLabels.length < 10}}" class="mylabel mylabel_add" bindtap="labelOperate" data-method="add">+</view>
+    </view>
+    <view style="clear:both"></view>
+    
+    <view class="font-size-30 c-323232 mt-40">可参考标签</view>
+    <view class="mt-20">
+        <block wx:for="{{label.referLabels}}" wx:key="referLabels">
+            <view class="mylabel refer_label_default" bindtap="labelOperate" data-method="addReferLabel" data-index="{{index}}">
+                <text class="{{item.selected}}">{{item.label_name}}</text>
+            </view>
+        </block>
+    </view>
+    <view style="clear:both"></view>
+    <button class="bg-3DB8C8 c-ffffff bord-radius font-size-36 mt-40" @tap="save">保存</button>
+    <!--模态框-->
+    <deecardmodal :modal.sync = "modal">
+        <!--添加标签窗体-->
+        <view style="font-size:24rpx;padding:35rpx 50rpx" wx:if="{{modal.switch === 'addLabel'}}">
+            <input class="weui-input bord" focus="true" placeholder="请输入自定义标签" bindinput="labelOperate" data-method="input"/>
+        </view>
+    </deecardmodal>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import uploadImgTem from '@/components/uploadImgTem'
+import modal from '@/components/modal/deecardModal'
+import { common } from '@/assets/js/common'
+import { resumeApi } from '@/api'
+export default class mylabel extends wepy.page {
+  config = {
+    navigationBarTitleText: '选择我的印象标签'
+  }
+  components = {
+    uploadImg: uploadImgTem,
+    deecardmodal: modal
+  }
+  data = {
+    staffId: null,
+    userId: null,
+    label: {
+      inputLabelName: '',
+      myLabels: [],
+      referLabels: [],
+      requestLabels: []
+    },
+    modal: {}
+  }
+  methods = {
+    labelOperate(e) {
+      let dataset = e.currentTarget.dataset
+      let method = this.labelInst(e)
+      method[dataset.method]()
+    },
+    // 保存
+    save(e) {
+      let requestObj = {
+        staffId: this.staffId,
+        userId: this.userId,
+        labels: this.label.requestLabels
+      }
+      resumeApi.save(requestObj).then(res => {
+        common.tip('保存成功', 'none')
+        this.label.requestLabels = []
+        wepy.reLaunch({
+          url: `/pages/card/cardIndex`
+        })
+      })
+    }
+  }
+  onLoad() {
+    let staffInfo = common.getStaffInfo(this)
+    this.staffId = staffInfo.staffId
+    this.userId = staffInfo.userId
+    resumeApi.getLabels(this.staffId, this.userId).then(res => {
+      // 加载我的标签以及参考标签
+      this.labelInst().load(res)
+      this.$apply()
+    })
+  }
+  // label实例
+  labelInst(e) {
+    let that = this
+    let label = that.label
+    let dataset
+    if (typeof (e) !== 'undefined') {
+      dataset = e.currentTarget.dataset
+    }
+    let method = {
+      // 加载标签
+      load(res) {
+        let _myLables = []
+        let _referLabels = []
+        let searchMyLables = function(id) {
+          let flag = false
+          for (let i = 0; i < _myLables.length; i++) {
+            if (_myLables[i].label_id === id) {
+              flag = true
+              break
+            }
+          }
+          return flag
+        }
+        for (let i = 0; i < res.length; i++) {
+          if (res[i].is_refer === '1') {
+            _myLables.push(res[i])
+          } else {
+            if (searchMyLables(res[i].label_id)) {
+              res[i]['selected'] = 'c-909090'
+            }
+            _referLabels.push(res[i])
+          }
+        }
+        that.label = {
+          inputLabelName: '',
+          myLabels: _myLables,
+          referLabels: _referLabels,
+          requestLabels: []
+        }
+      },
+      // 录入标签
+      input() {
+        label.inputLabelName = e.detail.value
+      },
+      // 添加标签
+      add() {
+        common.showModal(that, '添加标签', 'addLabel').bind('取消', function(modal) {
+          modal.show = false
+        }).bind('确认', function(modal) {
+          let labelName = label.inputLabelName
+          let currentLabel = {label_id: common.getUUID(), label_name: labelName}
+          label.myLabels.push(currentLabel)
+          currentLabel['state'] = 'add'
+          currentLabel['type'] = 1
+          label.requestLabels.push(currentLabel)
+          modal.show = false
+        }, '#e75152')
+      },
+      // 添加参考标签
+      addReferLabel() {
+        if (label.myLabels.length >= 10) {
+          wx.showToast({
+            title: '标签不能超过10个',
+            icon: 'none'
+          })
+          return
+        }
+        let currentLabel = label.referLabels[dataset.index]
+        if (typeof (currentLabel['selected']) === 'undefined' || currentLabel['selected'] === 'noselected') {
+          currentLabel['is_refer'] = '1'
+          currentLabel['selected'] = 'c-909090'
+          label.myLabels.push(currentLabel)
+          let labelIndex = method.findRequestLabels(currentLabel.label_id)
+          if (labelIndex > -1) {
+            label.requestLabels.splice(labelIndex, 1)
+          } else {
+            currentLabel['state'] = 'add'
+            label.requestLabels.push(currentLabel)
+          }
+        }
+      },
+      // 删除标签
+      del() {
+        let currentLabel = label.myLabels[dataset.index]
+        // 如果删除的为参考标签，将下方参考标签设置为选中
+        if (currentLabel.type === 0) {
+          let findReferLabel = function() {
+            let referLabels = label.referLabels
+            for (let i = 0; i < referLabels.length; i++) {
+              if (currentLabel.label_id === referLabels[i].label_id) {
+                referLabels[i]['selected'] = 'noselected'
+                break
+              }
+            }
+          }
+          findReferLabel()
+        }
+        // 如果当前删除的数据在requestLabels里面存在，表示该label是当前添加的，不是后台数据，直接清除掉，否则存储为需要删除的数据
+        let labelIndex = method.findRequestLabels(currentLabel.label_id)
+        if (labelIndex > -1) {
+          label.requestLabels.splice(labelIndex, 1)
+        } else {
+          currentLabel['state'] = 'del'
+          label.requestLabels.push(currentLabel)
+        }
+        label.myLabels.splice(dataset.index, 1)
+      },
+      findRequestLabels(labelId) {
+        let requestLabels = label.requestLabels
+        let labelIndex = -1
+        for (let i = 0; i < requestLabels.length; i++) {
+          if (labelId === requestLabels[i].label_id) {
+            labelIndex = i
+            break
+          }
+        }
+        return labelIndex
+      }
+    }
+    return method
+  }
+}
+</script>

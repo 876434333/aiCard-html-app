@@ -1,0 +1,31 @@
+<style lang="scss">
+  @import './cardTypeTwo.scss';
+</style>
+<template>
+  <view class="type-one">
+    <view class="type-one-top">
+      <image class="top-header-image" src="{{syncData.head_icon}}"/>
+    </view>
+    <view class="card-info">
+      <view class="card-info-top">
+        <text class="card-info-name">{{syncData.name}}</text>
+        <text class="card-info-station">{{syncData.station}}</text>
+      </view>
+      <view class="card-info-middle">{{syncData.phone}}</view>
+      <view class="card-info-bottom">{{syncData.enterprise_name}}</view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import CardDetailMixin from '../../../mixins/cardDetailMixins.js'
+import {G_RES_URL} from '@/config'
+
+export default class CardTypeTwo extends wepy.component {
+  mixins = [CardDetailMixin]
+  data = {
+    res_url: G_RES_URL
+  }
+}
+</script>

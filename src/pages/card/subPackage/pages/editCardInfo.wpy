@@ -1,0 +1,238 @@
+<style lang="scss">
+.font-lable {
+  font-size: 30rpx;
+  color: #323232;
+}
+.font-placeholder {
+  font-size: 30rpx;
+  color: #909090;
+}
+.arrow {
+  padding:24rpx 28rpx;
+  width:16rpx;
+  height:29rpx;
+  vertical-align:middle;
+}
+.weui-label {
+    width: 112rpx;
+}
+</style>
+<template>
+    <form bindsubmit="save">
+        <view >
+            <view class="weui-cells weui-cells_after-title">
+                <view class="weui-cell weui-cell_input">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label font-lable">姓名</view>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <input class="weui-input font-placeholder" placeholder="请填写您的姓名" value="{{staffInfo.name}}"  bindinput="getName" maxlength='10'/>
+                    </view>
+                </view>
+                <view class="weui-cell weui-cell_input">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label font-lable">电话</view>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <input class="weui-input font-placeholder" placeholder="请填写您的电话号码" value="{{staffInfo.phone}}" bindinput="getPhone"  maxlength='12'/>
+                    </view>
+                </view>
+                <view class="weui-cell weui-cell_input">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label font-lable">组织</view>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <input class="weui-input font-placeholder" placeholder="请填写您的组织名字" value="{{staffInfo.enterprise_name}}" bindinput="getConpanyName" maxlength='20'/>
+                    </view>
+                </view>
+                <view class="weui-cell weui-cell_input">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label font-lable">职务</view>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <input class="weui-input font-placeholder" placeholder="请填写您的职务" value="{{staffInfo.station}}" bindinput="getStation" maxlength='12'/>
+                    </view>
+                </view>
+                <view class="weui-cell weui-cell_input">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label font-lable">微信</view>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <input class="weui-input font-placeholder" placeholder="请填写您的微信" value="{{staffInfo.weixin}}" bindinput="getWeixin" maxlength='20'/>
+                    </view>
+                </view>
+                <view class="weui-cell weui-cell_input">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label font-lable">邮箱</view>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <input class="weui-input font-placeholder" placeholder="请填写您的邮箱" value="{{staffInfo.mail}}" bindinput="getMail" maxlength='20'/>
+                    </view>
+                </view>
+                <view class="weui-cell weui-cell_access" style="padding:0 10rpx 0 30rpx;">
+                    <view class="weui-cell__hd">
+                        <view class="weui-label font-lable">地址</view>
+                    </view>
+                    <input class="font-size-30 c-909090 weui-input" name="address" placeholder="请选择地址" value="{{staffInfo.address}}" style="display:inline-block;width:85%;vertical-align:middle;"/>
+                    <image src="/assets/images/card/card_edit_right.png" class="arrow" @tap="getLocation"/>
+                </view>
+            </view>
+
+            <button class="weui-btn submit-btn" formType="submit">保存</button>
+            <canvas canvas-id="myCanvas" style="width:682.5px;height:954px;position:absolute;top:-999px;left:-999px;"></canvas>
+        </view>
+    </form>
+</template>
+<script>
+import wepy from 'wepy'
+import { companyApi, cardManagerApi } from '@/api'
+import { common } from '../../../../assets/js/common'
+import {G_RES_URL} from '@/config'
+import {canvasPosterMixin} from '@/mixins'
+export default class EditCardInfo extends wepy.page {
+  mixins = [canvasPosterMixin];
+  data = {
+    location: '',
+    staffInfo: {},
+    userRole: '',
+    res_url: G_RES_URL
+  }
+  config = {
+    navigationBarTitleText: '编辑基本信息'
+  }
+  onLoad(options) {
+    this.userRole = options.userRole
+    this.staffInfo = this.$parent.getStaffInfo()
+  }
+  methods = {
+    getLocation() {
+      let _this = this
+      wx.chooseLocation({
+        success: function(res) {
+          _this.staffInfo.address = res.name
+          _this.$apply()
+        }
+      })
+    },
+    getName(e) {
+      this.staffInfo.name = e.detail.value
+    },
+    getPhone(e) {
+      this.staffInfo.phone = e.detail.value
+    },
+    getConpanyName(e) {
+      this.staffInfo.enterprise_name = e.detail.value
+    },
+    getStation(e) {
+      this.staffInfo.station = e.detail.value
+    },
+    getWeixin(e) {
+      this.staffInfo.weixin = e.detail.value
+    },
+    getMail(e) {
+      this.staffInfo.mail = e.detail.value
+    }
+  }
+  save(e) {
+    this.staffInfo.address = e.detail.value.address
+    if (this.staffInfo.name === '') {
+      common.tip('请输入姓名', 'none')
+      return
+    }
+    if (this.staffInfo.enterprise_name === '') {
+      common.tip('请输入组织名称', 'none')
+      return
+    }
+    let params = {
+      address: this.staffInfo.address,
+      company_name: this.staffInfo.enterprise_name,
+      mail: this.staffInfo.mail,
+      name: this.staffInfo.name,
+      staffId: this.staffInfo.staffId,
+      phone: this.staffInfo.phone,
+      station: this.staffInfo.station,
+      weixin: this.staffInfo.weixin
+    }
+    companyApi.updataCardBaseInfo(params).then(res => {
+      this.$parent.saveStaffInfo(this.staffInfo)
+      this.saveTempAndStartCanvas(this.staffInfo.temlate_id)
+      common.tip('保存成功', 'success')
+    })
+  }
+   // 保存临时图片并启动画布
+  saveTempAndStartCanvas(templateId) {
+    let cardBg
+    if (Number(templateId) === 1) {
+      cardBg = this.res_url + '/dc_card_card_bg.png'
+    } else if (Number(templateId) === 3) {
+      cardBg = this.res_url + '/dc_card_template_3.png'
+    } else if (Number(templateId) === 4) {
+      cardBg = this.res_url + '/dc_card_template_4.png'
+    }
+    wepy.getImageInfo({
+      src: cardBg
+    }).then(rs => {
+      cardBg = rs.path
+      this.drawCanvas(Number(templateId), cardBg)
+    })
+  }
+  drawCanvas(templateId, cardBg) {
+    let that = this
+    let staff = this.$parent.getStaffInfo()
+    let ctx = wepy.createCanvasContext('myCanvas')
+    ctx.setFillStyle('#ffffff')
+    ctx.fillRect(0, 0, 682.5, 954)
+
+    ctx.drawImage(cardBg, 32.25, 20, 618, 374)
+
+    if (templateId === 1) {
+      this.drawCardTypeOne(staff, ctx)
+    } else if (templateId === 3) {
+      this.drawCardTypeThree(staff, ctx)
+    } else if (templateId === 4) {
+      this.drawCardTypeFour(staff, ctx)
+    }
+    this.drawAddress(staff, templateId, ctx)
+    this.drawViewButton(ctx)
+    ctx.draw(false, function() {
+      wepy.canvasToTempFilePath({
+        canvasId: 'myCanvas',
+        fileType: 'jpg',
+        y: 25,
+        x: 38,
+        width: 605,
+        height: 530
+      }).then((r) => {
+        let imgPath = r.tempFilePath
+        that.uploadBg(imgPath)
+      }, err => {
+        console.info(err)
+      })
+    })
+  }
+  uploadBg(imgPath) {
+    let apiURL = wepy.$instance.globalData.api.apiUrl + '/push/v1.0/upload_files'
+    wepy.uploadFile({
+      url: apiURL,
+      filePath: imgPath,
+      name: 'editormd-image-file'
+    }).then((e) => {
+      let cardImgUrl = JSON.parse(e.data).url
+      this.saveCardimg(cardImgUrl)
+    })
+  }
+  // 保存名片背景图
+  saveCardimg(url) {
+    let staff = this.$parent.getStaffInfo()
+    if (staff.card_img_url) {
+      cardManagerApi.deleteResouces(staff.card_img_url).then(res => {})
+    }
+    cardManagerApi.updCardImg(url).then(res => {
+      this.$parent.globalData.staffInfo.card_img_url = url
+      setTimeout(() => {
+        wepy.navigateBack({ delta: 1 })
+      }, 100)
+    })
+  }
+}
+</script>

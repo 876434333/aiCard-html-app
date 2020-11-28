@@ -1,0 +1,66 @@
+<style lang="scss"> </style>
+<template>
+  <!-- 折线图 -->
+  <canvas canvas-id="lineCanvas" disable-scroll="true" class="echart-canvas" bindtouchstart="touchHandler"></canvas>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import echarts from './js/echarts.js'
+  export default class line extends wepy.component {
+    props = {
+      lineData: {
+        type: Object,
+        default: null,
+        twoWay: true
+      }
+    }
+    data = {
+      lineChart: null
+    }
+    line(e) {
+      var windowWidth = 320
+      try {
+        var res = wepy.getSystemInfoSync()
+        windowWidth = res.windowWidth
+      } catch (e) {
+        console.error('getSystemInfoSync failed!')
+      }
+      this.lineChart = new echarts({
+        canvasId: 'lineCanvas',
+        type: 'line',
+        categories: this.lineData.categories,
+        animation: true,
+        series: this.lineData.series,
+        xAxis: {
+          disableGrid: true
+        },
+        yAxis: {
+          title: '',
+          format(val) {
+            return val.toFixed(2)
+          },
+          min: 0
+        },
+        width: windowWidth,
+        height: 200,
+        dataLabel: false,
+        dataPointShape: true,
+        extra: {
+          lineStyle: 'curve'
+        }
+      })
+      this.$apply()
+    }
+    methods = {
+      touchHandler(e) {
+        this.lineChart.showToolTip(e, {
+          // background: '#7cb5ec',
+          format: function (item, category) {
+            return category + ' ' + item.name + ':' + item.data
+          }
+        })
+      }
+    }
+  }
+</script>

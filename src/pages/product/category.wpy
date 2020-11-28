@@ -1,0 +1,203 @@
+<style lang="scss">
+  @import '../../assets/css/pages/me/entOrg.scss';
+  @import '../../assets/css/pages/me/transfer.scss';
+  $main_color: #e75152;
+  .wrap{
+    padding-bottom:140rpx;
+    .contact-part{
+      background: #ffffff;
+      .weui-cell {
+        padding-left: 0;
+      }
+      .weui-cell__hd:nth-child(2) {
+        margin-left: 30rpx;
+      }
+      .contact-list {
+        margin-left: 24rpx;
+      }
+      .hook {
+        width:35rpx;
+        height: 35rpx;
+      }
+      .checked {
+        width:31rpx;
+        height: 31rpx;
+        border:2rpx solid #e8e8e8;
+        border-radius: 100%;
+      }
+    } 
+    .foot {
+      padding-top: 20rpx;
+      width: 100%;
+      height: 82rpx;
+      justify-content: space-between;
+      border-top:2rpx solid #e8e8e8;
+      background: #ffffff;
+      view {
+        width: 134rpx;
+        height: 63rpx;
+        line-height: 63rpx;
+        border-radius: 10rpx;
+        background: $main_color;
+      }
+      .cancel {
+        margin-left: 30rpx;
+        width: 130rpx;
+        height: 59rpx;
+        border:2rpx solid $main_color;
+        background: #ffffff;
+      }
+      .sure {
+        margin-right: 30rpx;
+      }
+    }
+  }
+</style>
+<template>
+  <!-- 商品分类 -->
+  <view class="wrap">
+    <!-- 商品分类 -->
+    <!-- <view class="contact-part {{categoryList.length === 0 ? 'contact-part-empty' : ''}}"> -->
+    <view class="contact-part">
+      <view class="contact-list" @tap="addCategory">
+        <view class="weui-cell">
+          <view class="weui-cell__hd">
+            <image src="../../assets/images/add.png" class="hook"/>
+          </view>
+          <view class="weui-cell__hd">
+            <view class="branch font-size-30 c-323232">新增分类</view>
+          </view>
+        </view>
+      </view>
+      <repeat for="{{categoryList}}" index="index" key="index" item="category" wx:if="{{categoryList.length != 0}}">
+        <view class="contact-list">
+          <view class="weui-cell" @tap="choose" data-index="{{index}}" data-id="{{category.id}}">
+            <view class="weui-cell__hd {{!category.selected ? 'checked' : ''}}">
+              <image src="../../assets/images/me/check.png" class="hook" wx:if="{{category.selected}}"/>
+            </view>
+            <view class="weui-cell__hd">
+              <view class="branch font-size-30 c-323232">{{category.name}}</view>
+            </view>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <!-- 空列表 -->
+    <view class="empty" wx:if="{{categoryList.length === 0}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+      <view class="font-size-32 ta-center c-909090">暂无分类，先去添加商品分类吧...</view>
+    </view>
+    <view class="foot" wx:if="{{categoryList.length != 0}}">
+      <view class="font-size-24 c-3DB8C8 ta-center cancel" @tap="cancel">取消</view>
+      <view class="font-size-24 c-ffffff ta-center sure" @tap="sure">确定</view>
+    </view>
+    <!--模态框-->
+    <deecardmodal :modal.sync = "modal">
+        <view style="font-size:24rpx;padding:35rpx 50rpx" wx:if="{{modal.switch === 'addCategory'}}">
+            <input class="bord" focus="true" placeholder="分类名称" bindinput="inputCategory"/>
+        </view>
+    </deecardmodal>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import {common} from '../../assets/js/common'
+  import {cardManagerApi} from '@/api'
+  import modal from '../../components/modal/deecardModal'
+  import {G_RES_URL} from '@/config'
+  export default class transfer extends wepy.page {
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '选择分类'
+    }
+    components = {
+      deecardmodal: modal
+    }
+    data = {
+      res_url: G_RES_URL,
+      categorySelected: '',
+      categoryList: [],
+      staffId: '',
+      enterpriseId: '',
+      modal: {},
+      categoryName: ''
+    }
+    onLoad(option) {
+      this.staffId = common.getStaffId(this)
+      this.enterpriseId = common.getEnterpriseId(this)
+      this.showCategory(option.id)
+    }
+    showCategory(currentId) {
+      // 获取分类列表
+      let that = this
+      cardManagerApi.getCategoryList(that.enterpriseId).then(res => {
+        that.categoryList = res
+        if (currentId != null && typeof (currentId) !== 'undefined') {
+          for (let i = 0; i < that.categoryList.length; i++) {
+            that.categoryList[i]['selected'] = false
+          }
+          for (let i = 0; i < that.categoryList.length; i++) {
+            if (currentId === that.categoryList[i]['id']) {
+              that.categoryList[i]['selected'] = true
+            }
+          }
+        }
+        that.$apply()
+      })
+    }
+    methods = {
+      // 输入分类
+      inputCategory(e) {
+        this.categoryName = e.detail.value
+      },
+      // 选择商品分类
+      choose(e) {
+        let index = e.currentTarget.dataset.index
+        for (let i = 0; i < this.categoryList.length; i++) {
+          this.categoryList[i]['selected'] = false
+        }
+        this.categoryList[index]['selected'] = !this.categoryList[index]['selected']
+        this.$apply()
+      },
+
+      // 添加分类
+      addCategory() {
+        let that = this
+        common.showModal(this, '添加分类', 'addCategory').bind('取消', function(modal) {
+          modal.show = false
+        }).bind('确认', function(modal) {
+          let param = {name: that.categoryName, create_staff_id: that.staffId, enterprise_id: that.enterpriseId}
+          cardManagerApi.addCategory(param).then(res => {
+            modal.show = false
+            common.tip('添加成功', 'success')
+            that.showCategory()
+          })
+        }, '#e75152')
+      },
+
+      // 点击取消
+      cancel() {
+        wepy.navigateBack({
+          delta: 1
+        })
+      },
+      // 点击确定
+      sure() {
+        for (let i = 0; i < this.categoryList.length; i++) {
+          if (this.categoryList[i]['selected'] === true) {
+            this.categorySelected = this.categoryList[i]
+            break
+          }
+        }
+        let prevPage = this.$parent.$pages['/pages/product/shopOfferDetails']
+        prevPage.data.offer.category_id = this.categorySelected.id
+        prevPage.data.offer.category_name = this.categorySelected.name
+        wepy.navigateBack({
+          delta: 1
+        })
+      }
+    }
+  }
+</script>

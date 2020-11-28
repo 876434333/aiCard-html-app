@@ -1,0 +1,1204 @@
+<style lang="scss">
+@import '../../assets/css/pages/chat/room.scss';
+</style>
+<template>
+  <view class="main">
+    <scroll-view scroll-y="true"
+                 class="scroll_view {{ view }}"
+                 id="showMsg"
+                 bindtap="cancelEmoji"
+                 bindscrolltoupper="getOlderHistoryMsg"
+                 scroll-into-view="{{ toView }}">
+      <view class="message"
+            wx:for="{{ chatMsg }}"
+            wx:key=""
+            id="{{ item.mid }}">
+        <view class="time" wx:if="{{item.msg.type !== 'welcome'}}">
+          <text>{{item.time}}</text>
+        </view>
+        <view class="main {{ item.style }}">
+          <!-- <view class="user">
+            <text>{{item.username === self.name ? self.nickName : friend.nickName}}</text>
+          </view> -->
+          <image class="avatar"
+                 src="{{item.username === self.name ? self.avtor : friend.avtor}}" />
+          <!-- 发送提醒 -->
+          <text class="msg-fail on-loading" wx:if="{{item.username === self.name && loads[item.mid]}}">
+          </text>
+          <image mode="widthFix"
+                 class="msg-fail"
+                 src="../../assets/images/close.png"
+                 wx:elif="{{item.isFail}}" />
+          <image wx:if="{{item.msg.type === 'img'}}" src="{{item.msg.data}}" data-url="{{item.msg.data}}" mode="widthFix" class="msg-img" @tap="previewImage"/>          
+          <view class="msg shap" wx:if="{{item.msg.type != 'img'}}">
+            <!-- <view wx:if="{{ item.msg.type == 'img' || item.msg.type == 'audio' || item.msg.type == 'video' || item.msg.type == 'audio'}}">
+              <image wx:if="{{item.msg.type === 'img'}}" src="{{item.msg.data}}" data-url="{{item.msg.data}}" mode="aspectFit" style="width: 200rpx; height: 260rpx;" @tap="previewImage"/>
+            </view> -->
+            <view wx:if="{{ item.msg.type == 'txt' || item.msg.type == 'emoji' }}" class="template">
+              <repeat for="{{ item.msg.data }}"
+                      item=""
+                      index="">
+                <template is="{{ item.type }}" data="{{ item }}"></template>
+              </repeat>
+            </view>
+            <!-- 欢迎卡片 -->
+            <view wx:elif="{{item.msg.type === 'welcome'}}">
+              <template is="{{ item.msg.type }}" data="{{ item: item.msg.data }}"></template>
+            </view>
+            <view class="{{item.username === self.name ? 'shape-r' : 'shape-l'}}"></view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 消息模板 -->
+    <template name="welcome">
+      <view class="msg-welcome ">
+        <view class="welc-title">{{item.title}}</view>
+        <view class="welc-subtitle">{{item.subtitle}}</view>
+        <view class="welc-opts">
+          <repeat for="{{item.list}}"
+                  item="btn"
+                  index="idx">
+            <view class="opts-item"
+                  data-type="{{btn.type}}"
+                  @tap="tapWelcomeOption">
+              <image src="{{btn.iconL}}"
+                      class="icon-l {{btn.type === 1 ? 'card' : ''}} {{btn.type === 2 ? 'compony' : ''}} {{btn.type === 4 ? 'my-momment' : ''}}"
+                      wx:if="{{btn.iconL}}" />
+              <view class="content">{{btn.content}}</view>
+              <view class="icon-r">
+                <image src="{{btn.iconR}}"
+                        class="{{btn.type === 5 ? 'phone' : ''}} {{btn.type === 6 ? 'wechat' : ''}}"
+                        wx:if="{{btn.iconR}}" />
+                <!-- <icon class="iconfont icon-more" wx:else></icon> -->
+                <image src="../../assets/images/chat/arrow.png" style="width:14rpx;height:24rpx;vertical-align:middle;" wx:if="{{btn.iconL}}"/>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </view>
+    </template>
+
+    <template name="txt">
+      {{ item.data }}
+      <!-- <text class="msg-txt" style="float: left;margin: 4rpx 0;line-height: 27px;"></text> -->
+    </template>
+
+    <template name="emoji">
+      <image src="{{'../../assets/images/chat/faces/' + item.data }}"
+             class="msg-emoji-image" />
+    </template>
+    <!-- <template name="img">
+      <image class="avatar"
+             src="{{ item.msg.data }}"
+             style="width:180rpx;height: 240rpx;margin: 4rpx auto;"
+             mode="aspectFit"
+             @tap="previewImage"
+             data-url="{{ item.msg.data }}" />
+    </template> -->
+    <view class="room_bar">
+      <view class="want-do" @tap="cancelShowBottom">
+        <view class="do-title">我想</view>
+        <view class="do-wechat" @tap="copyWechat">加微信</view>
+        <view class="do-wechat" @tap="toSaveCard">保存名片码</view>
+        <view class="do-wechat" @tap="callPhone">拨打电话</view>
+      </view>
+      <!-- 输入栏 -->
+      <form report-submit="true" @reset="cleanInput" bindsubmit="formSubmit">
+        <view class="f-row">
+          <input class="f news"
+                 type="text"
+                 value="{{ message.input }}"
+                 placeholder="输入新消息"
+                 placeholder-style="color:#CFCFCFpadding-left:10rpx"
+                 maxlength="{{maxLength}}"
+                 @input="bindMessage"
+                 @tap="messageFocus"
+                 @focus="messageFocus"
+                 @confirm="sendMessage"
+                 @confirm-type="send" />
+          <view class="open_emoji">
+            <image src="../../assets/images/chat/emoji.png"
+                    @tap="openEmoji" />
+          </view>
+          <view class="open_menu"
+                @tap="openMenu"
+                wx:if="{{message.input.length === 0}}">
+            <image src="../../assets/images/chat/add.png"
+                   mode="widthFix" />
+          </view>
+          <button class="send_btn"
+                  @tap="sendMessage"
+                  type="primary" 
+                  form-type="submit"
+                  wx:else>发送</button>
+        </view>
+      </form>
+      <!-- 菜单 -->
+      <view class="other_func {{ showMenu ? '' : 'hide' }}">
+        <view class="send_image"
+              @tap="sendImage">
+          <!-- <view class="img-box">
+            <image src="https://res.deecard.szrenzhi.com/dc_chat_img.png" />
+          </view> -->
+          <image src="../../assets/images/chat/album.png" class="img-box"/>
+          <view class="title">相册</view>
+        </view>
+        <!-- <view class="send_image"
+              @tap="sendCamera">
+          <image src="../../assets/images/chat/camera.png" class="img-box"/>
+          <view class="title">拍摄</view>
+        </view> -->
+      </view>
+      <!-- 表情 -->
+      <swiper class="emoji_list {{ show }}"
+              indicator-dots="{{indicatorDots}}"
+              autoplay="{{autoplay}}"
+              interval="{{interval}}"
+              duration="{{duration}}">
+        <block>
+          <swiper-item>
+            <view class="emoji_item">
+              <image wx:for="{{ emoji.obj.map1 }}"
+                     src="{{ emoji.obj.path + item }}"
+                     wx:key=""
+                     @tap="sendEmoji"
+                     data-emoji="{{ index }}" />
+            </view>
+            <view class="emoji_item">
+              <image wx:for="{{ emoji.obj.map2 }}"
+                     src="{{ emoji.obj.path + item }}"
+                     wx:key=""
+                     @tap="sendEmoji"
+                     data-emoji="{{ index }}" />
+            </view>
+            <view class="emoji_item">
+              <image wx:for="{{ emoji.obj.map3 }}"
+                     src="{{ emoji.obj.path + item }}"
+                     wx:key=""
+                     @tap="sendEmoji"
+                     data-emoji="{{ index }}" />
+            </view>
+          </swiper-item>
+        </block>
+        <block class="second">
+          <swiper-item>
+            <view class="emoji_item">
+              <image wx:for="{{ emoji.obj.map1 }}"
+                     src="{{ emoji.obj.path + item }}"
+                     wx:key=""
+                     @tap="sendEmoji"
+                     data-emoji="{{ index }}" />
+            </view>
+            <view class="emoji_item">
+              <image wx:for="{{ emoji.obj.map2 }}"
+                     src="{{ emoji.obj.path + item }}"
+                     wx:key=""
+                     @tap="sendEmoji"
+                     data-emoji="{{ index }}" />
+            </view>
+            <view class="emoji_item">
+              <image wx:for="{{ emoji.obj.map3 }}"
+                     src="{{ emoji.obj.path + item }}"
+                     wx:key=""
+                     @tap="sendEmoji"
+                     data-emoji="{{ index }}" />
+            </view>
+          </swiper-item>
+        </block>
+      </swiper>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import WebIM from '@/assets/js/webIM/index'
+import { cardApi } from '@/api'
+import { CARD_DETAIL, MOMENT_LIST, COMPANY } from '@/router'
+import { uploadRecordUrl, G_RES_URL } from '@/config'
+import zanLoadmore from '@/components/libs/zanui/zan-loadmore'
+export default class Empty extends wepy.page {
+  components = {
+    zanLoadmore: zanLoadmore
+  }
+  config = {
+    navigationBarBackgroundColor: '#ff7f02',
+    navigationBarTitleText: '名片'
+  }
+  data = {
+    res_url: G_RES_URL,
+    isLoading: true,
+    maxLength: 100,
+    chatMsg: [],
+    // 自己
+    self: {
+      name: '',
+      avtor: '',
+      nickName: ''
+    },
+    // 对方
+    friend: {
+      name: '',
+      avtor: '',
+      nickName: ''
+    },
+    // 输入框
+    message: {
+      input: ''
+    },
+    sendInfo: '',
+    show: 'emoji_list',
+    view: 'scroll_view',
+    showMenu: false,
+    noCancelShow: false,
+    toView: '',
+    emoji: {
+      obj: WebIM.EmojiObj
+    },
+    getPrePageC2CHistroyMsgInfoMap: [],
+    nowPreviewImage: false,
+    loads: {},
+    welcomeOption: {
+      title: '',
+      subtitle: '通过我的名片，您还可以：',
+      list: [
+        {
+          iconL: G_RES_URL + '/dc_chat_card.png',
+          iconR: '',
+          content: '进入我的名片',
+          type: 1
+        },
+        {
+          iconL: G_RES_URL + '/dc_chat_website.png',
+          iconR: '',
+          content: '查看我的官网',
+          type: 2
+        },
+        {
+          iconL: G_RES_URL + '/dc_chat_my_dt.png',
+          iconR: '',
+          content: '查看动态',
+          type: 4
+        },
+        {
+          iconL: '',
+          iconR: G_RES_URL + '/dc_chat_phone.png',
+          content: '拨打我的电话',
+          type: 5
+        },
+        {
+          iconL: '',
+          iconR: G_RES_URL + '/dc_chat_weixin.png',
+          content: '添加我的微信',
+          type: 6
+        }
+      ]
+    },
+    websiteId: ''
+  }
+  onLoad(options) {
+    let params = JSON.parse(options.data)
+    let self = params.self
+    let friend = params.friend
+    this.message.input = ''
+    this.self.name = self.name
+    this.self.nickName = self.nickName
+    this.self.avtor = self.avtor
+    this.friend.name = friend.name
+    this.friend.nickName = friend.nickName
+    this.friend.avtor = friend.avtor
+    // 获取聊天记录
+    wepy.setNavigationBarTitle({
+      title: friend.nickName
+    })
+    this.getLastHistoryMsgs()
+    let _this = this
+    wepy.getStorage({key: 'websiteId'}).then(res => {
+      if (res.data) {
+        _this.websiteId = res.data
+      }
+    })
+  }
+  onShow() {
+    this.message.input = ''
+    // 图片预览回来之后
+    this.$apply()
+  }
+  onUnload() {
+    this.getPrePageC2CHistroyMsgInfoMap = []
+    this.$parent.hasRead(this.getSelSess(), false, false)
+    this.selSess = ''
+  }
+  methods = {
+    // 发送emoji表情
+    sendEmoji: function(event) {
+      let emoji = event.target.dataset.emoji
+      let msglen = this.message.input.length - 1
+      let str = ''
+      if (emoji && emoji !== '[del]') {
+        str = this.message.input + emoji
+      } else if (emoji === '[del]') {
+        let start = this.message.input.lastIndexOf('[')
+        let end = this.message.input.lastIndexOf(']')
+        let len = end - start
+        if (end !== -1 && end === msglen && len >= 3 && len <= 4) {
+          str = this.message.input.slice(0, start)
+        } else {
+          str = this.message.input.slice(0, msglen)
+        }
+      }
+      this.message.input = str
+    },
+
+    // 预览图片
+    previewImage: function(event) {
+      let url = event.target.dataset.url
+      this.cache = {
+        friend: this.friend,
+        self: this.self
+      }
+      this.nowPreviewImage = true
+      let that = this
+      wepy.previewImage({
+        urls: [url], // 需要预览的图片http链接列表
+        complete: function(res) {
+          that.friend = that.cache.friend
+          that.self = that.cache.self
+          that.cache = ''
+          that.$apply()
+        }
+      })
+    },
+
+    // 绑定文本框输入
+    bindMessage: function(event) {
+      this.message.input = event.detail.value
+    },
+
+    /**
+     * 点击欢迎的面板选项
+     */
+    tapWelcomeOption(e) {
+      let type = e.currentTarget.dataset.type
+      switch (type) {
+        case 1:
+          this.toTabberPage(CARD_DETAIL)
+          break
+        case 2:
+          this.toTabberPage(COMPANY + '?id=' + this.websiteId)
+          break
+        case 3:
+          this.toTabberPage(MOMENT_LIST)
+          break
+        case 4:
+          this.toTabberPage(MOMENT_LIST)
+          break
+        case 5:
+          this.callPhone()
+          break
+        case 6:
+          this.copyWechat()
+          break
+      }
+    },
+
+    // 获取formId
+    formSubmit(e) {
+      let formId = e.detail.formId
+      let staffId = this.$parent.getCurSellerInfo().staffId
+      if (formId && formId !== 'the formId is a mock one') {
+        cardApi.sendFormId(formId).then(res => {
+          cardApi.sendMsgToSale(staffId).then(res => {
+          })
+        })
+      }
+    }
+  }
+  // 存储当前会话对象
+  saveSelSess(selSess) {
+    this.selSess = selSess
+  }
+  /**
+   * 获取会话对象
+   */
+  getSelSess() {
+    if (this.selSess) {
+      return this.selSess
+    } else {
+      this.selSess = this.$parent.getSelSeession(
+        this.friend.name,
+        WebIM.SESSION_TYPE.C2C
+      )
+      return this.selSess
+    }
+  }
+  // 将消息转为可以显示的格式
+  changeMsgToShow(elems) {
+    var value = []
+    var cType, text, data
+    var tempValue = []
+    var str = ''
+    elems.forEach((val, index) => {
+      // if (val.type === WebIM.MSG_ELEMENT_TYPE.IMAGE) {
+      //   cType = 'img'
+      // }
+      if (val.type === WebIM.MSG_ELEMENT_TYPE.TEXT) {
+        text = val.content.getText()
+        // 拼接，用来判断是否图片
+        str += text
+        // text = decode()
+        // 显示txt/emoji
+        data = WebIM.parseEmoji(text)
+        if (elems.length === 1) {
+          // 消息比较短
+          tempValue = data
+        } else {
+          // 消息过长
+          data.forEach(v => {
+            tempValue.push(v)
+          })
+        }
+      }
+    })
+    let res
+    try {
+      res = JSON.parse(decodeURI(str))
+      if (typeof res === 'object' && res.MsgType === 'image') {
+        // 自己项目定义的 图片
+        cType = 'img'
+        value = res.MsgContent
+        res = false
+      } else if (typeof res === 'object' && res.MsgType === 'welcome') {
+        // 自己项目定义的 欢迎消息
+        cType = 'welcome'
+        // value = JSON.parse(decodeURI(res.MsgContent.data))['welcome']
+        value = res.MsgContent.data
+        res = false
+      } else {
+        // 正常的文字消息
+        res = true
+      }
+    } catch (err) {
+      res = true
+    }
+    // 消息过长，且非图片
+    if (res) {
+      value = tempValue
+      cType = 'txt'
+    }
+    // if (cType !== 'emoji' && cType !== 'img') {
+    //   cType = 'txt'
+    // }
+    return {
+      value: value,
+      type: cType
+    }
+  }
+  /**
+   * 发送消息,文字、表情
+   */
+  sendMessage() {
+    if (!this.message.input.trim()) return
+    var msgToSend = this.message.input
+    let msg = this.getMsgToSend(msgToSend)
+    // 显示
+    let res = this.changeMsgToShow(msg.getElems())
+    // 获取要发送的消息的显示格式
+    let msgData = this.getSendMsgData(res.type, res.value)
+    this.berforeSendMsg(msgData)
+    WebIM.sendMsg(
+      msg,
+      resp => {
+        this.afterSendMsg(msgData)
+        // 销售端推送
+        this.pushMsgFirst()
+        // 私聊时，在聊天窗口手动添加一条发的消息，群聊时，长轮询接口会返回自己发的消息
+      },
+      () => {
+        msgData.isFail = true
+        this.afterSendMsg(msgData)
+        wepy.showModal({
+          title: '提示',
+          content: '网络异常，发送失败',
+          showCancel: false
+        })
+      }
+    )
+  }
+
+  /**
+   * 接受消息，文字/emoji/图片
+   * @param  {[type]} msg    消息对象
+   * @param  {[type]} type   官方的消息类型
+   */
+  receiveMsg(msg, type) {
+    if (msg.getFromAccount() === this.friend.name || msg.getIsSend()) {
+      if (type !== WebIM.C2C_MSG_SUB_TYPE.COMMON) {
+        // 不属于c2c消息
+        return
+      }
+      // 处理成显示的数据格式
+      var res = this.changeMsgToShow(msg.getElems())
+      let msgData
+      if (res.type === 'img') {
+        // 自定义的传图图片是以txt
+        msgData = this.receiveImage(msg, res.value)
+      } else if (res.type === 'txt' || res.type === 'emoji') {
+        msgData = this.receiveTxtAndFace(msg, res.type, res.value)
+      }
+      if (msg.getFromAccount() === this.friend.name) {
+        msgData.style = ''
+        msgData.username = msg.getFromAccount()
+        msgData.yourname = this.self.name
+        msgData.to = this.self.name
+      } else {
+        msgData.style = 'self'
+        msgData.username = this.self.name
+        msgData.yourname = this.friend.name
+        msgData.to = this.friend.name
+      }
+      this.chatMsg.push(msgData)
+      this.toFlexView()
+      this.$apply()
+    }
+  }
+
+  /**
+   * 接收文字或者emoji
+   * @param  {[type]} msg   消息对象
+   * @param  {[type]} type  本地显示的消息类型
+   * @param  {[type]} value 本地显示的数据格式
+   */
+  receiveTxtAndFace(msg, type, value) {
+    if (msg) {
+      let msgData = {
+        info: {
+          from: msg.getFromAccount(),
+          to: ''
+        },
+        username: '',
+        yourname: '',
+        msg: {
+          type: type,
+          data: value
+        },
+        style: '',
+        time: WebIM.Tool.formatTimeStamp(msg.getTime()),
+        mid: type + msg.getSeq()
+      }
+      return msgData
+    }
+  }
+
+  // 发送图片
+  sendImage() {
+    this.cache = {
+      friend: this.friend,
+      self: this.self
+    }
+    wepy
+      .chooseImage({
+        count: 1,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['album', 'camera']
+      })
+      .then(
+        res => {
+          // 获取要发送的消息的显示格式
+          let msgData = this.getSendMsgData('img', res.tempFilePaths[0])
+          this.berforeSendMsg(msgData)
+          this.upLoadImage(res, msgData)
+        },
+        () => {}
+      )
+  }
+
+  /**
+   * 接收图片，自定义收发图走的是txt消息
+   * @param  {[type]} msg 消息对象
+   * @param  {objec} value 图片路径
+   */
+  receiveImage(msg, value) {
+    let time = WebIM.Tool.formatTimeStamp(msg.getTime())
+    let msgData = {
+      info: {
+        from: msg.getFromAccount(),
+        to: this.self.name
+      },
+      username: this.self.name,
+      yourname: msg.getFromAccount(),
+      msg: {
+        type: 'img',
+        data: value
+      },
+      style: '',
+      time: time,
+      mid: 'img' + msg.getSeq()
+    }
+    if (msg.getFromAccount() === this.friend.name) {
+      msgData.style = ''
+      msgData.username = msg.getFromAccount()
+      msgData.yourname = this.self.name
+      msgData.to = this.self.name
+    } else {
+      msgData.style = 'self'
+      msgData.username = this.self.name
+      msgData.yourname = this.friend.name
+      msgData.to = this.friend.name
+    }
+    return msgData
+  }
+
+  // 打开相机
+  openCamera() {
+    this.cache = {
+      friend: this.friend,
+      self: this.self
+    }
+    wepy
+      .chooseImage({
+        count: 1,
+        sizeType: ['original', 'compressed'],
+        sourceType: ['camera']
+      })
+      .then(
+        res => {
+          this.upLoadImage(res)
+        },
+        () => {}
+      )
+  }
+
+  /**
+   * 关闭emoji/菜单
+   */
+  cancelShowBottom() {
+    this.showMenu = false
+    this.cancelEmoji()
+  }
+  /**
+   * 打开菜单
+   */
+  openMenu() {
+    if (!this.showMenu) {
+      // 未打开，就打开
+      this.showMenu = true
+      this.view = 'scroll_view_change'
+    } else if (this.noCancelShow && this.showMenu) {
+      // 已打开，且不隐藏
+      this.noCancelShow = false
+    } else {
+      // 已打开，直接隐藏
+      this.showMenu = false
+      this.view = 'scroll_view'
+    }
+    // 关闭emoji
+    if (this.show === 'showEmoji') {
+      this.show = 'emoji_list'
+    }
+  }
+  // 显示/隐藏emoji
+  openEmoji() {
+    if (this.show === 'emoji_list') {
+      // 未打开表情列表，就打开
+      this.show = 'showEmoji'
+      this.view = 'scroll_view_change'
+    } else if (this.noCancelShow && this.show === 'showEmoji') {
+      // 已打开列表，且不隐藏表情列表
+      this.noCancelShow = false
+    } else {
+      // 隐藏表情列表
+      this.show = 'emoji_list'
+      this.view = 'scroll_view'
+    }
+    // 关闭菜单
+    if (this.showMenu) {
+      this.showMenu = false
+    }
+  }
+
+  // 隐藏emoji
+  cancelEmoji() {
+    this.show = 'emoji_list'
+    this.view = 'scroll_view'
+    if (this.noCancelShow) {
+      // 显示表情时
+      this.noCancelShow = false
+    }
+    if (this.showMenu) {
+      this.showMenu = false
+    }
+  }
+
+  // 文本输入框获得焦点
+  messageFocus() {
+    // 如果表情打开,就保持挂起状态
+    if (this.show === 'showEmoji' || this.showMenu) {
+      // 显示表情，下次点击表情按钮，不隐藏表情列表
+      if (!this.noCancelShow) {
+        this.noCancelShow = true
+      }
+    } else {
+      this.view = 'scroll_view'
+      this.show = 'emoji_list'
+    }
+  }
+
+  // 清空文本输入框
+  cleanInput() {
+    this.sendInfo = this.message.input
+    this.message.input = ''
+  }
+
+  // 上传图片
+  upLoadImage(data, msgData) {
+    wepy
+      .getImageInfo({
+        src: data.tempFilePaths[0]
+      })
+      .then(res => {
+        // 检查格式
+        let type = res.type
+        let checkUpRes = this.checkUpImageAllowType(res.type)
+        if (!checkUpRes) {
+          return
+        }
+        // 提前加入一条消息到
+        // 上传到开发者服务器
+        let path = data.tempFilePaths[0]
+        let name = 'editormd-image-file'
+        let url = uploadRecordUrl
+        let contentType = `image/${type}`
+        wepy
+          .uploadFile({
+            url: url,
+            filePath: path,
+            name: name,
+            header: {
+              'Content-Type': contentType
+            }
+          })
+          .then(
+            data => {
+              // 发送路径
+              let urlObj = JSON.parse(data.data)
+              this.sendImageMsg(urlObj.url, msgData)
+            },
+            () => {}
+          )
+      })
+      .catch(() => {
+        this.$parent.showToast({
+          title: '不支持该格式'
+        })
+      })
+  }
+  /**
+   * 发送图片
+   * @param  {[type]} url 网络路径
+   * @return {[type]}     [description]
+   */
+  sendImageMsg(url, msgData) {
+    var msgToSend = encodeURI(
+      JSON.stringify({
+        MsgType: 'image',
+        MsgContent: url
+      })
+    )
+    let msg = this.getMsgToSend(msgToSend)
+    WebIM.sendMsg(
+      msg,
+      resp => {
+        this.afterSendMsg(msgData)
+        // 销售端推送
+        this.pushMsgFirst()
+        let staffId = this.$parent.getCurSellerInfo().staffId
+        cardApi.sendMsgToSale(staffId).then(res => { })
+        // 私聊时，在聊天窗口手动添加一条发的消息，群聊时，长轮询接口会返回自己发的消息
+      },
+      () => {
+        msgData.isFail = true
+        this.afterSendMsg(msgData)
+        wepy.showModal({
+          title: '提示',
+          content: '网络异常，发送失败',
+          showCancel: false
+        })
+      }
+    )
+  }
+  /**
+   * 获取用于显示 的所发送消息的数据
+   * @param  {[type]} type  类型
+   * @param  {[type]} value 值
+   */
+  getSendMsgData(type, value) {
+    // 显示
+    var msgTime = this.getNowTime()
+    let msgData = {
+      info: {
+        from: this.self.name,
+        to: this.friend.name
+      },
+      username: this.self.name,
+      yourname: this.friend.name,
+      msg: {
+        type: type,
+        data: value
+      },
+      style: 'self',
+      time: WebIM.Tool.formatTimeStamp(msgTime),
+      mid: type + Math.round(Math.random() * 42949)
+    }
+    return msgData
+  }
+  /**
+   * 生成im消息用于发送
+   * @param  {[type]} msgToSend 内容
+   */
+  getMsgToSend(msgToSend) {
+    var loginInfo = this.self
+
+    var selType = WebIM.SESSION_TYPE.C2C
+
+    var selToID = this.friend.name
+    var friendHeadUrl = this.friend.avtor
+    // 消息时间戳
+    var msgTime = this.getNowTime()
+    // 会话对象session
+    var selSess = this.getSelSess()
+    if (!this.selSess) {
+      selSess = this.$parent.newSelSession(
+        selType,
+        selToID,
+        selToID,
+        friendHeadUrl,
+        msgTime
+      )
+      this.saveSelSess(selSess)
+    }
+    // 是否为自己发送
+    var isSend = true
+    // 消息序列，-1表示 SDK 自动生成，用于去重
+    var seq = -1
+    // 消息随机数，用于去
+    var random = Math.round(Math.random() * 4294967296)
+    // 消息子类型
+    var subType = WebIM.C2C_MSG_SUB_TYPE.COMMON
+    // 消息对象Msg
+    var msg = new WebIM.Msg(
+      selSess,
+      isSend,
+      seq,
+      random,
+      msgTime,
+      loginInfo.name,
+      subType,
+      loginInfo.nickName
+    )
+    // msgToSend = WebIM.parseEmoji(msgToSend)
+    // msgToSend = encodeURI(msgToSend)
+    var textObj = new WebIM.Msg.Elem.Text(msgToSend)
+    msg.addText(textObj)
+    return msg
+  }
+  /**
+   * 发送之前，先添加一条消息到串口
+   * @param  {[type]} msgData 用于显示的消息数据
+   */
+  berforeSendMsg(msgData) {
+    this.message.input = ''
+    this.loads[msgData.mid] = true
+    this.chatMsg.push(msgData)
+    this.toFlexView()
+    this.$apply()
+  }
+  /**
+   * 发送之后
+   * @param  {[type]} msgData 用于显示的消息数据
+   */
+  afterSendMsg(msgData) {
+    delete this.loads[msgData.mid]
+    this.$apply()
+  }
+  // 获取未读计数
+  getUnreadNum(from) {
+    var selSession = this.$parent.getSelSeession(from, WebIM.SESSION_TYPE.C2C)
+    var sessMap = WebIM.MsgStore.sessMap()
+    var unread
+    if (selSession) {
+      unread = sessMap['C2C' + from].unread()
+    }
+    return unread
+  }
+  // 消息设置成已读
+  clearNoReadMsgs() {
+    this.$parent.hasRead(this.getSelSess(), true, false)
+  }
+  // 获取最近几条历史记录
+  getLastHistoryMsgs() {
+    var lastMsgTime = 0
+    var msgKey = ''
+    var maxCnt = 15
+    this.getLastC2CHistoryMsgs(
+      this.friend.name,
+      maxCnt,
+      lastMsgTime,
+      msgKey,
+      (msgList, complete) => {
+        this.clearNoReadMsgs()
+        // 一次性处理完，添加到记录去
+        var chatMsg = []
+        var msg
+        for (var i = msgList.length - 1; i >= 0; i--) {
+          msg = msgList[i]
+          var res = this.changeMsgToShow(msg.getElems())
+          var msgData
+          if (res.type === 'img') {
+            msgData = this.receiveImage(msg, res.value)
+          } else if (res.type === 'txt' || res.type === 'emoji') {
+            msgData = this.receiveTxtAndFace(msg, res.type, res.value)
+          }
+          if (msg.getFromAccount() === this.friend.name) {
+            msgData.style = ''
+            msgData.username = msg.getFromAccount()
+            msgData.yourname = this.self.name
+            msgData.to = this.self.name
+          } else if (msg.mid !== 'welcome') {
+            msgData.style = 'self'
+            msgData.username = this.self.name
+            msgData.yourname = this.friend.name
+            msgData.to = this.friend.name
+          }
+          chatMsg.unshift(msgData)
+        }
+        let welcome = this.getWelcome()
+        chatMsg.unshift(welcome)
+        this.chatMsg = chatMsg
+        this.toFlexView()
+        this.$apply()
+      }
+    )
+  }
+  // 获取更早的历史记录
+  getOlderHistoryMsg() {
+    var lastMsgTime = this.getPrePageC2CHistroyMsgInfoMap[this.friend.name]
+      .LastMsgTime
+    var msgKey = this.getPrePageC2CHistroyMsgInfoMap[this.friend.name].MsgKey
+    var maxCnt = 15
+    this.getLastC2CHistoryMsgs(
+      this.friend.name,
+      maxCnt,
+      lastMsgTime,
+      msgKey,
+      (msgList, complete) => {
+        var chatMsg = this.chatMsg || []
+        // 记录当前显示最早的消息位置位置
+        let nowMid = this.chatMsg[0].mid
+        // 一次性处理完，添加到记录去
+        var msg
+        for (var i = msgList.length - 1; i >= 0; i--) {
+          msg = msgList[i]
+          var res = this.changeMsgToShow(msg.getElems())
+          var msgData
+          if (res.type === 'img') {
+            msgData = this.receiveImage(msg, res.value)
+          } else if (res.type === 'txt' || res.type === 'emoji') {
+            msgData = this.receiveTxtAndFace(msg, res.type, res.value)
+          }
+          if (msg.getFromAccount() === this.friend.name) {
+            msgData.style = ''
+            msgData.username = msg.getFromAccount()
+            msgData.yourname = this.self.name
+            msgData.to = this.self.name
+          } else {
+            msgData.style = 'self'
+            msgData.username = this.self.name
+            msgData.yourname = this.friend.name
+            msgData.to = this.friend.name
+          }
+          chatMsg.unshift(msgData)
+        }
+        this.chatMsg = chatMsg
+        // 回到之前查看的消息
+        this.toFlexView(nowMid)
+        this.$apply()
+      }
+    )
+  }
+  // 获取c2c历史记录
+  getLastC2CHistoryMsgs(selToID, maxCnt, lastMsgTime, msgKey, cbOk, cbError) {
+    var options = {
+      // 好友帐号
+      Peer_Account: selToID,
+      // 拉取消息条数
+      MaxCnt: maxCnt,
+      // 第一次拉取好友历史消息时，必须传 0
+      // 最近的消息时间，即从这个时间点向前拉取历史消息
+      LastMsgTime: lastMsgTime,
+      MsgKey: msgKey
+    }
+    WebIM.getC2CHistoryMsgs(
+      options,
+      resp => {
+        // 是否还有历史消息可以拉取，1-表示没有，0-表示有
+        var complete = resp.Complete
+        // 返回的消息条数，小于或等于请求的消息条数，小于的时候，说明没有历史消息可拉取了
+        // var retMsgCount = resp.MsgCount
+        if (resp.MsgList.length === 0) {
+          // WebIM.Log.error('没有历史消息了:data=' + JSON.stringify(options))
+          if (cbOk) {
+            cbOk(resp.MsgList, complete)
+          }
+          return
+        }
+        this.getPrePageC2CHistroyMsgInfoMap[selToID] = {
+          // 保留服务器返回的最近消息时间和消息Key,用于下次向前拉取历史消息
+          LastMsgTime: resp.LastMsgTime,
+          MsgKey: resp.MsgKey
+        }
+        if (cbOk) {
+          cbOk(resp.MsgList, complete)
+        }
+      },
+      err => {
+        if (cbError) {
+          cbError(err)
+        }
+      }
+    )
+  }
+  /**
+   * 移动到显示最后指定的消息
+   * @param  {[type]} mid [description]
+   * @return {[type]}     [description]
+   */
+  toFlexView(mid) {
+    if (mid) {
+      this.toView = mid
+    } else {
+      this.toView = this.chatMsg[this.chatMsg.length - 1].mid
+    }
+  }
+  // 第一次30秒内未读就推送给销售
+  pushMsgFirst() {
+    // let sessionId = this.$parent.getSessionId()
+    // cardApi.sendToSale(
+    //   { userid: this.$parent.globalData.curSellerInfo.staffId },
+    //   sessionId
+    // )
+  }
+  /**
+   * 获取欢迎的卡片数据
+   */
+  getWelcome() {
+    let salerInfo = this.getEmployeeCard()
+    let msgTime = this.getNowTime()
+    this.welcomeOption.title = `您好，我是${salerInfo.enterprise_name}的${
+      this.friend.nickName
+    }，欢迎进入我的名片，有什么可以帮到您的吗？您可以跟我实时沟通。`
+    let data = {
+      info: {
+        from: this.friend.name,
+        to: this.self.name
+      },
+      username: this.friend.name,
+      yourname: this.self.name,
+      msg: {
+        type: 'welcome',
+        data: this.welcomeOption
+      },
+      style: '',
+      time: WebIM.Tool.formatTimeStamp(msgTime),
+      mid: 'welcome' + msgTime
+    }
+    return data
+  }
+  /**
+   * 获取当前时间戳
+   */
+  getNowTime() {
+    var msgTime = Math.round(new Date().getTime() / 1000)
+    return msgTime
+  }
+  /**
+   * 获取名片详情
+   */
+  getEmployeeCard() {
+    // let employee = this.$parent.getNowEmployee()
+    // let salerInfo = this.$parent.getCurSellerInfo()
+    return this.$parent.getCurSellerInfo()
+  }
+  /**
+   * 检查格式是否支持
+   * @param  {string} type 图片格式
+   */
+  checkUpImageAllowType(type) {
+    let allowType = ['jpg', 'png', 'bmp', 'jpeg', 'bpg']
+    let index = allowType.indexOf(type)
+    if (index >= 0) {
+      return true
+    } else {
+      this.$parent.showToast({
+        title: '不支持该格式'
+      })
+      return false
+    }
+  }
+  /**
+   * 前往别的页面
+   * @param  {[type]} src 路径
+   */
+  toTabberPage(src) {
+    wepy.reLaunch({
+      url: src
+    })
+  }
+  /**
+   * 拨打电话
+   */
+  callPhone() {
+    let phone = this.getEmployeeCard().phone
+    if (!phone) {
+      return
+    }
+    wepy.makePhoneCall({
+      phoneNumber: phone
+    })
+  }
+  /**
+   * 复制微信
+   */
+  copyWechat() {
+    let wechat = this.getEmployeeCard().weixin
+    wepy
+      .setClipboardData({
+        data: wechat
+      })
+      .then(() => {
+        wepy.showToast({
+          title: '已复制到系统剪贴板',
+          icon: 'none',
+          duraton: 1000
+        })
+      })
+  }
+  /**
+   * 保存名片
+   */
+  toSaveCard() {
+    /**
+     * 预览图片
+     */
+    var imageList = []
+    var current = this.getEmployeeCard().soft_img_url
+    imageList.push(current)
+    wx.previewImage({
+      current: current, // 当前显示图片的http链接
+      urls: imageList // 需要预览的图片http链接列表
+    })
+  }
+}
+</script>

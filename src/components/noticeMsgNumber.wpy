@@ -1,0 +1,50 @@
+<template>
+  <view class="app-opt app-opt-msg">
+    <!-- <button form-type="submit" plain="true" hover-class="none" class="button-plain-hidden-form" open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" data-method="toSendMsg" wx:if="{{!auth}}">
+      <image src="../../assets/images/card/card_detail_message.png" mode="scaleToFill"/>
+      <view class="app-opt-msg-number" wx:if="{{noReadNum > 0}}">{{noReadNum}}</view>
+    </button>
+    <view @tap="toSendMsg" wx:else>
+      <image src="../../assets/images/card/card_detail_message.png" mode="scaleToFill"/>
+      <view class="app-opt-msg-number" wx:if="{{noReadNum > 0}}">{{noReadNum}}</view>
+    </view> -->
+    <view class="app-opt app-opt-msg">
+      <button form-type="submit" plain="true" hover-class="none" class="button-plain-hidden-form" open-type="getPhoneNumber" @getphonenumber="getPhoneNumber" data-method="toSendMsg" wx:if="{{!auth}}">
+        <image src="../../assets/images/card/card_detail_message.png" mode="scaleToFill"/>
+        <view class="app-opt-msg-number" wx:if="{{noReadNum > 0}}">{{noReadNum}}</view>
+      </button>
+      <button form-type="submit" plain="true" hover-class="none" class="button-plain-hidden-form" @tap="toSendMsg" wx:else>
+        <image src="../../assets/images/card/card_detail_message.png" mode="scaleToFill"/>
+        <view class="app-opt-msg-number" wx:if="{{noReadNum > 0}}">{{noReadNum}}</view>
+      </button>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class NoticeMsgNumber extends wepy.component {
+  props = {
+    auth: {
+      type: Boolean,
+      default: false
+    }
+  }
+  methods = {
+    getPhoneNumber(e) {
+      this.$parent.getPhoneNumberAuth()
+      if (e.detail.iv) {
+        // 用数据从服务器获取手机号
+        // commonApi.phoneNumberAuth().then(data => {
+        //   this.$emit('on-tap', e)
+        // })
+        this.$emit('on-tap', e)
+      }
+    },
+    toSendMsg(e) {
+      this.$emit('on-tap', e)
+    }
+  }
+}
+</script>

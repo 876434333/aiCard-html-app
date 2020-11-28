@@ -1,0 +1,573 @@
+<style lang="scss">
+  $main_color: #ff7f02;
+  page {
+    background-color: #fff;
+  }
+  .search {
+    position: relative;
+    padding: 16rpx 0 18rpx 0;
+    width: 100%;
+    height: 58rpx;
+    background:#ededed;
+    image {
+      position: absolute;
+      top: 28rpx;
+      left: 50rpx;
+      z-index:999;
+      width: 32rpx;
+      height: 32rpx;
+    }
+    input {
+      margin: 0 auto;
+      padding:0 80rpx;
+      width: 550rpx;
+      height: 58rpx;
+      line-height: 58rpx;
+      text-align: left;
+      border:0;
+      border-radius: 29rpx;
+      background: #fff;
+    }
+  }
+  .create {
+    display:-webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    position: relative;
+    padding-left:26rpx;
+    height: 80rpx;
+    overflow: hidden;
+    // background: linear-gradient(to right, #ffcf00, #ff7f02);
+    .name-wrap {
+      line-height: 80rpx;
+      text {
+        display:inline-block;
+        vertical-align:top;
+      }
+      .name {   
+        max-width:190rpx;
+        white-space:nowrap;      
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+    }
+    .create-btn {
+      display:-webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      position: absolute;
+      right: 18rpx;
+      button {
+        margin-top:18rpx;
+        padding: 0;
+        width: 120rpx;
+        height: 46rpx;
+        line-height: 46rpx;
+        color: $main_color;
+        border-radius: 10rpx;
+        background: #ffffff;
+      }
+    }   
+  }
+  .contact-part {
+    height: 712rpx;
+  }
+  .contact-list {
+    .staff {
+      height: 83rpx;
+      line-height: 83rpx;
+    }
+    .weui-cell {
+      padding:20rpx 0 18rpx 0;
+      border-bottom:1px solid #e8e8e8;
+    }
+    .weui-cell:before {
+      border: 0;
+    }
+    .weui-cell .weui-cell__hd:nth-child(1){
+      margin-right:20rpx;
+    }
+    .weui-cell .weui-cell__hd:nth-child(2) {
+      height:103rpx;
+    }
+    .weui-cell .weui-cell__hd image {
+      display: block;
+      margin-left: 28rpx;
+      width: 103rpx;
+      height: 103rpx;
+      border-radius: 10rpx;
+      // vertical-align: middle;
+    }
+    .weui-cell__hd {
+      position: relative;
+    }
+    .weui-cell__hd .name {
+      margin-top: 0;
+      line-height:40rpx;
+    }
+    .weui-cell__hd .phone {
+      position:relative;
+      top:-2rpx;
+    }
+    .weui-cell__hd .address {
+      position:relative;
+      top:-8rpx;
+      width: 594rpx;
+    }
+    .card-status {
+      position: absolute;
+      left: 28rpx;
+      bottom: 0;
+      width: 103rpx;
+      height: 30rpx;
+      line-height: 30rpx;
+      border-bottom-left-radius: 10rpx;
+      border-bottom-right-radius: 10rpx;
+      opacity: 0.5;
+      background: #000000;
+    }
+  }
+  .foot-wrap {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    background: #ffffff;
+    .foot {
+      margin:0 auto;
+      width: 514rpx;
+      height: 100%;
+      height: 70rpx;
+      line-height: 70rpx;
+      border-radius: 35rpx;
+      background: #f5f5f5;
+      .btn {
+        display: inline-block;
+        padding: 0;
+        line-height: 70rpx;
+        border-radius:35rpx;
+      }
+      .btn:nth-child(1) {
+        width: 224rpx;
+      }
+      .btn:nth-child(2) {
+        width: 290rpx;
+      }
+      .btn-select {
+        color: #fff!important;
+        border-radius: 35rpx;
+        background: $main_color;
+      }
+    }
+  }
+  .my-card {
+    background:#ededed;
+  }
+  .recommend-part {
+    position: relative;
+    padding-top:12rpx;
+    .hand {
+      position: absolute;
+      top: -2rpx;
+      z-index: 999;
+      padding:104rpx 24rpx 66rpx 24rpx;
+      width: 29rpx;
+      height: 33rpx;
+    }
+    .hand-left{
+      left:8rpx;
+      padding-left: 0;
+    }
+    .hand-right{
+      right:8rpx;
+      padding-right: 0;
+    }
+    .recommend {
+      position: relative;
+      margin:0 auto;
+      width:88%;
+      height:140rpx;
+      .swiper {
+        padding-top:12rpx;
+        height:103rpx;
+        view {
+          margin:0 auto;
+          width: 103rpx;
+          image {
+            display: block;
+            width: 100%;
+            height: 103rpx;
+            border-radius: 100%;
+          }
+        }
+      }
+    }
+  }
+  .to-send-msg{
+    bottom:80rpx;
+  }
+</style>
+<template>
+  <view class="wrap">
+    <!-- 创建名片 -->
+    <view class="create" style="background: url({{res_url}}/dc_card_create_bg.png)" wx:if="{{createShow}}">
+      <view class="font-size-28 c-ffffff name-wrap">
+        <text>您好，</text>
+        <text class="name">{{createName}}</text>
+        <text>，您还没有建立自己的深卡名片哦</text>
+      </view>
+      <view class="create-btn">
+        <form report-submit="true" bindsubmit="formSubmit" style="width:100%;height:100%;" class="flex">
+          <button class="font-size-22 ta-center" form-type="submit" @tap="goCreate">立即创建</button>
+        </form>
+      </view>
+    </view>
+    <!-- 推荐名片 -->
+    <view class="recommend-part" wx:if="{{findCardList.length > 0}}">
+      <view class="font-size-30 c-323232 ta-center">发现新名片</view>
+      <image src="/assets/images/home/arrow_left.png" class="hand hand-left" @tap="preFindCard"/>
+      <view class="recommend">
+        <swiper class="swiper">
+          <swiper-item class="flex">
+            <repeat  for="{{findCardList}}" item="item" index="index"> 
+              <view data-staffId="{{item.staffId}}" data-enterpriseId="{{item.enterpriseId}}" data-departmentId="{{item.departmentId}}" @tap="cardView">
+                <image src="{{item.headIcon}}"/>
+              </view>
+            </repeat>
+          </swiper-item>
+        </swiper>
+      </view>
+      <image src="/assets/images/home/arrow_right.png" class="hand hand-right" @tap="nextFindCard"/>
+    </view>
+    <view class="font-size-30 c-909090 ta-center" style="line-height:100rpx;" wx:if="{{findCardList.length == 0}}">没有发现新名片</view>
+    <view class="search" hidden="{{!isReceived}}">
+      <image src="/assets/images/contact/search.png"/>
+      <input type="text" placeholder="搜索" class="font-size-30 c-909090" @input="searchInput"/>
+    </view>
+    <!-- 我的名片夹列表 -->
+    <view class="contact-list my-card" hidden="{{searchStatus || createShow}}">
+      <view class="weui-cell" @tap="goCardIndex()">
+        <view class="weui-cell__hd">
+          <image src="{{myCard.head_icon}}"/>
+          <view class="font-size-18 c-ffffff ta-center card-status" wx:if="{{myCard.status === 0}}">已离职</view>
+          <view class="font-size-18 c-ffffff ta-center card-status" wx:if="{{myCard.enterprise_status === 0}}">已解散</view>
+        </view>
+        <view class="weui-cell__hd" style="width:100%">
+          <view class="name font-size-30 c-323232">
+            <text style="margin-right:16rpx;">{{myCard.name}}</text>
+            <text class="font-size-20 c-909090">{{myCard.station === '' || myCard.station === null ? '暂无' : myCard.station}}</text>
+          </view>
+          <view class="phone font-size-24 c-909090">{{myCard.phone === '' || myCard.phone === null ? '暂无' : myCard.phone}}</view>
+          <view class="address font-size-20 c-909090 ellipsis-1">{{myCard.enterprise_name === '' || myCard.enterprise_name === null ? '暂无' : myCard.enterprise_name}}</view>
+        </view>
+      </view>
+    </view>    
+    <!-- 收到的名片夹列表 -->
+    <scroll-view scroll-y="true" class="contact-part" wx:if="{{isReceived}}" style="height:{{searchStatus ? scrollHeight + 142 : scrollHeight}}rpx;">
+      <view class="contact-list">
+        <repeat for="{{cardList}}" index="index" key="index" item="item" wx:if="{{cardList.length > 0}}">
+          <view class="weui-cell" data-staffStatus="{{item.status}}" data-enterpriseStatus="{{item.enterprise_status}}" @tap="goCardView('{{index}}', 'cardList')">
+            <view class="weui-cell__hd">
+              <image src="{{item.head_icon}}"/>
+              <view class="font-size-18 c-ffffff ta-center card-status" wx:if="{{item.status === 0}}">已离职</view>
+              <view class="font-size-18 c-ffffff ta-center card-status" wx:if="{{item.enterprise_status === 0}}">已解散</view>
+            </view>
+            <view class="weui-cell__hd" style="width:100%">
+              <view class="name font-size-30 c-323232">
+                <text style="margin-right:16rpx;">{{item.name}}</text>
+                <text class="font-size-20 c-909090">{{item.station === '' || item.station === null ? '暂无' : item.station}}</text>
+              </view>
+              <view class="phone font-size-24 c-909090">{{item.phone === '' || item.phone === null ? '暂无' : item.phone}}</view>
+              <view class="address font-size-20 c-909090 ellipsis-1">{{item.enterprise_name === '' || item.enterprise_name === null ? '暂无' : item.enterprise_name}}</view>
+            </view>
+          </view>
+        </repeat>
+        <view class="font-size-24 c-909090 ta-center" style="line-height:60rpx;">没有更多了</view>
+      </view>        
+    </scroll-view>
+    <!-- 看过我名片的人列表 -->
+    <scroll-view scroll-y="true" class="contact-part" wx:if="{{!isReceived}}" style="height:{{scrollHeight}}rpx">
+      <view class="contact-list">
+        <repeat for="{{viewMyCardList}}" index="index" key="index" item="item" wx:if="{{viewMyCardList.length}}">
+          <view class="weui-cell">
+            <view class="weui-cell__hd">
+              <image src="{{item.headIcon}}"/>
+            </view>
+            <view class="weui-cell__hd" style="width:100%">
+              <view class="name font-size-30 c-323232" style="line-height:60rpx;">
+                <text style="margin-right:16rpx;">{{item.nickName}}</text>
+              </view>
+              <view class="phone font-size-24 c-909090">查看了{{item.enterpriseName === '' || item.enterpriseName === null ? '暂无' : item.enterpriseName}}</view>
+            </view>
+          </view>
+        </repeat>
+        <view class="font-size-24 c-909090 ta-center" style="line-height:60rpx;">没有更多了</view>
+      </view>        
+    </scroll-view>
+    <view class="foot-wrap" style="height:{{btnHeight}}rpx" hidden="{{searchStatus}}">
+      <view class="foot">
+        <form report-submit="true" bindsubmit="formSubmit" style="width:100%;height:100%;" class="flex">
+          <button class="font-size-30 c-646464 ta-center btn {{isReceived ? 'btn-select' : ''}}" form-type="submit" @tap="receivedCard">收到的名片</button>
+          <button class="font-size-30 c-646464 ta-center btn {{isReceived ? '' : 'btn-select'}}" form-type="submit" @tap="viewCard">看过我名片的人</button>
+        </form>
+      </view>
+    </view>
+    <!-- 留言 -->
+    <cover-view class="to-send-msg" @tap="toMsgList">
+      <cover-image wx:if="{{res_url}}" class="to-send-msg-img" src="{{res_url}}/dc_send_msg.png"/>
+      <cover-view class="text">留言</cover-view>
+    </cover-view>
+    <cover-view class="c-ffffff msg-number" style="bottom:148rpx" wx:if="{{totalUnreadMsg > 0}}">{{totalUnreadMsg}}</cover-view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import { contactApi, homeApi, companyApi, cardApi, cardManagerApi } from '@/api'
+  import { common } from '@/assets/js/common'
+  import {G_RES_URL} from '@/config'
+  import {getTotalUnreadMsgBlue} from '@/storage/src/cardDetail'
+  export default class cardListIndex extends wepy.page {
+    data = {
+      res_url: G_RES_URL,
+      myCard: {},
+      cardList: [],
+      receivedCardList: [],
+      viewMyCardList: [],
+      isReceived: true,
+      openId: null,
+      searchStatus: false,
+      searchText: '',
+      staffId: null,
+      createShow: false,
+      createName: null,
+      btnHeight: 90,
+      scrollHeight: 560,
+      findCardList: [],
+      findCardPage: {
+        page_size: 5,
+        page_num: 1
+      },
+      haveNextPage: true,
+      totalUnreadMsg: ''
+    }
+    onLoad() {
+      this.openId = this.$parent.$parent.getNowOpenid()
+      this.staffId = this.$parent.$parent.getStaffInfo().staffId
+      this.createName = this.$parent.$parent.getUserInfo().nickName
+      this.searchStatus = false
+      // 显示立即创建
+      cardApi.createCard(this.openId).then((res) => {
+        if (res === 0) {
+          this.createShow = true
+        } else {
+          this.createShow = false
+        }
+        this.setScrollHeight()
+        this.$apply()
+      })
+      this.getFindCardList()
+      this.getMyselfList()
+      this.getreceivedCardList()
+      this.totalUnreadMsg = getTotalUnreadMsgBlue()
+    }
+    // 获取发现名片列表
+    getFindCardList() {
+      homeApi.findCardList(this.openId, this.findCardPage).then((res) => {
+        this.findCardList = res.data_list
+        this.haveNextPage = res.haveNextPage
+        this.$apply()
+      })
+    }
+    // 设置滚动高度
+    setScrollHeight() {
+      wepy.getSystemInfo().then(res => {
+        if (this.createShow) {
+          this.scrollHeight = (res.windowHeight - res.windowWidth / 750 * 490) * 2
+        } else {
+          this.scrollHeight = (res.windowHeight - res.windowWidth / 750 * 550) * 2
+        }
+        this.$apply()
+      })
+    }
+    events = {
+      refreshMycardList () {
+        this.onLoad()
+      }
+    }
+    // 获取我自己的名片列表
+    getMyselfList() {
+      contactApi.getMyselfList(this.openId).then(res => {
+        for (let key in res) {
+          // if ( res[key].id === this.staffId || (res[key].staff_status === 1 && res[key].enterprise_status === 1)) {
+          //   this.myCard = res[key]
+          //   this.switchCompany()
+          //   break
+          // }
+          if (this.staffId) {
+            if (res[key].id === this.staffId) {
+              this.myCard = res[key]
+              break
+            }
+          } else {
+            if (res[key].staff_status === 1 && res[key].enterprise_status === 1) {
+              this.myCard = res[key]
+              break
+            }
+          }
+        }
+        if (JSON.stringify(this.myCard) === '{}') {
+          wepy.hideTabBar()
+          this.btnHeight = 128
+        } else {
+          this.switchCompany()
+        }
+        this.$apply()
+      })
+    }
+    // 获取我收到的名片列表
+    getreceivedCardList() {
+      let params = {
+        searchComment: this.searchText
+      }
+      if (this.searchText) {
+        this.searchStatus = true
+        homeApi.searchCardList(params).then(res => {
+          this.cardList = res
+          this.$apply()
+        })
+      } else {
+        this.searchStatus = false
+        contactApi.getCardList(' ', this.openId).then(res => {
+          this.receivedCardList = res
+          this.cardList = this.receivedCardList
+          this.$apply()
+        })
+      }
+    }
+    // 获取看过我名片的人的名片列表
+    getviewMyCardList() {
+      homeApi.viewMyCardList().then(res => {
+        this.viewMyCardList = res
+        this.$apply()
+      })
+    }
+    // 切换企业
+    switchCompany() {
+      let id = this.myCard.enterprise_id
+      companyApi.switchCompany(id, this.openId).then(
+        res => {
+          this.$parent.$parent.saveStaffInfo(res)
+          this.$apply()
+        },
+        err => {
+          wepy.showToast({
+            title: '系统错误：' + err.err_msg
+          })
+        }
+      )
+    }
+    methods = {
+      // 点击收到的名片
+      receivedCard() {
+        this.getreceivedCardList()
+        this.isReceived = true
+      },
+      // 点击看过我名片的人
+      viewCard() {
+        // this.getviewMyCardList()
+        // this.isReceived = false
+        // 跳转到商务雷达
+        cardManagerApi.getRadarPermissions(this.staffId).then(res => {
+          if (res.open_ai === 1) {
+            this.$parent.$navigate(`/pages/aiRadar/clientIndex`)
+          } else {
+            common.tip('暂无销售雷达权限')
+          }
+        })
+      },
+      // 跳到管名片名片主页
+      goCardIndex() {
+        // this.switchCompany()
+        wepy.reLaunch({
+          url: `/pages/card/cardIndex`
+        })
+      },
+      // 跳到名片夹页面
+      goCardView(staffIndex, type, e) {
+        let staff = {}
+        if (type === 'myCard') {
+          staff = this.myCard
+        } else {
+          staff = this.cardList[staffIndex]
+        }
+        if ((staff.staff_status === 0 || staff.status === 0) && staff.enterprise_status === 1) {
+          let type = 1
+          this.$parent.$navigate('/pages/card/subPackage/pages/dimission?staff=' + JSON.stringify(staff) + '&type=' + type)
+        }
+        if (staff.enterprise_status === 0) {
+          let type = 2
+          this.$parent.$navigate('/pages/card/subPackage/pages/dimission?staff=' + JSON.stringify(staff) + '&type=' + type)
+        }
+        if ((staff.staff_status === 1 || staff.status === 1) && staff.enterprise_status === 1) {
+          this.$parent.$navigate(`/pages/card/cardView?employee_id=${staff.id}&enterprise_id=${staff.enterprise_id}&department_id=${staff.department_id}&cardHolder=cardHolder`)
+        }
+      },
+      // 输入搜索内容
+      searchInput(e) {
+        this.cardList = []
+        this.searchStatus = true
+        this.searchText = e.detail.value
+        let params = {
+          searchComment: this.searchText
+        }
+        if (this.searchText === '') {
+          this.searchStatus = false
+          this.cardList = this.receivedCardList
+        } else {
+          homeApi.searchCardList(params).then(res => {
+            this.cardList = res
+            this.$apply()
+          })
+        }
+      },
+      // 点击立即创建
+      goCreate() {
+        this.$parent.$navigate(`/pages/card/subPackage/pages/createEnt`)
+      },
+      // 查看推荐名片
+      cardView(e) {
+        let staffId = e.currentTarget.dataset.staffid
+        let enterpriseId = e.currentTarget.dataset.enterpriseid
+        let departmentId = e.currentTarget.dataset.departmentid
+        wepy.navigateTo({
+          url: `/pages/card/cardView?employee_id=${staffId}&enterprise_id=${enterpriseId}&department_id=${departmentId}&cardHolder=cardHolder`
+        })
+      },
+      // 上一批推荐名片
+      preFindCard() {
+        if (this.findCardPage.page_num > 1) {
+          this.findCardPage.page_num --
+          this.getFindCardList()
+        }
+      },
+      // 下一批推荐名片
+      nextFindCard() {
+        if (this.haveNextPage) {
+          this.findCardPage.page_num ++
+          this.getFindCardList()
+        }
+      },
+      // 获取formId
+      formSubmit(e) {
+        let formId = e.detail.formId
+        if (formId && formId !== 'the formId is a mock one') {
+          cardApi.sendFormId(formId).then(res => { })
+        }
+      },
+      // 跳到留言列表
+      toMsgList () {
+        this.$parent.$navigate('/pages/chat/msgList')
+      }
+    }
+  }
+</script>

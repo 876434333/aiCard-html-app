@@ -1,0 +1,349 @@
+<style lang="scss">
+  page {
+    background-color: #fefbfb;
+  }
+  .wrap {
+    overflow: hidden;
+    .load {
+      position:fixed;
+      top:0;
+      left: 0;
+      width: 100%;
+      overflow: hidden;
+      image {
+        display: block;
+        width: 100%;
+        height: 1173rpx;
+      }
+      .load-title {
+        position: absolute;
+        top:250rpx;
+        left:188rpx;
+        font-size: 48rpx;
+      }
+      .load-text {
+        position: absolute;
+        top:59%;
+        left:40%;
+        color: #b0b0b0;
+      }
+    }
+    .foot {
+      position: fixed;
+      left:255rpx;
+      bottom: 88rpx;
+      .logo {
+        margin: 0 auto;
+        padding-left:30rpx;
+        width: 240rpx;
+        image {
+          position: relative;
+          top: 6rpx;
+          margin-right: 14rpx;
+          width: 43rpx;
+          height: 43rpx;
+        }
+      }
+      .foot-title {
+        padding-top:4rpx;
+        color: #b2b2b2;
+      }
+    }
+    .btn {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      background-color:none;
+    }
+  }
+</style>
+<template>
+  <view class="wrap">
+     <form report-submit="true" bindsubmit="formSubmit" style="width:100%;height:100%;" class="flex">
+      <view class="load">
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_load2.png"/>
+        <!-- <text class="c-ffffff load-title">DeeCard</text> -->
+        <text class="font-size-30 load-text">{{loadText}}</text>
+      </view>
+      <view class="foot">
+        <view class="logo">
+          <image wx:if="{{res_url}}" src="{{res_url}}/dc_load_logo.png?v=20190411"/>
+          <text class="font-size-36 c-323232">深卡名片</text>
+        </view>
+        <view class="font-size-30 ta-center foot-title">工作社交就用深卡</view>
+      </view>
+      <button class="btn" form-type="submit"></button>
+    </form>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { authorizeFromMap } from '@/constants/pageMap'
+import { cardApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class domain extends wepy.page {
+  data = {
+    res_url: G_RES_URL,
+    sellerId: '',
+    enterpriseId: '',
+    departmentId: '',
+    loadText: 'Loading  .',
+    timeHandle: '',
+    option: ''
+  }
+  config = {
+    navigationBarBackgroundColor: '#ff7f02',
+    navigationBarTitleText: '深卡名片',
+    enablePullDownRefresh: true
+  }
+  onLoad(option) {
+    console.log(option)
+    this.option = option
+    let that = this
+    let time = 1
+    that.timeHandle = setInterval(() => {
+      that.loadText += ' .'
+      time++
+      if (time > 6) {
+        time = 1
+        that.loadText = 'Loading   .'
+      }
+      that.$apply()
+      // console.log(time)
+    }, 700)
+    this.$parent.saveFroms(option.froms)
+    if (option.from_openid) {
+      this.fromOpenid = option.from_openid
+    }
+    this.setEmployee(option)
+  }
+  // 获取formId
+  formSubmit(e) {
+    let formId = e.detail.formId
+    if (formId && formId !== 'the formId is a mock one') {
+      cardApi.sendFormId(formId).then(res => { })
+    }
+  }
+  onPullDownRefresh() {
+    wx.stopPullDownRefresh()
+    setTimeout(() => {
+      this.onLoad(this.option)
+    }, 500)
+  }
+  onUnload() {
+    if (this.timeHandle) {
+      clearInterval(this.timeHandle)
+    }
+  }
+  // 根据身份去不同的主页 -- 页面分发
+  toPage(loginType) {
+    let url = ``
+    // 1=身份未定，2=看名片(客户角色)，3=管名片(员工)
+    if (loginType === 1) {
+      url = `/pages/card/subPackage/pages/createEnt`
+    } else if (loginType === 2) {
+      // url = `/pages/card/cardView?employee_id=${
+      //   this.sellerId
+      // }&enterprise_id=${this.enterpriseId}&department_id=${this.departmentId}`
+      url = `/pages/home/homeIndex`
+    } else if (loginType === 3) {
+      // url = `/pages/card/cardIndex`
+      url = `/pages/home/homeIndex`
+    }
+    wepy.reLaunch({
+      url: url
+    })
+  }
+  /**
+   * 设置员工id
+   * @param {[type]} option [description]
+   */
+  setEmployee(option) {
+    if (option.froms === 1) {
+      // 扫码或者链接进来的
+      this.sellerId = option.employee_id
+      this.enterpriseId = option.enterprise_id
+      this.departmentId = option.department_id
+      // 看名片方式
+      this.loginType = 2
+      // 看名片
+      this.whetherAuthorize()
+    } else {
+      // 获取默认员工 --V2.0没有默认名片 默认名片为平台的客服
+      this.getDefaultEmployee()
+    }
+  }
+  /**
+   * 检查是否授权
+   */
+  whetherAuthorize() {
+    // 判断用户是否授权
+    return wepy.getSetting().then(
+      res => {
+        if (res.authSetting['scope.userInfo']) {
+          // 登录小程序并获取名片详情
+          this.loginUser().then(
+            result => {
+              this.afterLogin(result)
+            },
+            () => {
+              this.clearFromOpenid()
+            }
+          )
+        } else {
+          // 未授权，跳转到授权页面
+          let data = {
+            from: authorizeFromMap.index,
+            employee_id: this.sellerId,
+            enterprise_id: this.enterpriseId,
+            department_id: this.departmentId
+          }
+          if (this.fromOpenid) {
+            data.from_openid = this.fromOpenid
+            this.fromOpenid = null
+          }
+          this.$parent.toAuthorize(data)
+        }
+      },
+      err => {
+        console.info(err.errMsg)
+        wepy.showModal({
+          content: err.errMsg,
+          showCancel: false
+        })
+      }
+    )
+  }
+  /**
+   * 登录
+   */
+  loginUser() {
+    // 获取wx用户信息
+    return this.$parent.setWxUserInfo().then(
+      res => {
+        let sellerInfo = {
+          employeeId: this.sellerId,
+          enterpriseId: this.enterpriseId
+        }
+        let openid = this.$parent.getNowOpenid()
+        if (openid) {
+          // 有openid,直接登录
+          return this.$parent.login(
+            sellerInfo,
+            this.$parent.globalData.userInfo,
+            openid,
+            this.fromOpenid,
+            () => {
+              this.openId = openid
+              this.getPhoneNumberAuth()
+            }
+          )
+        } else {
+          // 无openid，获取后登录
+          return this.$parent
+            .getOpenId(this.sellerId, this.enterpriseId)
+            .then(res => {
+              openid = res
+              this.$parent.saveOpenid(openid)
+              return this.$parent.login(
+                sellerInfo,
+                this.$parent.globalData.userInfo,
+                openid,
+                this.fromOpenid,
+                () => {
+                  this.getPhoneNumberAuth()
+                }
+              )
+            })
+        }
+      },
+      () => {}
+    )
+  }
+  /**
+   * 登录完成之后
+   */
+  afterLogin(result) {
+    this.clearFromOpenid()
+    if (this.loginType === 2) {
+      // 此时为看名片操作
+      this.toPage(2)
+    } else {
+      // 到后台获取用户身份
+      let openid = this.$parent.getNowOpenid()
+      this.$parent.getStaffInfoFromBack(openid).then(res => {
+        var loginType = res.loginType
+        if (loginType === 2) {
+          this.sellerId = res.staffId
+          this.enterpriseId = res.enterprise_id
+          this.departmentId = res.department_id
+        }
+        this.toPage(loginType)
+      },
+      err => {
+        wepy.reLaunch({
+          url: `/pages/home/homeIndex`
+        })
+      })
+    }
+  }
+
+  clearFromOpenid() {
+    if (this.fromOpenid) {
+      this.fromOpenid = null
+    }
+  }
+  /**
+   * 获取默认员工
+   */
+  getDefaultEmployee() {
+    this.$parent.getDefaultEmployee().then(defaultEmployee => {
+      this.sellerId = defaultEmployee.staff_id
+      this.enterpriseId = defaultEmployee.enterprise_id
+      this.departmentId = defaultEmployee.department_id
+      // 保存对方im账号的id
+      this.$parent.saveEmployeeChatUser(this.sellerId, this.sellerId)
+      this.whetherAuthorize()
+    })
+  }
+  /**
+   * 记录最后一次查看的名片id
+   * @param  {[sting]} sellerId     员工id
+   * @param  {[sting]} enterpriseId 企业id
+   * @param  {[sting]} departmentId 部门id
+   */
+  putLastSeller(sellerId, enterpriseId, departmentId) {
+    return wepy.setStorageSync('lastSeller', {
+      sellerId: sellerId,
+      enterpriseId: enterpriseId,
+      departmentId: departmentId
+    })
+  }
+  /**
+   * 获取最后一次查看的名片id
+   * @return {[sting]} 名片id
+   */
+  outLastSeller() {
+    return wepy.getStorageSync('lastSeller')
+  }
+  // 获取手机保存状态
+  getPhoneNumberAuth() {
+    return wepy
+      .getStorage({
+        key: 'phoneNumberAuth'
+      })
+      .then(
+        data => {
+          return data.data
+        },
+        () => {
+          return false
+        }
+      )
+  }
+}
+</script>

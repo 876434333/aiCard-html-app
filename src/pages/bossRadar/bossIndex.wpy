@@ -1,0 +1,1015 @@
+<style lang="scss">
+  $main_color: #e75152;
+  .wrap {
+    overflow: hidden;
+  }
+  .head {
+    position: relative;
+    padding-left: 30rpx;
+    height: 102rpx;
+    line-height: 102rpx;
+    background: #ffffff;
+    .switch {
+      position: absolute;
+      top: 18rpx;
+      right: 28rpx;
+      width: 170rpx;
+      height: 58rpx;
+      line-height: 58rpx;
+      color: $main_color;
+      border-radius: 6rpx;
+      border:1px solid $main_color;
+    }
+  }
+  .overview-head{   
+    margin-top: 32rpx;
+    overflow: hidden;
+    border-bottom:1px solid #e8e8e8;
+    background: #ffffff;   
+    .overview{
+      width: 33.33%;
+      height: 88rpx;
+      line-height: 88rpx;
+    }
+    .overview-select {
+      position: relative;
+      color: $main_color!important;
+      view {
+        position: absolute;
+        left:18%;
+        bottom: 0;
+        width: 154rpx;
+        height: 4rpx;
+        background: $main_color;
+      }
+    }
+  }
+  .summary-part {
+    padding:30rpx 10rpx;
+    justify-content: space-between;    
+    background: #ffffff;  
+    .summary {
+      padding:0 16rpx;
+      height: 52rpx;
+      line-height: 52rpx;
+      border:1px solid #e8e8e8; 
+    }
+    .summary-select {
+      color: #ffffff!important;
+      border:1px solid $main_color;
+      background: $main_color;
+    }
+  }
+  .time-part {
+    height: 72rpx;
+    line-height: 72rpx;
+    border-top:1px solid #e8e8e8;
+    background: #ffffff; 
+    .time {
+      padding:0 36rpx;
+    }
+    .time-select {
+      color: $main_color!important;
+    }
+  }
+  .overview-main {    
+    overflow: hidden; 
+    .summary {
+      padding:0 42rpx;
+    }
+    .client-part {
+      padding:28rpx 0 40rpx 0;
+      flex-wrap: wrap;
+      border-top:1px solid #e8e8e8;
+      overflow: hidden;
+      background: #ffffff;
+      .client-wrap {
+        margin:16rpx 8rpx 0 10rpx;
+        width: 229rpx;
+        height: 220rpx;
+        border:1px solid #f8ddde;
+        overflow: hidden;
+        .client-middle {
+          margin:4rpx auto 0;
+          width: 217rpx;
+          height: 208rpx;
+          border:1px solid #f1bcbd;
+          .client-inner {
+            margin:4rpx auto 0;
+            width: 205rpx;
+            height: 196rpx;
+            border:1px solid $main_color;
+            overflow: hidden;
+            .client-total {
+              margin-top:24rpx;
+            }
+            .client-number {
+              margin-top:6rpx;
+            }
+            .growth-rate {
+              color: #19d4ae!important;
+            }
+          }
+        }      
+      }
+    }   
+    .pie-wrap {
+      margin-top: 32rpx;
+      padding-bottom:40rpx;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    .line-wrap {
+      margin-top: 18rpx;
+      padding-bottom:40rpx;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    .echart-title {
+      line-height: 80rpx;
+    }
+    .echart-head {
+      padding:46rpx 0 0 142rpx;
+      view {
+        margin-right: 63rpx;
+        width: 112rpx;
+        height: 54rpx;
+        line-height: 54rpx;
+        border:1px solid #e8e8e8;
+      }
+      .echart-time-select {
+        color: $main_color!important;
+        border:1px solid $main_color;
+      }
+    }
+  }
+  .sale-main {
+    overflow: hidden;
+    .sale-list {
+      margin-top: 28rpx;
+    }    
+    .weui-cell {
+      padding:28rpx 37rpx 28rpx 80rpx;
+      border-bottom:1px solid #e8e8e8;
+      background: #ffffff;
+    }
+    .weui-cell:before {
+      border: 0;
+    }
+    .weui-cell:nth-child(1){
+      border: 0;
+    }
+    .weui-cell:nth-child(2){
+      margin-top: 12rpx;
+      .weui-cell__hd:nth-child(1) {
+        color: #ffd624!important;
+      }
+      .weui-cell__hd:nth-child(3) {
+        color: #ffd624!important;
+      }
+    }
+    .weui-cell:nth-child(3){
+      .weui-cell__hd:nth-child(1) {
+        color: #ffd624!important;
+      }
+    }
+    .weui-cell:nth-child(4){
+      .weui-cell__hd:nth-child(1) {
+        color: #ffd624!important;
+      }
+    }
+    .weui-cell:last-child {
+      border: 0;
+    }
+    .weui-cell__hd {
+      position: relative;
+    }
+    .weui-cell__hd:nth-child(1) {
+      margin-right: 74rpx;
+    }
+    .weui-cell__hd:nth-child(3) {
+      margin-right:4rpx;
+    }
+  }
+  .avatar {
+    display:block;
+    margin-right: 40rpx;
+    width: 84rpx;
+    height: 84rpx;
+    border-radius: 50%;
+  }
+  .crown {
+    position: absolute;
+    top: -8rpx;
+    left: -4rpx;
+    width: 36rpx;
+    height: 34rpx;
+  }
+  .sun {
+    width: 35rpx;
+    height: 36rpx;
+  }
+  .number {
+    position: absolute;
+    top:-10rpx;
+    left:6rpx;
+  }
+  .ability-main {
+    padding:0 30rpx 30rpx 30rpx;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    overflow: hidden;
+    .ability {
+      margin-top: 30rpx;
+      width: 330rpx;
+      box-shadow: 0 0 12rpx 4rpx rgba(0,0,0,0.1);
+      background: #ffffff;
+      .weui-cell {
+        padding: 58rpx 46rpx;
+        border-radius: 10rpx;        
+      }
+      .weui-cell__hd {
+        position: relative;
+      }
+      .avatar {
+        margin-right: 34rpx;
+      }
+    }
+    .ability:nth-child(1){
+      padding-bottom:40rpx;
+      width: 100%;
+    }
+  }
+  .echart-canvas {
+    margin-top: 40rpx;
+  }
+  .echart-subtitle {
+    margin:0 auto;
+    width:54%;
+    view {
+      width:50%;
+      justify-content:center;
+      align-items:center;
+      text:nth-child(4) {
+        margin-left: 10rpx;
+      }
+    }
+    .echart-line {
+      width: 14rpx;
+      height: 2rpx;
+    }
+    .circle {
+      width: 22rpx;
+      height: 22rpx;
+      border-radius: 100%;
+    }
+    .echart-subtitle-blue {
+      .circle {
+        border:2rpx solid #5077aa;
+      }
+      .echart-line {
+        background: #5077aa;
+      }
+    }
+    .echart-subtitle-orange {
+      .circle {
+        border:2rpx solid #ffa512;
+      }
+      .echart-line {
+        background: #ffa512;
+      }
+    }
+    .echart-subtitle-gray {
+      .circle{
+        border:2rpx solid #909090;
+      }
+      .echart-line {
+        background: #909090;
+      }
+    }
+  }
+  .pt-130 {
+    padding-top:130rpx!important;
+  }
+  .ability-radar {
+    margin-top:-50rpx;
+    // height:280rpx;
+    // overflow:hidden;
+  }
+</style>
+<template>
+  <!-- boss雷达 -->
+  <view class="wrap">
+    <view class="font-size-30 c-323232 head"><view class="ellipsis-1" style="width:70%;">当前查看：{{deptName}}</view><view class="font-size-26 ta-center switch" @tap="switchDept">切换部门</view></view>
+    <view class="overview-head flex">
+      <view class="font-size-30 c-323232 ta-center overview {{overviewSelect === '0' ? 'overview-select' : ''}}" @tap="clickOverview('0')">
+        总览<view></view>
+      </view>
+      <view class="font-size-30 c-323232 ta-center overview {{overviewSelect === '1' ? 'overview-select' : ''}}" @tap="clickOverview('1')">
+        销售排行<view></view>
+      </view>
+      <view class="font-size-30 c-323232 ta-center overview {{overviewSelect === '2' ? 'overview-select' : ''}}" @tap="clickOverview('2')">
+        能力分析<view></view>
+      </view>
+    </view>
+
+    <!-- 总览主体部分 -->
+    <view class="overview-main" hidden="{{overviewShow && overviewSelect === '0' ? false : true}}">
+      <view class="summary-part flex">
+        <repeat for="{{overviewTimeList}}" index="index" item="item">
+          <view class="font-size-28 c-909090 ta-center summary {{overviewTimeSelect === index + 1 ? 'summary-select' : ''}}" data-type='{{item.type}}' @tap="clickOverviewTime()">{{item.name}}</view>
+        </repeat>
+      </view>
+      <view class="client-part flex" wx:if="{{totalDataList.length > 0}}">
+        <repeat for="{{totalDataList}}" index="index" item="item">
+          <view class="client-wrap">
+            <view class="client-middle">
+              <view class="client-inner">
+                <view class="font-size-26 c-909090 ta-center client-total">{{item.desc}}</view>
+                <view class="font-size-40 c-909090 ta-center client-number {{item.growthRate === '无对比' || item.growthRate === '' ? '' : 'growth-rate'}}">{{item.now_num}}</view>
+                <view class="font-size-26 c-909090 ta-center {{item.growthRate === '无对比' || item.growthRate === '' ? '' : 'growth-rate'}}">{{item.growthRate}}</view>
+								<view class="font-size-26 c-909090 ta-center" hidden="{{item.growthRate}}">{{item.upOrDown}}</view>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+      <view class="pie-wrap">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title">成交率漏斗</view>
+        <view class="echart-head flex">
+          <repeat for="{{selectDaySubList}}" item="item" index="index" wx:if="{{index > 0}}">
+            <view class="font-size-24 c-909090 ta-center {{funnelDay === item.day ? 'echart-time-select' : ''}}" @tap="funnelDay('{{item.day}}')">{{item.name}}</view>
+          </repeat>
+        </view>
+        <column :columnData.sync="dealRateData" :columnTitle.sync="dealRateTitle"></column>
+      </view>
+      <view class="line-wrap">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title">商城订单量&交易金额</view>
+        <view class="font-size-24 c-323232 echart-subtitle flex">
+          <view class="flex {{orderListShow ? 'echart-subtitle-blue' : 'echart-subtitle-gray'}}" @tap="chooseOrder('0')"><text class="echart-line"></text><text class="circle"></text><text class="echart-line"></text><text>商城订单量</text></view>
+          <view class="flex {{moneyListShow ? 'echart-subtitle-orange' : 'echart-subtitle-gray'}}" @tap="chooseOrder('1')"><text class="echart-line"></text><text class="circle"></text><text class="echart-line"></text><text>交易金额</text></view>
+        </view>
+        <canvas canvas-id="orderCanvas" disable-scroll="true" class="echart-canvas"></canvas>
+      </view>
+      <view class="line-wrap">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title">客户统计</view>
+        <!-- 跟进客户数 -->
+        <view>
+          <view class="echart-head flex">
+            <repeat for="{{selectDaySubList}}" item="item" index="index" wx:if="{{index > 0}}">
+              <view class="font-size-24 c-909090 ta-center {{attachDay === item.day ? 'echart-time-select' : ''}}" @tap="attachDay('{{item.day}}')">{{item.name}}</view>
+            </repeat>
+          </view>
+          <canvas canvas-id="attachList" disable-scroll="true" class="echart-canvas"></canvas>
+        </view>
+        <!-- 新增订单数 -->
+        <view>
+          <view class="echart-head pt-130 flex">
+            <repeat for="{{selectDaySubList}}" item="item" index="index" wx:if="{{index > 0}}">
+              <view class="font-size-24 c-909090 ta-center {{imDay === item.day ? 'echart-time-select' : ''}}" @tap="imDay('{{item.day}}')">{{item.name}}</view>
+            </repeat>
+          </view>
+          <canvas canvas-id="imList" disable-scroll="true" class="echart-canvas"></canvas>
+        </view>
+        <!-- 新增客户数 -->
+        <view>
+          <view class="echart-head pt-130 flex">
+            <repeat for="{{selectDaySubList}}" item="item" index="index" wx:if="{{index > 0}}">
+              <view class="font-size-24 c-909090 ta-center {{userDay === item.day ? 'echart-time-select' : ''}}" @tap="userDay('{{item.day}}')">{{item.name}}</view>
+            </repeat>
+          </view>
+          <canvas canvas-id="userList" disable-scroll="true" class="echart-canvas"></canvas>
+        </view>
+      </view>     
+    </view>
+
+    <!-- 销售排行 -->
+    <view class="sale-main" hidden="{{overviewShow && overviewSelect === '1' ? false : true}}">      
+      <view class="summary-part flex">
+        <!-- 按订单量、按客户人数、按互动频率、按成交率区间 -->
+        <repeat for="{{selectTypeList}}" item="item" index="index">
+          <view class="font-size-28 c-909090 ta-center summary {{selectType === item.queryType ? 'summary-select' : ''}}" @tap="selectType('{{item.queryType}}')">{{item.name}}</view>
+        </repeat>
+      </view>
+      <view class="time-part flex">
+        <!-- 按订单量时间 -->
+        <block wx:if="{{selectType === 1}}">
+          <repeat for="{{selectDayList}}" item="item" index="index">
+            <view class="font-size-28 c-909090 time {{selectDay === index ? 'time-select' : ''}}" @tap="selectDay('{{index}}', '{{item.day}}')">{{item.name}}</view>
+          </repeat>
+        </block>
+        <!-- 按客户人数客户总数 -->
+        <block wx:elif="{{selectType === 2}}">
+          <repeat for="{{userNumberList}}" item="item" index="index">
+            <view class="font-size-28 c-909090 time {{userNumber === item.type ? 'time-select' : ''}}" @tap="userNumber('{{item.type}}')">{{item.name}}</view>
+          </repeat>
+        </block>
+        <!-- 按互动频率跟进总数 -->
+        <block wx:elif="{{selectType === 3}}">
+          <repeat for="{{selectUserTypeList}}" item="item" index="index">
+            <view class="font-size-28 c-909090 time {{selectUserType === item.type ? 'time-select' : ''}}" @tap="selectUserType('{{item.type}}')">{{item.name}}</view>
+          </repeat>
+        </block>
+        <!-- 按成交率区间成交率 -->
+        <block wx:elif="{{selectType === 4}}">
+          <repeat for="{{selectRaleList}}" item="item" index="index">
+            <view class="font-size-28 c-909090 time {{selectRale === index ? 'time-select' : ''}}" @tap="selectRale('{{index}}', '{{item.lowCloseRate}}', '{{item.hightCloseRate}}')">{{item.name}}</view>
+          </repeat>
+        </block>
+      </view>
+      <view class="time-part flex" wx:if="{{selectType === 2 && userNumber === 2 || selectType === 3}}">
+        <!-- 按客户人数时间 -->
+        <block>
+          <repeat for="{{selectDaySubList}}" item="item" index="index">
+            <view class="font-size-28 c-909090 time {{selectDay === index ? 'time-select' : ''}}" @tap="selectDay('{{index}}', '{{item.day}}')">{{item.name}}</view>
+          </repeat>
+        </block>
+      </view>
+      <view class="sale-list">
+        <view class="weui-cell">
+          <view class="weui-cell__hd font-size-36 c-323232" wx:if="{{saleMyself.length > 0}}">
+            {{saleMyselfOrder}}
+          </view>
+          <view class="weui-cell__hd">
+            <image src="{{saleMyself[0].head_icon}}" class="avatar"/>
+          </view>
+          <view class="weui-cell__hd font-size-30 c-323232" style="width:100%">
+            {{saleMyself[0].name}}
+          </view>
+          <view class="weui-cell__hd font-size-36 c-3DB8C8">
+            {{saleMyself[0].user_num}}
+          </view>
+        </view>
+        <repeat for="{{saleList}}" index="index" key="index" item="item" wx:if="{{saleList.length > 0}}">
+          <view class="weui-cell">
+            <view class="weui-cell__hd font-size-36 c-323232">
+              {{index + 1}}
+            </view>
+            <view class="weui-cell__hd">
+              <image src="./images/crown.png" class="crown" wx:if="{{index === 0}}"/>
+              <image src="{{item.head_icon}}" class="avatar"/>
+            </view>
+            <view class="weui-cell__hd font-size-30 c-323232" style="width:100%">
+              {{item.name}}
+            </view>
+            <view class="weui-cell__hd font-size-36 c-3DB8C8">
+              {{item.user_num}}
+            </view>
+          </view>
+        </repeat>
+      </view>
+    </view>
+
+    <!-- 能力分析 -->
+    <view class="ability-main flex" hidden="{{overviewShow && overviewSelect === '2' ? false : true}}">
+      <repeat for="{{abilityList}}" index="index" key="index" item="item">
+        <view class="ability" @tap="goAbilityDetail('{{index}}', '{{item.id}}', '{{item.department_id}}')">
+          <view class="weui-cell">
+            <view class="weui-cell__hd">
+              <image src="{{item.head_icon}}" class="avatar"/>
+              <image src="./images/crown.png" class="crown" wx:if="{{index === 0}}"/>
+              <image src="./images/sun.png" class="crown sun" wx:if="{{index === 1 || index === 2}}"/>
+              <text class="font-size-24 c-ffffff number" wx:if="{{index === 1 || index === 2}}">{{index + 1}}</text>
+            </view>
+            <view class="weui-cell__hd">
+              <view class="font-size-30 c-323232" style="word-break:break-all;">{{item.name}}</view>
+              <view class="font-size-24 c-909090">{{item.station}}</view>
+            </view>
+          </view>
+          <view class="{{index !== 0 ? 'ability-radar' : ''}}">
+            <canvas canvas-id="radarCanvas{{index}}" class="echart-canvas" style="margin-top:0;{{index === 0 ? 'margin-left:-26rpx;' : ''}}"></canvas>
+          </view>
+        </view>
+      </repeat>        
+    </view>
+
+    <view class="font-size-28 c-909090 ta-center" style="line-height:80rpx;">没有更多了</view>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import pie from '@/components/echarts/pie'
+  import column from '@/components/echarts/column'
+  import lineMixin from '@/components/echarts/js/line.js'
+  import radarMixin from '@/components/echarts/js/radar.js'
+  import { bossRadarApi } from '@/api'
+  export default class bossIndex extends wepy.page {
+    config = {
+      navigationBarTitleText: 'BOSS雷达'
+    }
+    mixins = [lineMixin, radarMixin]
+    components = {
+      pie: pie,
+      column: column
+    }
+    data = {
+      overviewShow: true,
+      overviewSelect: '0',
+      overviewTimeSelect: '1',
+      saleMyselfOrder: null,
+      dealRateTitle: '成交率',
+      dealRateData: {
+        main: {
+          title: '成交率',
+          data: [],
+          categories: []
+        }
+      },
+      radarList: [],
+      totalDataList: [],
+      saleList: [],
+      saleMyself: [],
+      abilityList: [],
+      departmentId: null,
+      deptName: '',
+      selectTypeList: [
+        {name: '按订单量', queryType: 1},
+        {name: '按客户人数', queryType: 2},
+        {name: '按互动频率', queryType: 3},
+        {name: '按成交率区间', queryType: 4}
+      ],
+      overviewTimeList: [
+        {name: '汇总', type: 1, day: 30},
+        {name: '昨天', type: 2, day: 1},
+        {name: '近7天', type: 3, day: 7},
+        {name: '近30天', type: 4, day: 30}
+      ],
+      selectType: 1,
+      selectDayList: [
+        {name: '全部', day: ''},
+        {name: '近7天', day: 7},
+        {name: '近15天', day: 15},
+        {name: '近30天', day: 30}
+      ],
+      selectDay: 0,
+      selectDaySubList: [
+        {name: '昨天', day: 1},
+        {name: '近7天', day: 7},
+        {name: '近15天', day: 15},
+        {name: '近30天', day: 30}
+      ],
+      selectDaySub: 0,
+      selectUserTypeList: [
+        {name: '跟进总数', type: 1},
+        {name: '咨询总数', type: 2}
+      ],
+      selectUserType: 1,
+      selectRaleList: [
+        {name: '1%-50%', lowCloseRate: 1, hightCloseRate: 50},
+        {name: '51%-80%', lowCloseRate: 51, hightCloseRate: 80},
+        {name: '81%-99%', lowCloseRate: 81, hightCloseRate: 99},
+        {name: '100%', lowCloseRate: 100, hightCloseRate: 100}
+      ],
+      selectRale: 0,
+      userNumberList: [
+        {name: '客户总数', type: 1},
+        {name: '新增客户', type: 2}
+      ],
+      userNumber: 1,
+      orderParams: {
+        department_id: '',
+        query_type: 1,
+        day_number: '',
+        page_num: 1,
+        page_size: 10,
+        user_type: 1,
+        low_close_rate: '',
+        high_close_rate: ''
+      },
+      staffId: null,
+      funnelList: [],
+      orderList: {
+        categories: [],
+        series: [{
+          name: '商城订单量',
+          data: [],
+          color: '#5077aa',
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        }]
+      },
+      moneyList: {
+        categories: [],
+        series: [{
+          name: '交易金额',
+          data: [],
+          color: '#ffa512',
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        }]
+      },
+      orderTotalList: {
+        categories: [],
+        series: [{
+          name: '商城订单量',
+          data: [],
+          color: '#5077aa',
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        },
+        {
+          name: '交易金额',
+          data: [],
+          color: '#ffa512',
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        }]
+      },
+      orderLineList: {},
+      orderListShow: true,
+      moneyListShow: true,
+      funnelDay: 7,
+      attachDay: 7,
+      imDay: 7,
+      userDay: 7,
+      attachList: {
+        categories: [],
+        series: [{
+          name: '跟进客户数',
+          data: [],
+          color: '#5077aa',
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        }]
+      },
+      imList: {
+        categories: [],
+        series: [{
+          name: '新增订单数',
+          data: [],
+          color: '#5077aa',
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        }]
+      },
+      userList: {
+        categories: [],
+        series: [{
+          name: '新增客户数',
+          data: [],
+          color: '#5077aa',
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        }]
+      }
+    }
+    onLoad() {
+      this.staffId = this.$parent.globalData.staffInfo.staffId
+    }
+    onShow() {
+      wepy.getStorage({key: 'departmentId'}).then(res => {
+        this.departmentId = res.data
+        this.orderParams.department_id = res.data
+        wepy.removeStorage({key: 'departmentId'})
+        this.$apply()
+        if (res.data) {
+          this.getEntInfo()
+          this.clickOverviewTime()
+          this.getOrderAmoney()
+          this.getFunneltList()
+          this.getAttachList()
+          this.getImList()
+          this.getUserList()
+          this.getSaleList()
+          this.getAnalysisList()
+        }
+      })
+    }
+    // 获取企业信息
+    getEntInfo() {
+      bossRadarApi.enterpriseInfoPromise(this.departmentId).then(res => {
+        this.deptName = res
+        this.$apply()
+      })
+    }
+    // 点击总览时间
+    clickOverviewTime(e) {
+      if (e) {
+        this.overviewTimeSelect = e.currentTarget.dataset.type
+      } else {
+        this.overviewTimeSelect = 1
+      }
+      bossRadarApi.dataViewPromise(this.overviewTimeSelect, this.departmentId).then(res => {
+        this.totalDataList = res
+        this.methods.growthRate(this, this.overviewTimeSelect)
+        this.methods.upOrDown(this, this.overviewTimeSelect)
+        this.$apply()
+      })
+    }
+    // 获取销售排行数据
+    getSaleList() {
+      bossRadarApi.orderPromise(this.orderParams).then(res => {
+        this.saleList = res
+        this.saleMyself = []
+        for (let key in res) {
+          if (res[key].id === this.staffId) {
+            this.saleMyself.push(res[key])
+            this.saleMyselfOrder = Number(key) + 1
+          }
+        }
+        this.$apply()
+      })
+    }
+    // 获取成交率漏斗数据
+    getFunneltList() {
+      let params = {
+        day: this.funnelDay,
+        departmentId: this.departmentId
+      }
+      bossRadarApi.funnelPromise(params).then(res => {
+        this.dealRateData.main.categories = []
+        this.dealRateData.main.data = []
+        for (let key in res) {
+          this.dealRateData.main.categories.push(res[key].name)
+          this.dealRateData.main.data.push(Number(res[key].value))
+        }
+        this.$invoke('column', 'column', '')
+        this.$apply()
+      })
+    }
+    // 获取商城订单量&交易金额数据
+    getOrderAmoney() {
+      let params = {
+        day: 7,
+        departmentId: this.departmentId
+      }
+      bossRadarApi.orderAmoneyPromise(params).then(res => {
+        this.orderList.categories = []
+        this.orderList.series[0].data = []
+        this.moneyList.categories = []
+        this.moneyList.series[0].data = []
+        this.orderTotalList.categories = []
+        this.orderTotalList.series[0].data = []
+        this.orderTotalList.series[1].data = []
+        for (let key in res.order) {
+          this.orderList.categories.push(res.order[key].name)
+          this.orderList.series[0].data.push(Number(res.order[key].value))
+          this.orderTotalList.categories.push(res.order[key].name)
+          this.orderTotalList.series[0].data.push(Number(res.order[key].value))
+        }
+        for (let key in res.money) {
+          this.moneyList.categories.push(res.order[key].name)
+          this.moneyList.series[0].data.push(Number(res.order[key].value))
+          this.orderTotalList.series[1].data.push(Number(res.order[key].value))
+        }
+        this.orderLineList = this.orderTotalList
+        this.line('orderCanvas', this.orderLineList)
+        this.$apply()
+      })
+    }
+    // 获取客户统计--跟进客户数
+    getAttachList() {
+      let params = {
+        day: this.attachDay,
+        departmentId: this.departmentId
+      }
+      bossRadarApi.attachPromise(params).then(res => {
+        this.attachList.categories = []
+        this.attachList.series[0].data = []
+        for (let key in res) {
+          this.attachList.categories.push(res[key].name)
+          this.attachList.series[0].data.push(Number(res[key].value))
+        }
+        this.line('attachList', this.attachList)
+        this.$apply()
+      })
+    }
+    // 获取客户统计--新增订单数
+    getImList() {
+      let params = {
+        day: this.imDay,
+        departmentId: this.departmentId
+      }
+      bossRadarApi.imPromise(params).then(res => {
+        this.imList.categories = []
+        this.imList.series[0].data = []
+        for (let key in res) {
+          this.imList.categories.push(res[key].name)
+          this.imList.series[0].data.push(Number(res[key].value))
+        }
+        this.line('imList', this.imList)
+        this.$apply()
+      })
+    }
+    // 获取客户统计--新增客户数
+    getUserList() {
+      let params = {
+        day: this.userDay,
+        departmentId: this.departmentId
+      }
+      bossRadarApi.userPromise(params).then(res => {
+        this.userList.categories = []
+        this.userList.series[0].data = []
+        for (let key in res) {
+          this.userList.categories.push(res[key].name)
+          this.userList.series[0].data.push(Number(res[key].value))
+        }
+        this.line('userList', this.userList)
+        this.$apply()
+      })
+    }
+    // 获取能力分析数据
+    getAnalysisList() {
+      bossRadarApi.analysisPromise(this.departmentId).then(res => {
+        this.abilityList = res.staffs
+        let list = []
+        let categories = ['', '', '', '', '', '']
+        for (let i = 0; i < this.abilityList.length; i++) {
+          list.push(this.abilityList[i].v1, this.abilityList[i].v2, this.abilityList[i].v3, this.abilityList[i].v4, this.abilityList[i].v5, this.abilityList[i].v6)
+        }
+        for (let i = 0; i < list.length; i += 6) {
+          let radarCanvasId = 'radarCanvas' + i / 6
+          this.radarList.push(list.slice(i, i + 6))
+          this.radar(radarCanvasId, categories, this.radarList[i / 6])
+        }
+        this.$apply()
+      })
+    }
+    methods = {
+      // 跳转到切换部门
+      switchDept() {
+        this.$navigate('/pages/bossRadar/switchDept')
+      },
+      // 跳转到雷达能力详情页面
+      goAbilityDetail(index, staffId, departmentId) {
+        let staff = {
+          staffId: staffId,
+          departmentId: departmentId,
+          radarData: this.radarList[index]
+        }
+        this.$navigate(`/pages/bossRadar/abilityDetail?staff=${JSON.stringify(staff)}`)
+      },
+      // 点击总览导航栏
+      clickOverview(index) {
+        this.overviewSelect = index
+        this.overviewShow = true
+      },
+      // 总览汇总数据增长率
+      growthRate(that, type) {
+        if (type !== 1) {
+          for (let i = 0; i < that.totalDataList.length; i++) {
+            if (that.totalDataList[i].last_num === 0) {
+              that.totalDataList[i].growthRate = '无对比'
+            } else {
+              let now = that.totalDataList[i].now_num
+              let last = that.totalDataList[i].last_num
+              let rate = Math.round((now - last) / last * 100)
+              if (rate > 0) {
+                that.totalDataList[i].growthRate = `+${rate}%`
+              } else if (rate < 0) {
+                that.totalDataList[i].growthRate = `${rate}%`
+              } else {
+                that.totalDataList[i].growthRate = '持平'
+              }
+            }
+          }
+        } else {
+          for (let i = 0; i < that.totalDataList.length; i++) {
+            that.totalDataList[i].growthRate = ''
+          }
+        }
+      },
+      // 总览汇总数据下降率
+      upOrDown(that, type) {
+        if (type !== 1) {
+          for (let i = 0; i < that.totalDataList.length; i++) {
+            if (that.totalDataList[i].last_num === 0) {
+              that.totalDataList[i].upOrDown = ''
+            } else {
+              let now = that.totalDataList[i].now_num
+              let last = that.totalDataList[i].last_num
+              let rate = Math.round((now - last) / last * 100)
+              if (rate > 0) {
+                that.totalDataList[i].upOrDown = 'up'
+              } else if (rate < 0) {
+                that.totalDataList[i].upOrDown = 'down'
+              } else {
+                that.totalDataList[i].upOrDown = ''
+              }
+            }
+          }
+        } else {
+          for (let i = 0; i < that.totalDataList.length; i++) {
+            that.totalDataList[i].upOrDown = ''
+          }
+        }
+      },
+      // 点击按订单量
+      selectType(queryType) {
+        this.selectType = queryType
+        this.orderParams.query_type = queryType
+        // this.selectDay = 0
+        switch (queryType) {
+          case 1:
+            this.orderParams.day_number = ''
+            break
+          case 2:
+            // this.userNumber = 1
+            this.orderParams.day_number = ''
+            break
+          case 3:
+            // this.selectUserType = 1
+            this.orderParams.user_type = 1
+            this.orderParams.day_number = 1
+            break
+          case 4:
+            // this.selectRale = 1
+            this.orderParams.low_close_rate = 1
+            this.orderParams.high_close_rate = 50
+            break
+          default:
+            break
+        }
+        this.getSaleList()
+      },
+      // 点击按订单量--销售时间
+      selectDay(index, dayNumber) {
+        this.selectDay = index
+        this.orderParams.day_number = dayNumber
+        this.getSaleList()
+      },
+      // 点击按客户人数--客户总数
+      userNumber(type) {
+        this.userNumber = type
+        if (type === 2) {
+          this.orderParams.day_number = 1
+        } else {
+          this.orderParams.day_number = ''
+        }
+        this.getSaleList()
+      },
+      // 点击按互动频率--跟进总数
+      selectUserType(type) {
+        this.selectUserType = type
+        this.orderParams.user_type = type
+        this.orderParams.day_number = 1
+        this.getSaleList()
+      },
+      // 点击按成交率区间--成交率
+      selectRale(index, lowCloseRate, highCloseRate) {
+        this.selectRale = index
+        this.orderParams.low_close_rate = lowCloseRate
+        this.orderParams.high_close_rate = highCloseRate
+        this.getSaleList()
+      },
+      // 选择商城订单量&交易金额
+      chooseOrder(type) {
+        if (type === '0') {
+          this.orderListShow = !this.orderListShow
+        } else if (type === '1') {
+          this.moneyListShow = !this.moneyListShow
+        }
+        if (this.orderListShow && this.moneyListShow) {
+          this.orderLineList = this.orderTotalList
+        }
+        if (this.orderListShow && !this.moneyListShow) {
+          this.orderLineList = this.orderList
+        }
+        if (!this.orderListShow && this.moneyListShow) {
+          this.orderLineList = this.moneyList
+        }
+        // if (!this.orderListShow && !this.moneyListShow) {
+        //   this.orderLineList = {
+        //     categories: this.orderList.categories,
+        //     series: [{
+        //       name: '',
+        //       data: [],
+        //       format(val, name) {
+        //         return val.toFixed(2)
+        //       }
+        //     }]
+        //   }
+        // }
+        this.line('orderCanvas', this.orderLineList)
+      },
+      // 点击成交率时间
+      funnelDay(day) {
+        this.funnelDay = day
+        this.getFunneltList()
+      },
+      // 点击跟进客户数时间
+      attachDay(day) {
+        this.attachDay = day
+        this.getAttachList()
+      },
+      // 点击新增订单数时间
+      imDay(day) {
+        this.imDay = day
+        this.getImList()
+      },
+      // 点击新增客户数时间
+      userDay(day) {
+        this.userDay = day
+        this.getUserList()
+      }
+    }
+  }
+</script>

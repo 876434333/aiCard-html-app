@@ -1,0 +1,112 @@
+<style lang="scss">
+@import '../../assets/css/pages/me/entOrg.scss';
+$main_color: #e75152;
+.btn {
+  background-color: $main_color;
+  width: 180rpx;
+  height: 60rpx;
+  line-height: 60rpx;
+  border-radius: 10rpx;
+  font-size: 26rpx;
+  text-align: middle;
+  color: #f7f7f7;
+}
+</style>
+<template>
+  <view class="wrap">
+    <view class="empty d-n {{offerList.length === 0 && empty? 'd-b':''}}">
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png" />
+        <view class="font-size-26 c-909090 ta-center">没有商品</view>
+    </view>
+    <view class="contact-list d-n {{offerList.length > 0 ? 'd-b':''}}">
+        <repeat for="{{offerList}}" item="item" key="index">
+          <view class="weui-cell">
+            <view class="weui-cell__hd">
+              <image src="{{item.offerImgs[0].img_url}}"  mode="aspectFill"/>
+            </view>
+            <view class="weui-cell__hd" style="width:55%">
+              <text class="branch font-size-30 c-323232">{{item.offer_name}}</text>
+              <view class="count font-size-26" style="color:#ff3a00"><text class="font-size-18">￥</text>{{item.offer_price}}</view>
+            </view>
+            <view class="weui-cell__hd">
+              <button class="btn" wx:if="{{item.flag}}" style="background:red" @tap="recommendOfferCancel({{item.introId}},{{index}})">取消推荐</button>
+              <button class="btn" wx:else @tap="recommendOffer({{item.id}},{{index}})">设为推荐</button>
+            </view>
+          </view>
+        </repeat>
+    </view>    
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import {common} from '../../assets/js/common'
+import {cardManagerApi} from '@/api'
+import {G_RES_URL} from '@/config'
+export default class recommendOffer extends wepy.page {
+  config = {
+    enablePullDownRefresh: true,
+    navigationBarTitleText: '推荐商品'
+  }
+  data = {
+    res_url: G_RES_URL,
+    staffId: null,
+    entId: null,
+    offerList: [],
+    empty: false,
+    saveStatus: []
+  }
+  onLoad() {
+    this.staffId = common.getStaffId(this)
+    this.entId = common.getEnterpriseId(this)
+  }
+  onShow() {
+    cardManagerApi.getOfferListByStatus(this.entId, 1, '*').then(res => {
+      this.offerList = res
+      this.setRecList()
+    })
+  }
+  setRecList() {
+    cardManagerApi.getRecommendOfferList(this.staffId, this.entId).then(res => {
+      let recList = res.data_list
+      for (let i = 0; i < this.offerList.length; i++) {
+        this.offerList[i]['introId'] = ''
+        this.offerList[i]['flag'] = false
+        this.saveStatus[i] = true
+        for (let j = 0; j < recList.length; j++) {
+          if (this.offerList[i].id === recList[j].id) {
+            this.offerList[i]['introId'] = recList[j].intro_id
+            this.offerList[i]['flag'] = true
+            this.saveStatus[i] = false
+          }
+        }
+      }
+      this.empty = true
+      this.$apply()
+    })
+  }
+  methods = {
+    recommendOffer(id, index) {
+      index = parseInt(index)
+      if (this.saveStatus[index]) {
+        this.saveStatus[index] = false
+        cardManagerApi.recommendOffer(id).then(res => {
+          this.offerList[index]['introId'] = res
+          this.offerList[index]['flag'] = true
+          this.$parent.globalData.refreshPage = true
+          this.$apply()
+        })
+      }
+    },
+    recommendOfferCancel(introId, index) {
+      index = parseInt(index)
+      cardManagerApi.recommendOfferCancel(introId).then(res => {
+        this.offerList[index]['flag'] = false
+        this.$parent.globalData.refreshPage = true
+        this.saveStatus[index] = true
+        this.$apply()
+      })
+    }
+  }
+}
+</script>

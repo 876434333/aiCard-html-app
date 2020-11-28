@@ -1,0 +1,45 @@
+<style lang="scss"> </style>
+<template>
+  <!-- 雷达图 -->
+  <canvas canvas-id="radarCanvas" class="echart-canvas"></canvas>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import echarts from './js/echarts.js'
+  export default class radar extends wepy.component {
+    props = {
+      radarData: {
+        type: Object,
+        default: null,
+        twoWay: true
+      }
+    }
+    data = {
+      radarChart: null
+    }
+    radar(e) {
+      var windowWidth = 320
+      try {
+        var res = wepy.getSystemInfoSync()
+        windowWidth = res.windowWidth
+      } catch (e) {
+        console.error('getSystemInfoSync failed!')
+      }
+      this.radarChart = new echarts({
+        canvasId: 'radarCanvas',
+        type: 'radar',
+        categories: this.radarData.categories,
+        series: this.radarData.series,
+        width: windowWidth,
+        height: 200,
+        extra: {
+          radar: {
+            max: 150
+          }
+        }
+      })
+      this.$apply()
+    }
+  }
+</script>

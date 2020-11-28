@@ -1,0 +1,112 @@
+<style lang="scss">
+  .main {
+    position: relative;
+    display:-webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    height: 90rpx;
+    line-height: 90rpx;
+    border-bottom: 1px solid #e8e8e8;
+    overflow: hidden;
+    background: #fff;
+    text {
+      margin: 0 56rpx 0 30rpx;
+    }
+    input {
+      height: 100%;
+    }
+    image {
+      position: absolute;
+      top: 30rpx;
+      right: 36rpx;
+      width: 30rpx;
+      height: 30rpx;
+    }
+  }
+  .save {
+    position: relative;
+    top: 30rpx;
+    left: 0;
+  }
+</style>
+<template>
+  <!-- 部门设置 -->
+  <view class="wrap">
+    <view class="main">
+      <text class="font-size-30 c-323232">部门名称</text>
+      <input type="text" placeholder="请输入部门名称" value="{{inputVal}}" class="font-size-30 c-909090" @input="input" @focus="inputFocus" @blur="inputBlur"/>
+      <image src='../../../assets/images/card/close.png' hidden="{{closeHidden}}" @tap="clear"/>
+    </view>
+    <button class="save font-size-36 c-ffffff" style="opacity:{{opacity}};" @tap="save">保存</button>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+export default class branchName extends wepy.page {
+  // 相当于page.json
+  config = {
+    enablePullDownRefresh: true,
+    navigationBarTitleText: '部门设置'
+  }
+  data = {
+    closeHidden: true,
+    inputVal: '',
+    opacity: 1,
+    enterpriseId: '',
+    departmentId: ''
+  }
+  onLoad(option) {
+    if (this.inputVal === '') {
+      this.opacity = 0.5
+    }
+    if (option) {
+      // entOrg传过来的值
+      this.enterpriseId = option.enterpriseId
+      this.departmentId = option.departmentId
+      this.inputVal = option.branchName
+    }
+  }
+  methods = {
+    // 获取输入的部门名称
+    input(e) {
+      this.inputVal = e.detail.value
+      this.closeHidden = false
+    },
+    // 清空输入的文字
+    clear() {
+      this.inputVal = ''
+    },
+    // 输入框聚焦
+    inputFocus() {
+      this.closeHidden = false
+      this.opacity = 1
+    },
+    // 输入框失焦
+    inputBlur() {
+      this.closeHidden = true
+      if (this.inputVal === '') {
+        this.opacity = 0.5
+      }
+    },
+    // 保存
+    save() {
+      if (!this.inputVal) {
+        wepy.showToast({ title: '请输入部门名称', icon: 'none' })
+        return
+      }
+      let params = {
+        departmentName: this.inputVal,
+        enterpriseId: this.enterpriseId,
+        parentId: this.departmentId
+      }
+      companyApi.updataDepartment(params).then(res => {
+        // this.$navigate(`./entOrg?enterprise_id=${this.enterpriseId}`)
+        wepy.setStorage({ key: 'updDept', data: { upd: true } })
+        wepy.navigateBack({ delta: 1 })
+      })
+    }
+  }
+}
+</script>

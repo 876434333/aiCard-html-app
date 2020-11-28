@@ -1,0 +1,136 @@
+<style lang="scss">
+  $main_color: #e75152;
+  page {
+    background: #f1f1f1;
+    height:100%;
+    overflow: hidden;
+  }
+  .wrap{
+    height:100%;
+  }
+  .panel{
+    height:calc(50vh - 38rpx);
+    background: #fff;
+    border-radius: 10rpx;
+    margin:24rpx 30rpx 30rpx 24rpx;
+    position: relative;
+    .title{
+        padding:10rpx 30rpx;font-size:36rpx;position: relative;color:#323232;
+        .status{
+          position: absolute;right:30rpx;top:18rpx;color:$main_color;font-size:30rpx;
+          image{
+            position: absolute;left:-38rpx;top:10rpx;
+            height:30rpx;
+            width:30rpx;
+          }
+        }
+    }
+    .content{
+      padding:30rpx 30rpx 0 30rpx;color:#909090;font-size:30rpx;
+    }
+    .btn{
+      position: absolute;
+      bottom:30rpx;
+      right:30rpx;
+      border:solid 1rpx $main_color;
+      color:$main_color;
+      width:100rpx;
+      text-align: center;
+      font-size:30rpx;
+      border-radius: 10rpx;
+    }
+    .edit{
+      color:#fff;
+      background: $main_color;
+    }
+  }
+</style>
+
+<template>
+<view class="wrap">
+    <view class="panel">
+        <view class="title">
+          产品
+          <view class="status" wx:if="{{type === 1}}">
+            <image src="../../assets/images/me/check.png"/>
+            已启用
+          </view>
+        </view>
+        <view class="content">
+          <view>1、产品管理：后台管理编辑产品</view>
+          <view>2、产品展示：通过前端界面，以标准的或者其他个性化的方式向用户展示产品信息</view>
+          <view>3、产品咨询：用户可向销售人员在线咨询产品信息</view>
+          <view>4、产品转发：用户可转发产品到微信</view>
+        </view>
+        <view class="btn edit" wx:if="{{type === 1}}" @tap="edit(1)">编辑</view>
+        <view class="btn" wx:else  @tap="startup(1)">启用</view>
+    </view>
+    <view class="panel">
+        <view class="title">
+          商城
+          <view class="status" wx:if="{{type === 2}}">
+            <image src="../../assets/images/me/check.png"/>
+            已启用
+          </view>
+        </view>
+        <view class="content">
+          <view>1、商品管理：包括后台商品库存管理、编辑管理和商品分类管理等。</view>
+          <view>2、订单管理：在线订单程序，使消费者能够顺利的通过WEB在线的方式，直接生成购买订单。</view>
+          <view>3、商品展示：通过前端界面，以标准的或者其他个性化的方式向用户展示商品各类信息</view>
+          <view>4、购物车： 用户可对想要购买的商品进行网上订购，在购物过程中，随时增删商品。</view>
+        </view>
+        <view class="btn edit" wx:if="{{type === 2}}"  @tap="edit(2)">编辑</view>
+        <view class="btn" wx:else  @tap="startup(2)">启用</view>
+    </view>
+</view>
+</template>
+<script>
+import wepy from 'wepy'
+import {cardApi, cardManagerApi} from '@/api'
+import { common } from '../../assets/js/common'
+export default class shopMgr extends wepy.page {
+  config = {
+    navigationBarTitleText: '商城管理'
+  }
+  data = {
+    type: null,
+    entId: null
+  }
+  onLoad(option) {
+    this.entId = option.enterprise_id
+    // 获取商城类型，1=产品，2=商城
+    cardApi.getShopType(option.enterprise_id).then(res => {
+      this.type = res
+      this.$apply()
+    })
+  }
+  components = {}
+  methods = {
+    edit(type) {
+      if (type === '1') {
+        this.$navigate(`/pages/product/shopProduct?operate=edit&entId=${this.entId}`)
+      } else {
+        this.$navigate(`/pages/product/shopOffer?operate=edit&entId=${this.entId}`)
+      }
+    },
+    startup(type) {
+      wepy.showModal({
+        content: '确定要启用' + (type === '1' ? '产品' : '商城') + '？'
+      }).then((res) => {
+        if (!res.cancel) {
+          cardManagerApi.startupShop(type, this.entId).then(res => {
+            if (type === '1') {
+              this.type = 1
+            } else {
+              this.type = 2
+            }
+            this.$apply()
+          })
+          common.tip('启用成功', 'success')
+          this.$parent.globalData.refreshPage = true
+        }
+      })
+    }
+  }
+}
+</script>

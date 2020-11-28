@@ -1,0 +1,215 @@
+<style lang="scss">
+  $main_color: #e75152;
+  page {
+    background-color: #ffffff;
+  }
+  .wrap {
+    overflow: hidden;
+    .logo {
+      margin:0 auto;
+      padding-bottom:48rpx;
+      width: 630rpx;
+      border-bottom:2rpx solid #e8e8ea;
+      overflow: hidden;
+      image {
+        display: block;
+        margin:142rpx auto 0;
+        width: 72rpx;
+        height: 72rpx;
+      }
+      view {
+        margin-top: 28rpx;
+      }
+    }
+    .sure-msg {
+      margin-top: 46rpx;
+    }
+    .get-msg {
+      margin-top: 30rpx;
+    }
+    .authorize {
+      margin-top: 82rpx;
+      padding: 0;
+      width: 634rpx;
+      height: 92rpx;
+      line-height: 92rpx;
+      border-radius: 10rpx;
+      background: $main_color;
+    }
+  }
+</style>
+<template>
+  <view class="wrap">
+    <view class="logo"> 
+      <image src="{{res_url}}/dc_load_logo.png?v=20190411" wx:if="{{res_url}}"/>
+      <view class="font-size-36 c-323232 ta-center">深卡人工智能名片</view>
+    </view>
+    <view class="font-size-32 c-323232 ta-center sure-msg">请确认以下授权信息</view>
+    <view class="font-size-28 c-909090 ta-center get-msg">·获取你的信息（头像，信息等）</view>
+    <button class="font-size-36 c-ffffff ta-center authorize" open-type="getUserInfo" @getuserinfo="applyAuthorize">同意授权</button>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { authorizeToMap } from '@/constants/pageMap'
+import { loginApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class ApplyForAuthorize extends wepy.page {
+  // 相当于page.json
+  config = {
+    enablePullDownRefresh: true,
+    navigationBarTitleText: '授权'
+  }
+  data = {
+    res_url: G_RES_URL,
+    option: ''
+  }
+
+  onLoad(option) {
+    this.option = JSON.parse(option.data)
+    let employee = this.$parent.getNowEmployee()
+    if (!employee || employee.employeeId !== this.option.employee_id) {
+      this.$parent.saveNowEmployee(
+        this.option.employee_id,
+        this.option.enterprise_id,
+        this.option.department_id
+      )
+    }
+  }
+
+  methods = {
+    // 申请授权
+    applyAuthorize(res) {
+      if (res.detail.userInfo) {
+        wepy.showLoading({
+          title: '加载中'
+        })
+        // 记录微信用户信息
+        this.$parent.globalData.userInfo = res.detail.userInfo
+        if (this.option.from === 4 || this.option.from === 5 || this.option.from === 2) {
+          // 从Cardview过来的 保存userInfo到数据库 在cardview页面只有扫码和链接才会进入到授权页面
+          let openid = this.$parent.getNowOpenid()
+          this.createRela(this.option, res.detail.userInfo, openid)
+        }
+        this.getOpenIdAndLoginWebim()
+      }
+    }
+  }
+
+  // 授权完，跳转到之前要去的页面
+  toPage() {
+    wepy.hideLoading()
+    let url = authorizeToMap[this.option.from]
+    if (this.option) {
+      switch (this.option.from) {
+        case 1:
+          url += `?employee_id=${this.option.employee_id}&enterprise_id=${
+            this.option.enterprise_id
+            }`
+          break
+        case 2:
+          url += `?employee_id=${this.option.employee_id}&enterprise_id=${
+            this.option.enterprise_id
+            }&department_id=${this.option.department_id}`
+          break
+        case 3:
+          url += `?employee_id=${this.option.employee_id}&enterprise_id=${
+            this.option.enterprise_id
+            }&invite_staff_id=${this.option.invite_staff_id}`
+          break
+        case 4:
+          url += `?employee_id=${this.option.employee_id}&from_openid=${
+            this.option.from_openid
+            }&scene=${this.option.scene}&symbol=1`
+          break
+        case 5:
+          url += `?circle_id=${this.option.circle_id}&t=${this.option.t}&employee_id=${this.option.employee_id}&enterprise_id=${this.option.enterprise_id}&department_id=${this.option.department_id}`
+          break
+        case 6:
+          url += `?operate=${this.option.operate}&employee_id=${this.option.employee_id}&entId=${this.option.enterprise_id}&department_id=${this.option.department_id}`
+          break
+        case 7:
+          url += `?operate=${this.option.operate}&employee_id=${this.option.employee_id}&entId=${this.option.enterprise_id}&department_id=${this.option.department_id}&product=${this.option.product}&symbol=1`
+          break
+      }
+    }
+    if (this.option.from_openid) {
+      url += `&from_openid=${this.option.from_openid}`
+    }
+    wepy.reLaunch({
+      url: url
+    })
+  }
+  /**
+   * 获取openid、登录webIM
+   */
+  getOpenIdAndLoginWebim() {
+    // this.$parent.getAndSetOpenid(this.option.employee_id, this.option.enterprise_id).then(openid => {
+    //     this.$parent.getUserChatLoginInfo(
+    //       openid,
+    //       this.option.employee_id,
+    //       this.option.enterprise_id,
+    //       () => {
+    //         this.toPage()
+    //       }
+    //     )
+    //   })
+    this.$parent.getAndSetOpenid(this.option.employee_id, this.option.enterprise_id).then(openid => {
+      let employeeInfo = this.$parent.getNowEmployee()
+      let userInfo = this.$parent.getUserInfo()
+      this.$parent.login(employeeInfo, userInfo, openid).then(res => {
+        this.$parent.getUserChatLoginInfo(
+          openid,
+          this.option.employee_id,
+          this.option.enterprise_id,
+          () => {
+            this.toPage()
+          }
+        )
+      })
+    })
+  }
+  /**
+   * 创建用户关系
+   * @param employeeInfo 员工
+   * @param userInfo 微信用户信息
+   * @param openid 微信openid
+   * @param fromType 进入小程序的方式
+   */
+  createRela(option, userInfo, openid, fromOpenid) {
+    let promise = new Promise((resolve, reject) => {
+      let loginObj = {
+        employee_id: option.employee_id,
+        froms: option.from_type,
+        head_icon: userInfo.avatarUrl,
+        nick_name: userInfo.nickName,
+        open_id: openid,
+        sex: userInfo.gender
+      }
+      if (fromOpenid) {
+        loginObj = Object.assign({}, loginObj, { from_open_id: fromOpenid })
+      }
+      loginApi.createRela(loginObj).then(
+        res => {
+          this.$parent.saveSessionId(res.token)
+        },
+        err => {
+          wepy.showModal({
+            title: '提示',
+            content: '登录失败',
+            showCancel: false
+          })
+          this.hideLoading()
+          setTimeout(() => {
+            reject(err)
+          }, 1000)
+        }
+      )
+    })
+    return promise
+  }
+}
+</script>
+<style>
+</style>

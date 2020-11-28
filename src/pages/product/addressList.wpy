@@ -1,0 +1,300 @@
+<style lang="scss">
+  @import '../../assets/css/zanui.scss';
+  @import '../../assets/css/pages/product/address.scss';
+  @import '../../assets/css/pages/product/trade.scss';
+  @import '../../assets/css/pages/product/mod.scss';
+  .empty {
+    padding-top: 72rpx;
+  }
+</style>
+<template>
+  <view class="address view-trade">
+    <noticemsg></noticemsg>
+    <form class="" report-submit="true" bindsubmit="formSubmit">
+      <repeat for="{{table.list}}"
+              index="index"
+              key="index"
+              item="item">
+        <view class="zan-panel zan-cell zan-cell--access address-item">
+          <view class="zan-cell__bd">
+            <view class="zan-cell__text item-title" @tap="chooseAddress" data-index="{{index}}">
+              {{item.name}}
+              <text class="item-phone">{{item.phone}}</text>
+            </view>
+            <view class="zan-cell__desc item-conten" @tap="chooseAddress" data-index="{{index}}">收货地址：{{item.province_name + item.city_name + item.area_name + item.address}}</view>
+            <view class="zan-row item-bottom">
+              <view class="zan-col zan-col-12 bottom-left" @tap="setDefault" data-id="{{item.id}}">
+                <text class="zan-icon zan-icon-{{item.is_default === 1 ? 'checked c-15aefa' : 'check'}} icon"></text>
+                <text>{{item.is_default === 1 ? '已' : ''}}设为默认</text>
+              </view>
+              <view class="zan-col zan-col-12 bottom-right">
+                <text class="zan-icon zan-icon-edit icon" @tap="editAddress" data-id="{{item.id}}"></text>
+                <text class="label" @tap="editAddress" data-id="{{item.id}}">编辑</text>
+                <text class="zan-icon zan-icon-delete icon" @tap="delAddress" data-id="{{item.id}}"></text>
+                <text class="label" @tap="delAddress" data-id="{{item.id}}">删除</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </repeat>
+      <view class="list-no-more" wx:if="{{!isNonthing && (isNoMore || isLoading)}}">
+        <text wx:if="{{isLoading}}">正在加载更多....</text>
+        <text wx:if="{{isNoMore}}">已经没有更多了</text>
+      </view>
+      <view class="empty" wx:if="{{isNonthing}}">
+        <image src="../../assets/images/product/orderEmpty.png" class="empty-img" />
+        <view class="empty-text">空空如也</view>
+      </view>
+      <view class="trade-opts">
+        <button class="trade-opt-placer text-flex-center flex-3 normal-add"
+                @tap="addAddress"
+                form-type="submit"
+                plain="true"
+                style="border:none;border-radius:0"
+                hover-class="none">
+          <image src="../../assets/images/product/add.png" class="add-icon" />
+          手动添加
+        </button>
+        <button wx:if="{{openSetting}}"
+                form-type="submit"
+                plain="true"
+                hover-class="none"
+                class="trade-opt-buy wechat-add"
+                open-type="openSetting"
+                style="border:none;border-radius:0"
+                @opensetting="afterOpensetting">
+          <image src="../../assets/images/product/wechat-icon.png" class="add-icon" />
+          微信添加
+        </button>
+        <button wx:else
+                class="trade-opt-buy wechat-add"
+                form-type="submit"
+                plain="true"
+                hover-class="none"
+                style="border:none;border-radius:0"
+                @tap="wxAddress">
+          <image src="../../assets/images/product/wechat-icon.png" class="add-icon" />
+          微信添加
+        </button>
+      </view>
+    </form>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {
+    indexMixin,
+    setEmployeeMixin,
+    saveFormidMixin,
+    authorizeScopeMixin
+  } from '@/mixins/index.js'
+  import {addressApi} from '@/api'
+  import NoticeMsg from '@/components/noticeMsg'
+  import {common} from '../../assets/js/common.js'
+  export default class AddressList extends wepy.page {
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarBackgroundColor: '#ff7f02',
+      navigationBarTitleText: '收货地址'
+    }
+    mixins = [
+      setEmployeeMixin,
+      indexMixin,
+      saveFormidMixin,
+      authorizeScopeMixin
+    ]
+    components = {
+      noticemsg: NoticeMsg
+    }
+
+    data = {
+      firseList: true,
+      fromOrder: false
+    }
+
+    onLoad(params, data) {
+      // 是否从订单支付页面进来
+      if (data.preload && data.preload.fromOrder) {
+        this.fromOrder = true
+      }
+    }
+
+    onShow() {
+      this.init()
+      this.checkAuthorize('scope.address')
+      if (!this.firseList) {
+        this.search()
+      }
+      if (this.firseList) {
+        this.firseList = false
+      }
+    }
+
+    methods = {
+      /**
+       * 设置默认地址
+       * @param {[object]} e 触发事件的元素
+       */
+      setDefault(e) {
+        let id = e.currentTarget.dataset.id
+        wepy.showModal({
+          content: '确定要设置为默认地址？'
+        }).then(() => {
+          let userId = this.$parent.getUserId()
+          let params = {
+            id: id,
+            is_default: 1,
+            user_id: userId
+          }
+          wepy.showLoading({
+            title: '加载中'
+          })
+          addressApi.setDefaultAddress(params).then(() => {
+            this.search()
+            wepy.hideLoading()
+            common.tip('修改成功', 'success')
+          }).catch(() => {
+            common.tip('修改失败', 'none')
+            wepy.hideLoading()
+          })
+        })
+      },
+      /**
+       * 编辑默认地址
+       * @param {[object]} e 触发事件的元素
+       */
+      editAddress(e) {
+        let id = e.currentTarget.dataset.id
+        this.toEditAddress(id)
+      },
+      /**
+       * 删除默认地址
+       * @param {[object]} e 触发事件的元素
+       */
+      delAddress(e) {
+        let id = e.currentTarget.dataset.id
+        wepy.showModal({
+          content: '确定要删除该地址？'
+        }).then(() => {
+          let params = {
+            id: id,
+            status: 0
+          }
+          wepy.showLoading({
+            title: '加载中'
+          })
+          addressApi.delAddress(params).then(() => {
+            this.search()
+            wepy.hideLoading()
+            common.tip('删除成功', 'success')
+          }).catch(() => {
+            common.tip('删除失败', 'none')
+            wepy.hideLoading()
+          })
+        })
+      },
+      /**
+       * 选择该地址作为当前订单的收获地址，并返回支付页面
+       */
+      chooseAddress(e) {
+        if (!this.fromOrder) {
+          return
+        }
+        let index = e.currentTarget.dataset.index
+        this.$parent.setCheckedAddress(this.table.list[index])
+        // 返回支付页
+        wepy.navigateBack({
+          delta: 1
+        })
+      }
+    }
+    /**
+     * 查询列表数据
+     * @param {any} pageNum
+     * @param {any} pageSize
+     */
+    list(pageNum, pageSize) {
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let userId = this.$parent.getUserId()
+      let params = {
+        user_id: userId,
+        page_num: pageNum,
+        page_size: pageSize
+      }
+      return addressApi.getAddressList(params).then((data) => {
+        wepy.hideLoading()
+        return data
+      })
+    }
+    /**
+     * 打开openSetting的回调
+     * @param  {[type]} res 授权结果
+     */
+    afterOpensetting(res) {
+      if (res.detail.authSetting['scope.address'] === true) {
+        this.closeOpenSetting()
+      }
+    }
+    /**
+     * 手动添加地址
+     */
+    addAddress() {
+      this.toEditAddress()
+    }
+    /**
+     * 前往编辑地址页面
+     */
+    toEditAddress(id) {
+      id && this.$preload('id', id)
+      this.$navigate('/pages/product/editAddress')
+    }
+    /**
+     * 打开微信选择地址接口
+     * @param {[object]} e 触发事件的元素
+     */
+    wxChooseAddress(e) {
+      wepy.chooseAddress().then(res => {
+        if (res.errMsg !== 'chooseAddress:ok') {
+          return null
+        }
+        this.saveWxAddress(res)
+      })
+    }
+    /**
+     * 保存微信添加的地址
+     * @param  {object} res 保存的地址信息
+     */
+    saveWxAddress(res) {
+      wepy.showLoading({
+        title: '保存中'
+      }).then(() => {
+        let userId = this.$parent.getUserId()
+        let params = {
+          province_name: res.provinceName,
+          city_name: res.cityName,
+          area_name: res.countyName,
+          name: res.userName,
+          phone: res.telNumber,
+          address: res.detailInfo,
+          user_id: userId
+        }
+        addressApi.addAddress(params).then((res) => {
+          wepy.hideLoading()
+          wepy.showToast({
+            title: '保存成功'
+          }).then(() => {
+            this.search()
+          })
+          this.$apply()
+        }, () => {
+          wepy.hideLoading()
+          common.tip('保存失败', 'none')
+        })
+      })
+    }
+  }
+</script>

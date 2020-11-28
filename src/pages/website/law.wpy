@@ -1,0 +1,15 @@
+<style lang="scss">
+</style>
+<template>
+  <!-- 法律声明 -->
+  <view class="wrap">法律声明</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  export default class websiteEdit extends wepy.page {
+    config = {
+      navigationBarTitleText: '法律声明'
+    }
+  }
+</script>

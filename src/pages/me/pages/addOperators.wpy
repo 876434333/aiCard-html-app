@@ -1,0 +1,119 @@
+<style lang="scss">
+@import '../../../assets/css/pages/me/entOrg.scss';
+@import '../../../assets/css/pages/me/transfer.scss';
+</style>
+<template>
+  <!-- 管理员设置-添加运营者 -->
+  <view class="wrap">
+    <view class="search">
+      <image src="../../../assets/images/contact/search.png"/>
+      <input type="text" placeholder="搜索" class="font-size-30 c-909090"/>
+    </view>
+    <!-- 空列表 -->
+    <view class="empty" wx:if="{{showEmpty}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+      <view class="font-size-32 ta-center c-909090">暂无成员，先去添加公司成员吧...</view>
+    </view>
+    <!-- 联系人列表 -->
+    <view class="contact-part {{staffGroupList.length === 0 ? 'contact-part-empty' : ''}}">
+      <repeat for="{{staffGroupList}}" index="firstIndex" key="index" item="item">
+        <view class="contact-list">
+          <view class="staff font-size-24 c-909090">{{item.groupName}}</view>
+          <repeat for="{{item.dataList}}" index="secondIndex" key="index" item="staff">
+            <view class="weui-cell" @tap="choose" data-firstIndex="{{firstIndex}}" data-secondIndex="{{secondIndex}}">
+              <view class="weui-cell__hd">
+                <image src="{{staff.head_icon}}"/>
+              </view>
+              <view class="weui-cell__hd">
+                <view class="branch font-size-30 c-323232">{{staff.name}}</view>
+                <view class="count font-size-26 c-909090">{{staff.station}}</view>
+              </view>
+              <view class="weui-cell__hd" wx:if="{{staff.selected}}">
+                <image src="../../../assets/images/contact/hook.png" class="hook"/>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </repeat>
+    </view>
+    <view class="foot"><button class="save font-size-36 c-ffffff" @tap="save">确定</button></view>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+import { common } from '../../../assets/js/common.js'
+import {G_RES_URL} from '@/config'
+export default class transfer extends wepy.page {
+  // 相当于page.json
+  config = {
+    navigationBarTitleText: '添加运营者'
+  }
+  data = {
+    res_url: G_RES_URL,
+    showEmpty: false,
+    staffSelectedId: '',
+    enterpriseId: '',
+    staffGroupList: [],
+    staffId: ''
+  }
+  onLoad(option) {
+    this.enterpriseId = option.enterprise_id
+    this.staffId = option.staff_id
+    companyApi.getEnterpriseOnlyStaffList(this.enterpriseId).then(res => {
+      this.staffGroupList = common.getGroupListByKey(res, 'first_letter')
+      if (this.staffGroupList.length === 0) {
+        this.showEmpty = true
+      }
+      this.$apply()
+    })
+  }
+  methods = {
+    // 选择转让的员工
+    choose(e) {
+      let firstIndex = e.currentTarget.dataset.firstindex
+      let secondIndex = e.currentTarget.dataset.secondindex
+      let staffGroupList = this.staffGroupList
+      for (let i = 0; i < staffGroupList.length; i++) {
+        let staffList = staffGroupList[i].dataList
+        for (let j = 0; j < staffList.length; j++) {
+          staffList[j]['selected'] = false
+        }
+      }
+      staffGroupList[firstIndex].dataList[secondIndex].selected = true
+
+      this.staffSelectedId = staffGroupList[firstIndex].dataList[secondIndex].id
+      this.$apply()
+    },
+    // 点击确定
+    save() {
+      let _this = this
+      if (!this.staffSelectedId) {
+        wepy.showToast({
+          title: '请选择运营者',
+          icon: 'none',
+          duration: 2000
+        })
+        return
+      }
+      companyApi.addOperator(this.staffSelectedId).then(res => {
+        _this.$parent.globalData.refreshPage = true
+        wepy
+          .showToast({
+            title: '增加运营者成功',
+            icon: 'success',
+            duration: 2000
+          })
+          .then(res => {
+            setTimeout(() => {
+              wepy.navigateBack({
+                delta: 1
+              })
+            }, 1000)
+          })
+      })
+    }
+  }
+}
+</script>

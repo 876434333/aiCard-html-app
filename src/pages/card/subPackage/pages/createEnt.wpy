@@ -1,0 +1,176 @@
+<style lang="scss">
+  $main_color: #e75152;
+  page {
+    background-color: #ffffff;
+  }
+  .wrap {
+    overflow: hidden;
+    .avatar {
+      display:block;
+      margin:32rpx auto 0;
+      width: 150rpx;
+      height: 150rpx;
+      border-radius: 100%;
+    }
+    .create {
+      margin:24rpx auto 0;
+      width: 688rpx;
+      height: 96rpx;
+      line-height: 96rpx;
+      border-radius: 10rpx;
+      background: $main_color;
+    }
+    .look {
+      margin-top: 28rpx;
+      height: 94rpx;
+      line-height: 94rpx;
+      color: $main_color;
+      border:1px solid $main_color;
+      background: #ffffff;
+    }
+    .recommend-part {
+      margin-top:20rpx;
+      padding:0 44rpx;
+    }
+    .recommend-part-three {
+      padding:0 6rpx;
+    }
+    .recommend {
+      margin:0 auto;
+      // width: 25%;
+      width: 120rpx;
+      image {
+        display: block;
+        width: 100%;
+        height: 120rpx;
+        border-radius: 100%;
+      }
+    }
+    .copy {
+      display:-webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      margin:0 auto;
+      width:680rpx;
+      .line {
+        position: relative;
+        top: 22rpx;
+        width: 118rpx;
+        height: 2rpx;
+        background: #d0d0d0;
+      }
+    }
+    .swiper {
+      swiper-item {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+      }
+    }
+  }
+</style>
+<template>
+  <view class="wrap">
+    <image src="{{userInfo.avatarUrl}}" class="avatar"/>
+    <view class="font-size-36 c-646464 ta-center" style="padding:18rpx 0 8rpx 0;">您好，{{userInfo.nickName}}</view>
+    <view class="font-size-36 c-646464 ta-center">{{markedWords}}</view>
+    <view class="font-size-36 c-ffffff ta-center create" @tap="createEnt">一键创建名片、商城、官网</view>
+    <view class="font-size-36 ta-center create look" @tap="gotoCS">联系客服</view>
+    <view class="font-size-28 c-646464 ta-center" style="margin-top:28rpx;">深卡名片</view>
+    <view class="font-size-28 c-646464 ta-center copy" style="margin-top:-2rpx;"><text class="line"></text><text style="margin:0 10rpx;">一张为销售赋能的微信小程序名片</text><text class="line"></text></view>
+    <view class="font-size-28 c-646464 ta-center" style="margin-top:-2rpx;color:#e75152;" @tap="more">了解更多</view>
+    <view class="font-size-28 c-909090 ta-center" style="margin-top:80rpx;" wx:if="{{recommendCardList.length > 0}}">看看他们怎么用</view>
+    <view class="recommend-part" wx:if="{{recommendCardList.length > 0}}">
+      <swiper autoplay="true" interval="10000" class="swiper">
+        <repeat for="{{recommendCardList}}" item="list" index="index">
+          <swiper-item class="{{recommendCardList.length === 3 ? 'swiper-three' : ''}}">
+            <repeat  for="{{list}}" item="item" index="index"> 
+              <view class="recommend" data-staffId="{{item.staffId}}" data-enterpriseId="{{item.enterpriseId}}" data-departmentId="{{item.departmentId}}" @tap="cardView">
+                <image src="{{item.headIcon}}"/>
+                <view class="font-size-28 c-323232 ta-center" style="padding-top:6rpx;">{{item.name}}</view>
+              </view>
+            </repeat>
+          </swiper-item>
+        </repeat>
+      </swiper>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {cardApi} from '@/api'
+  export default class welcom extends wepy.page {
+    config = {
+      navigationBarTitleText: '深卡名片'
+    }
+    data = {
+      userInfo: {
+        nickName: '',
+        avatarUrl: ''
+      },
+      recommendCardList: [],
+      staff: {},
+      markedWords: ''
+    }
+    onLoad() {
+      this.userInfo = this.$parent.getUserInfo()
+      // 判断是否存在名片
+      let openid = this.$parent.getNowOpenid()
+      this.isExitCard(openid)
+      // 获取推荐名片列表
+      cardApi.getRecommendCard().then((res) => {
+        for (let key in res) {
+          if (res[key].name.length > 7) {
+            res[key].name = res[key].name.substr(0, 7) + '...'
+          }
+        }
+        for (let i = 0; i < res.length; i += 4) {
+          this.recommendCardList.push(res.slice(i, i + 4))
+        }
+        this.$apply()
+      })
+    }
+    methods = {
+      // 一键创建名片
+      createEnt() {
+        wepy.navigateTo({
+          url: './create'
+        })
+      },
+      // 查看客服名片
+      gotoCS() {
+        wepy.navigateTo({
+          url: `/pages/card/cardView?employee_id=DCSTAFF0000000000000000000000000&enterprise_id=00000000-0000-0000-0000-000000000000&department_id=1&cardHolder=cardHolder&open_id=o6B9Z5EBha9CpI0oYnPvibC9DVcw`
+        })
+      },
+      // 查看推荐名片
+      cardView(e) {
+        this.staff.staffId = e.currentTarget.dataset.staffid
+        this.staff.enterpriseId = e.currentTarget.dataset.enterpriseid
+        this.staff.departmentId = e.currentTarget.dataset.departmentid
+        cardApi.viewRecommendCard(this.staff.staffId).then((res) => {
+          wepy.navigateTo({
+            url: `/pages/card/cardView?employee_id=${this.staff.staffId}&enterprise_id=${this.staff.enterpriseId}&department_id=${this.staff.departmentId}&cardHolder=cardHolder`
+          })
+        })
+      },
+      // 了解更多
+      more() {
+        // wepy.navigateTo({
+        //   url: '/pages/card/more'
+        // })
+      }
+    }
+    isExitCard(openid) {
+      cardApi.createCard(openid).then(res => {
+        if (res === 1) {
+          this.markedWords = '多张深卡名片将展示多彩的自己'
+        } else {
+          this.markedWords = '您还没有创建自己的深卡名片哦'
+        }
+        this.$apply()
+      })
+    }
+  }
+</script>

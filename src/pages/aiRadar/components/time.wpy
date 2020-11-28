@@ -1,0 +1,72 @@
+<style lang="scss">
+  @import '../../../assets/css/pages/radar/time.scss';
+</style>
+<template>
+  <view class="contact-part" style="padding-bottom:30rpx; height:100%;">
+    <view class="empty" wx:if="{{dataList.length === 0 && emptyShow}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png" style="margin:226rpx auto 16rpx;width:192rpx;height:223rpx;"/>
+      <view class="font-size-26 c-909090 ta-center">空空如也</view>
+    </view>
+    <repeat for="{{dataList}}" index="groupIndex" key="index" item="item" wx:if="{{dataList.length > 0}}">
+      <view class="font-size-24 c-323232 time">{{item.groupName}}</view>
+      <repeat for="{{item.dataList}}" index="index" key="index" item="client">
+        <view class="comment" @tap="toClientMsg('{{client}}')">
+          <view class="left">
+            <image src="{{client.head_icon}}" class="headIcon"/>
+          </view>
+          <view class="middle">
+            <text class="font-size-30 c-323232">{{client.name}}</text>{{client.description}}<text class="font-size-30 c-3DB8C8">{{client.num}}</text><text>次</text>
+          </view>
+          <view class="right">
+            <image src="/assets/images/chat/arrow.png" class="arrow" />
+          </view>
+        </view>
+      </repeat>
+    </repeat>
+    <view class="font-size-26 c-909090 ta-center"  style="line-height:100rpx;" wx:if="{{noMore}}">没有更多数据</view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import {G_RES_URL} from '@/config'
+import { common } from '../../../assets/js/common.js'
+import { pagingMixin } from '@/mixins'
+import { aiRadarApi } from '@/api'
+export default class time extends wepy.component {
+  data = {
+    res_url: G_RES_URL,
+    dataList: [],
+    emptyShow: false
+  }
+  mixins = [pagingMixin];
+  onLoad() {
+    this.init()
+  }
+  events = {}
+  methods = {
+    toClientMsg(client) {
+      wepy.navigateTo({
+        url: `/pages/aiRadar/detail/clientMsg?userId=${client.user_id}`
+      })
+    }
+  }
+  // 加载数据
+  getDataList() {
+    return aiRadarApi.getActionList(this.params).then(res => {
+      if (res.data_list.length === 0) {
+        this.emptyShow = true
+      }
+      let tempList = common.getGroupListByKey(res.data_list, 'create_time')
+      // 将时间戳转化为字符串
+      for (let i = 0; i < tempList.length; i++) {
+        let timeString = common.formatDateTime(tempList[i].groupName)
+        tempList[i].groupName = timeString
+      }
+      this.dataList = this.dataList.concat(tempList)
+      this.$apply()
+      return res
+    })
+  }
+}
+</script>

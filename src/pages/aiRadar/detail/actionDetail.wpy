@@ -1,0 +1,114 @@
+<style lang="scss">
+  @import '../../../assets/css/pages/radar/time.scss';
+  $main_color: #e75152;
+  .c-3DB8C8{
+    color:$main_color!important;
+  }
+</style>
+<template>
+  <view class="wrap">    
+    <!-- 时间 -->
+    <calendar :actionParams.sync="calendarParams"></calendar>
+    <view class="empty" wx:if="{{dataList.length === 0 && emptyShow}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png" style="margin:226rpx auto 16rpx;width:192rpx;height:223rpx;"/>
+      <view class="font-size-26 c-909090 ta-center">空空如也</view>
+    </view>
+    <view wx:if="{{totalNum > 0}}" class="font-size-26 c-909090 ta-center" style="margin-top:30rpx;">共<text class="c-3DB8C8">{{totalNum}}</text>次</view>
+   
+   <!-- 条目 -->
+    <scroll-view scroll-y="true" style="height: {{scrollHeight}}rpx;" bindscrolltolower="onReachBottom" upper-threshold="0" lower-threshold="0" wx:if="{{dataList.length > 0}}">
+      <repeat for="{{dataList}}" index="groupIndex" key="index" item="item">
+      <view class="time">{{item.groupName}}</view>
+      <repeat for="{{item.dataList}}" index="itemIndex" key="index" item="client">
+        <view class="comment">
+          <view class="left">
+            <image src="{{client.head_icon}}" class="headIcon"/>
+          </view>
+          <view class="middle">
+            {{client.description}}
+          </view>
+        </view>
+      </repeat>
+    </repeat>
+    <view class="font-size-30 ta-center c-909090" style="line-height:100rpx;" wx:if="{{noMore}}">没有更多数据</view>
+    </scroll-view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {aiRadarApi} from '@/api'
+  import calendar from '../components/calendar'
+  import {G_RES_URL} from '@/config'
+  import { pagingMixin } from '@/mixins'
+  import {common} from '../../../assets/js/common.js'
+  export default class actionDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '行为详情页'
+    }
+    mixins = [pagingMixin];
+    components = {
+      calendar: calendar
+    }
+    data = {
+      res_url: G_RES_URL,
+      dataList: [],
+      emptyShow: false,
+      calendarParams: {},
+      code: '',
+      calendarTimestamp: {
+        begin_time: '',
+        end_time: ''
+      },
+      scrollHeight: 960
+    }
+    onLoad(option) {
+      this.calendarParams = {
+        begin_time: option.begin_time,
+        end_time: option.end_time
+      }
+      this.code = option.code
+      this.init()
+      this.setScrollHeight()
+    }
+    events = {
+      'choose-data': (...args) => {
+        let event = args[args.length - 1]
+        this.calendarParams = event.source.calendarParams
+        this.calendarTimestamp = event.source.calendarTimestamp
+        this.dataList = []
+        this.getDataList()
+      }
+    }
+    // 设置滚动高度
+    setScrollHeight() {
+      wepy.getSystemInfo().then(res => {
+        this.scrollHeight = (res.screenHeight - res.screenWidth / 750 * 382) * 2
+        this.$apply()
+      })
+    }
+    // 加载数据
+    getDataList() {
+      let actionParams = {
+        begin_time: this.calendarTimestamp.begin_time,
+        end_time: this.calendarTimestamp.end_time,
+        code: this.code
+      }
+      this.addRequestParams(actionParams)
+      return aiRadarApi.actionDetailsPromise(this.params).then((res) => {
+        if (res.data_list.length === 0) {
+          this.emptyShow = true
+        }
+        let tempdataList = common.getGroupListByKey(res.data_list, 'create_time')
+        // 将时间戳转化为字符串
+        for (let i = 0; i < tempdataList.length; i++) {
+          let timeString = common.formatDateTime(tempdataList[i].groupName)
+          tempdataList[i].groupName = timeString
+        }
+        this.dataList = this.dataList.concat(tempdataList)
+        this.$apply()
+        return res
+      })
+    }
+  }
+</script>

@@ -1,0 +1,54 @@
+.list-card {
+  display: flex;
+  align-items:center;
+  background: #fff;
+  border-bottom:1rpx solid #f6f6f6;
+  .card-check {
+    text-align: right;
+    flex: 1;
+  }
+  .card-box {
+    flex: 9;
+    .card-thumb {
+      width: 200rpx;
+      height: 200rpx;
+      border-radius: 12rpx;
+      margin: 25rpx 33rpx 25rpx 33rpx;
+      float: left;
+    }
+    .card-detail {
+      position: relative;
+      .card-title {
+        font-size: 28rpx;
+        color: #333;
+        line-height: 36rpx;
+        font-weight:bold;
+        margin: 34rpx 30rpx 30rpx 0;
+      }
+      .card-subtitle {
+        font-size: 28rpx;
+        color: #999;
+        line-height: 36rpx;
+      }
+      .card-stepper {
+        position: absolute;
+        right: 30rpx;
+        bottom: 0;
+        font-szie:32rpx;
+        color:#999;
+      }
+      .card-content {
+        margin-top: 10rpx;
+        .discount-price {
+          font-size: 32rpx;
+          color: #fa694a;
+        }
+        .price {
+          font-size: 26rpx;
+          color: #666;
+          margin-left: 20rpx;
+        }
+      }
+    }
+  }
+}

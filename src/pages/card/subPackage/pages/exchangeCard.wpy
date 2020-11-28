@@ -1,0 +1,104 @@
+<style lang="scss">
+  @import '../css/exchangeCard.scss';
+</style>
+<template>
+  <!-- 面对面扫码换名片 -->
+  <view class="wrap">
+    <canvas canvas-id="myCanvas" style="width:828px;height: 1062px;position:absolute;left: -999px;top -999px;"></canvas>
+    <!-- <canvas canvas-id="myCanvas" class="myCanvas"></canvas> -->
+    <image src="{{ImgPath}}" class="myCanvas"/>
+    <button class="weui-btn bg-3DB8C8" type="primary" @tap="canvas" data-method="save">保存到手机相册</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {common} from '@/assets/js/common.js'
+  export default class exchangeCard extends wepy.page {
+    // 相当于page.json
+    config = {
+      navigationBarTitleText: '面对面扫码换名片'
+    }
+    data = {
+      screenWidth: 350,
+      ImgPath: '',
+      qrCode: ''
+    }
+    methods = {
+      canvas(e, that) {
+        let method = {
+          // 创建画布
+          creatCanvas() {
+            let ctx = wepy.createCanvasContext('myCanvas')
+            // 转换为rpx计算
+            // 绘制文本，样式要写在绘制的文本内容之前
+            ctx.setFillStyle('#ffffff')
+            ctx.fillRect(0, 0, 900, 1080)
+            ctx.setFontSize(30)
+            ctx.setFillStyle('#e75152')
+            ctx.fillText('深卡名片', 286, 150)
+            ctx.setFillStyle('#646464')
+            ctx.fillText('小程序码', 422, 150)
+            ctx.setTextAlign('center')
+            ctx.fillText('长按或扫码进入', 414, 194)
+
+            // 绘制图片
+            ctx.drawImage(that.qrCode, 300, 375, 255, 228)
+
+            ctx.setFontSize(24)
+            ctx.fillText('深卡名片名片码', 414, 640)
+
+            // 绘制圆形
+            // ctx.arc(326, 836, 16, 0, Math.PI * 2, false)
+            // ctx.setFillStyle('#d4d4d4')
+            // ctx.fill()
+
+            ctx.setFillStyle('#646464')
+            ctx.fillText('深卡名片', 414, 846)
+            ctx.fillText('—  创建深卡名片，获得专属小程序码  —', 414, 890)
+
+            // 将绘制的内容画到画布上
+            ctx.draw()
+          },
+          // 保存画布
+          save(e) {
+            wepy.saveImageToPhotosAlbum({
+              filePath: e.ImgPath
+            }).then(() => {
+              common.tip('保存成功', 'success')
+            })
+          },
+          getTempUrl() {
+            wepy.canvasToTempFilePath({
+              canvasId: 'myCanvas',
+              fileType: 'jpg'
+            }).then((r) => {
+              that.ImgPath = r.tempFilePath
+              that.$apply()
+            })
+          }
+        }
+        if (typeof (that) === 'undefined') {
+          method[e.currentTarget.dataset.method](this)
+        } else {
+          return method
+        }
+      }
+    }
+    onLoad() {
+      let that = this
+      this.qrCode = this.$parent.globalData.staffInfo.tmp_soft_img_url
+      wepy.getSystemInfo().then((res) => {
+        that.screenWidth = res.screenWidth
+        // that.w = res.screenWidth * 2
+        // that.h = (1062 * 0.5) * 2
+        that.$apply()
+        that.methods.canvas(null, that).creatCanvas()
+        setTimeout(() => {
+          that.methods.canvas(null, that).getTempUrl()
+        }, 1000)
+        // that.methods.canvas(null, that).getTempUrl()
+      })
+    }
+  }
+</script>

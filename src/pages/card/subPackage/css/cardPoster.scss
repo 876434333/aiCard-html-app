@@ -1,0 +1,109 @@
+.card-poster-wrap {
+    margin: 0 auto;
+    margin-top: 34rpx;
+    width: 91%;
+    height:954rpx;
+    font-size: 24rpx;
+    color: #aea8a8;
+    text-align: center;
+    border-radius:10rpx;
+    box-shadow: 0 0 12rpx rgba(0,0,0,0.18);
+    overflow: hidden;
+    .card-poster { 
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;  
+        position: relative;
+        margin: 0 auto;
+        margin-top:34rpx;
+        width: 90%;
+        height: 412rpx;
+        justify-content:space-between;
+        .card-poster-left {
+            margin-left: 26rpx;
+            width: 42%;
+            .card-company {
+                padding:32rpx 0 26rpx 0;
+                font-size: 20rpx;
+                color: #646464;
+                text-align: left;
+            }
+            .card-info {
+                position: relative;                
+                margin-bottom: 40rpx;    
+                .card-info-bg {                    
+                    width: 40rpx;
+                    height: 40rpx;
+                    border-radius: 10rpx;
+                    background: #272731;
+                    image {
+                        margin-top: 6rpx;
+                        margin-left: 2rpx;
+                        width: 20rpx;
+                        height: 26rpx;
+                    }
+                }               
+                text {
+                    position: absolute;
+                    top:6rpx;
+                    left: 54rpx;
+                    font-size: 20rpx;
+                    color: #646464;
+                    text-align: left;
+                }
+            }
+            .card-info-mail {                
+                .card-info-bg {
+                    image {
+                        margin-top: 10rpx;
+                        width: 23rpx;
+                        height: 19rpx;
+                    }
+                }
+            }
+            .card-info-address {                
+                .card-info-bg {
+                    image {
+                        margin-top: 8rpx;
+                        width: 15rpx;
+                        height: 23rpx;
+                    }
+                }
+            }   
+        }
+        .card-poster-right{
+            width: 45%;
+            image{
+                margin-top:94rpx;
+                width: 112rpx;
+                height: 112rpx;
+            }
+            .card-info-name {
+                margin-top:4rpx;
+                font-size: 26rpx;
+                color: #ffdd15;
+            }
+            .card-info-position {
+                margin-top:2rpx;
+                font-size: 16rpx;
+                color: #ffdd15;
+            }
+        }
+    }
+    .card-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index:-1;
+        width: 100%;
+        height: 372rpx;
+    }
+    .card-code {
+        display: block;
+        margin: 0 auto;
+        margin-bottom: 40rpx;
+        width: 372rpx;
+        height: 386rpx;
+    }
+
+}

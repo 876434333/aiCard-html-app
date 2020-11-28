@@ -1,0 +1,192 @@
+$main_color: #e75152;
+.card-temple-four {
+  width: 100%;
+  background: #ffffff;
+  .card-bg {
+    text-align: center;
+    margin: 34rpx 0 0 34rpx;
+    width: 680rpx;
+    height: 416rpx;
+    .card-bg-image {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      .card-bg-text {
+        display: flex;
+        padding: 41rpx 0 0 23rpx;
+        .card-bg-left {
+          width: 58%;
+          height: 60rpx;
+          flex-direction: row;
+          text-align: left;
+          font-size: 22rpx;
+          .card-company {
+            height: 70rpx;
+            line-height: 34rpx;
+            font-size: 30rpx;
+            font-weight: bold;
+            color: #646464;
+          }
+          .card-phone {
+            margin-top: 48rpx;
+            display: flex;
+            .card-phone-border {
+              height: 44rpx;
+              width: 44rpx;
+              border: 1px solid #000;
+              background: #000;
+              text-align: center;
+              border-radius: 10rpx;
+              .card-phone-image {
+                height: 29rpx;
+                width: 21rpx;
+                margin-top: 8rpx;
+              }
+            }
+          }
+          .card-email {
+            margin-top: 10rpx;
+            display: flex;
+            .card-email-border {
+              height: 44rpx;
+              width: 44rpx;
+              border: 1px solid #000;
+              background: #000;
+              text-align: center;
+              border-radius: 10rpx;
+              .card-email-image {
+                height: 20rpx;
+                width: 26rpx;
+                margin-top: 12rpx;
+              }
+            }
+          }
+          .card-address {
+            margin-top: 10rpx;
+            display: flex;
+            .card-address-border {
+              height: 44rpx;
+              width: 44rpx;
+              border: 1px solid #000;
+              background: #000;
+              text-align: center;
+              border-radius: 10rpx;
+              .card-address-image {
+                height: 26rpx;
+                width: 17rpx;
+                margin-top: 10rpx;
+              }
+            }
+            text {
+              margin-left: 15rpx;
+              padding-top:8rpx;
+              width: 250rpx;
+              color: #646464;
+            }
+          }
+        }
+        .card-bg-right {
+          width: 40%;
+          height: 60rpx;
+          flex-direction: row;
+          margin-top: 48rpx;
+          text-align: center;
+          color: #ffdd15;
+          .card-head {
+            image {
+              width: 124rpx;
+              height: 124rpx;
+              border-radius: 65rpx;
+            }
+          }
+          .card-name {
+            font-size: 30rpx;
+          }
+          .card-station {
+            font-size: 18rpx;
+          }
+          .card_edit {
+            position: relative;
+            width: 44rpx;
+            height: 37rpx;
+            margin-left: 158rpx;
+          }
+        }
+      }
+    }
+  }
+}
+.margin15 {
+  margin-left: 15rpx;
+  margin-top: 8rpx;
+  width: 250rpx;
+  font-size: 22rpx;
+  color: #646464;
+}
+.card-spt-type-four {
+  margin: 0 0 36rpx;
+  font-size: 26rpx;
+  color: #999;
+  text-align: center;
+}
+.card-opt-item-btn {
+  color: #fa8415fa !important;
+  text-align: center !important;
+  font-size: 26rpx;
+  width: 90rpx;
+  height: 40rpx;
+  line-height: 36rpx;
+  border: 1px solid #fa8415fa !important;
+  border-radius: 8rpx;
+  float: right;
+  &.type-three {
+    margin: 0;
+  }
+}
+.card-photos-title {
+  &.type-four {
+    font-size: 30rpx;
+    color: #323232;
+    background: #f1f1f1;
+    padding: 10rpx 40rpx 24rpx;
+  }
+}
+.card-comd-title.type-four .card-line,
+.card-introduction-title.type-four .card-line,
+.card-photos-title.type-four .card-line {
+  display: inline-block;
+  position: relative;
+  top: 2rpx;
+  margin-right: 8rpx;
+  width: 6rpx;
+  height: 28rpx;
+  background: $main_color;
+}
+.product-list .product-item .product-tit {
+  font-size: 24rpx !important;
+  color: #323232 !important;
+}
+.product-list .product-item .product-price .price-disc {
+  font-size: 34rpx !important;
+  color: #ff3a00 !important;
+}
+.product-list .product-item .product-price .price-symbol {
+  font-size: 26rpx !important;
+}
+.card-opt-item-btn {
+  font-size: 22rpx;
+}
+.card-opt-list-type-four .card-opt-list-bg .card-opt-item:last-child {
+  margin-bottom: 18rpx;
+}
+.card-history-vist .card-view {
+  width: 32rpx;
+  height: 22rpx;
+}
+.card-history-vist .card-history-number {
+  font-size: 22rpx;
+  color: $main_color;
+}
+.card-history-vist {
+  justify-content: flex-end;
+}

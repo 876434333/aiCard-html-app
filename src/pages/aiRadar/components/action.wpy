@@ -1,0 +1,318 @@
+<style lang="scss">
+  $main_color: #e75152;
+  .action {
+    padding-bottom: 30rpx;
+    overflow: hidden;
+    .head {
+      position: relative;
+      padding-left: 36rpx;
+      height: 84rpx;
+      line-height: 84rpx;
+      background-color: #ffffff;
+      .calendar {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: 998;
+        padding:0 40rpx;
+        image {
+          width: 35rpx;
+          height: 35rpx;
+          vertical-align:middle;
+        }
+      }
+      .head-time {
+        image {
+          position:relative;
+          top:4rpx;
+          left:26rpx;
+          width: 28rpx;
+          height: 28rpx;
+        }
+      }
+    }
+    .main {
+      margin-top: 22rpx;
+      padding:4rpx 22rpx 24rpx 22rpx;
+      overflow: hidden;
+      background: #ffffff;
+      .view-card-part {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        justify-content:space-between;
+        flex-wrap:wrap;
+        overflow: hidden;
+        .view-card {
+          display:-webkit-box;
+          display: -webkit-flex;
+          display: flex;
+          margin-top:22rpx;
+          width: 342rpx;
+          height: 135rpx;
+          border-radius: 20rpx;
+          overflow: hidden;
+          background: $main_color;
+          image {
+            margin:38rpx 42rpx 0 54rpx;
+            width: 81rpx;
+            height: 58rpx;
+          }
+          .view-card-right {
+            margin-top: 28rpx;
+          }
+          .view-card-number {
+            margin-right: 16rpx;
+          }
+          .view-card-text {
+            line-height:38rpx;
+          }
+        }
+        .view-card:nth-child(2) {
+          image {
+            margin:36rpx 68rpx 0 54rpx;
+            width: 55rpx;
+            height: 60rpx;
+          }
+        }
+        .view-card:nth-child(3) {
+          image {
+            margin:40rpx 55rpx 0 54rpx;
+            width: 68rpx;
+            height: 56rpx;
+          }
+        }
+        .view-card:nth-child(4) {
+          image {
+            margin:34rpx 74rpx 0 54rpx;
+            width: 49rpx;
+            height: 70rpx;
+          }
+        }
+      }
+    }
+    .count-list {
+      margin-top: 20rpx;
+      background: #ffffff;
+      .view-website {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        padding:0 32rpx 0 36rpx;
+        height: 90rpx;
+        line-height: 90rpx;
+        justify-content:space-between;
+        border-bottom:2rpx solid #e8e8e8;
+        overflow: hidden;
+        image {
+          position: relative;
+          top: 4rpx;
+          margin-right: 18rpx;
+          width: 34rpx;
+          height: 30rpx;
+        }
+      }
+      .view-website:nth-child(2) {
+        image {
+          margin-right: 16rpx;
+          width: 36rpx;
+          height: 29rpx;
+        }
+      }
+      .view-website:nth-child(3) {
+        image {
+          margin-right: 22rpx;
+          width: 30rpx;
+          height: 30rpx;
+        }
+      }
+      .view-website:nth-child(4) {
+        image {
+          top: 2rpx;
+          margin-right: 19rpx;
+          width: 33rpx;
+          height: 32rpx;
+        }
+      }
+      .view-website:nth-child(5) {
+        image {
+          margin-right: 22rpx;
+          width: 30rpx;
+          height: 30rpx;
+        }
+      }
+      .view-website:nth-child(6) {
+        image {
+          margin-right: 22rpx;
+          width: 30rpx;
+          height: 30rpx;
+        }
+      }
+      .view-website:nth-child(7) {
+        image {
+          top: 0rpx;
+          margin-right: 18rpx;
+          width: 34rpx;
+          height: 24rpx;
+        }
+      }
+    }
+    .mask {
+      top: 50%;
+      left: 50%;
+      margin-top: -185rpx;
+      margin-left: -282rpx;
+      width: 564rpx;
+      height: 370rpx;
+      border-radius: 10rpx;
+      overflow: hidden;
+      .mask-title {
+        height: 110rpx;
+        line-height: 90rpx;
+      }
+      .mask-main {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        padding:0 28rpx;
+        height: 74rpx;
+        line-height: 74rpx;
+        justify-content:space-between;
+        .date {
+          position: relative;
+          padding-left: 18rpx;
+          width: 190rpx;
+          border:1px solid #afafaf;
+          border-radius: 10rpx;
+          image {
+            position: absolute;
+            top: 18rpx;
+            right: 10rpx;
+            width: 34rpx;
+            height: 35rpx;
+            z-index: 9999;
+          }
+        }
+      }
+      .mask-bottom{
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        margin-top: 82rpx;
+        width:100%;
+        height: 102rpx;
+        line-height: 102rpx;
+        border-top:4rpx solid #e8e8e8;
+        view {
+          width: 50%;
+        }
+        .cancel {
+          border-right:4rpx solid #e8e8e8;
+        }
+      }
+    }
+  }
+</style>
+<template>
+  <!-- 行为 -->
+  <view class="action">
+    <calendar calendarParams.sync="calendarParams"></calendar>
+    <!-- 查看名片部分 -->
+    <view class="main">
+      <view class="view-card-part">
+        <repeat for="{{actionList}}" index="index" key="index" item="item" wx:if="{{index < 4}}">
+          <view class="view-card" @tap="goActionDetail('{{item.action_code}}')">
+            <image src="{{item.image}}" class="phone"/>
+            <view class="view-card-right">
+              <view class="font-size-24 c-ffffff">{{item.description}}</view>
+              <view class="font-size-24 c-ffffff view-card-text">
+                <text class="font-size-30 view-card-number">{{item.count}}</text>
+                <text>次</text>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+    </view>
+    <!-- 查看官网部分 -->
+    <view class="count-list" wx:if="{{actionList.length > 0}}">
+      <repeat for="{{actionList}}" index="index" key="index" item="item" wx:if="{{index > 3}}">
+        <view class="view-website" @tap="goActionDetail('{{item.action_code}}')">
+          <view class="view-website-left">
+            <image src="{{item.image}}" />
+            <text class="font-size-30 c-323232">{{item.description}}</text>
+          </view>
+          <view class="view-website-right">
+            <text class="font-size-30 c-3DB8C8">{{item.count}}</text>
+            <text class="font-size-30 c-323232">次</text>
+          </view>
+        </view>
+      </repeat>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import { aiRadarApi } from '@/api'
+  import calendar from './calendar'
+  export default class action extends wepy.component {
+    props = {
+    }
+    components = {
+      calendar: calendar
+    }
+    data = {
+      maskShow: false,
+      imgList: [
+        {image: './assets/images/card.png'},
+        {image: './assets/images/copy.png'},
+        {image: './assets/images/love.png'},
+        {image: './assets/images/phone.png'},
+        {image: './assets/images/website.png'},
+        {image: './assets/images/mall.png'},
+        {image: './assets/images/save.png'},
+        {image: './assets/images/forward.png'},
+        {image: './assets/images/tel.png'},
+        {image: './assets/images/moment.png'},
+        {image: './assets/images/email.png'}
+      ],
+      actionList: [],
+      calendarParams: {
+        begin_time: '',
+        end_time: ''
+      },
+      calendarTimestamp: {
+        begin_time: '',
+        end_time: ''
+      }
+    }
+    onLoad() {
+      this.getActionListData()
+    }
+    events = {
+      'choose-data': (...args) => {
+        let event = args[args.length - 1]
+        this.calendarParams = event.source.calendarParams
+        this.calendarTimestamp = event.source.calendarTimestamp
+        this.getActionListData()
+      }
+    }
+    methods = {
+      // 跳转行为详情页
+      goActionDetail(code) {
+        wepy.navigateTo({url: `/pages/aiRadar/detail/actionDetail?code=${code}&begin_time=${this.calendarParams.begin_time}&end_time=${this.calendarParams.end_time}`})
+      }
+    }
+    // 获取行为列表数据
+    getActionListData() {
+      aiRadarApi.actionListPromise(this.calendarTimestamp).then((res) => {
+        this.actionList = res
+        for (let i = 0; i < this.imgList.length; i++) {
+          this.actionList[i].image = this.imgList[i].image
+        }
+        this.$apply()
+      })
+    }
+  }
+</script>

@@ -1,0 +1,154 @@
+<style lang="scss">
+$main_color: #e75152;
+.manager {
+  margin-left: 32rpx;
+  padding: 30rpx 0 4rpx;
+}
+.avatar {
+  display: block;
+  margin: 0 auto;
+  width: 103rpx;
+  height: 103rpx;
+  border-radius: 10rpx;
+}
+.weui-flex {
+  flex-wrap: wrap;
+}
+.staff {
+  margin-top: 20rpx;
+  margin-left: 40rpx;
+  width: 103rpx;
+  height: 160rpx;
+  text-align: center;
+  view {
+    line-height: 60rpx;
+  }
+}
+.add {
+  margin-top: 20rpx;
+  margin-left: 40rpx;
+}
+.weui-cell {
+  padding: 20rpx 32rpx;
+}
+.weui-cell:before {
+  height: 0;
+  border: 0;
+}
+.transfer {
+  width: 128rpx;
+  height: 60rpx;
+  line-height: 58rpx;
+  border: 1px solid $main_color;
+  border-radius: 10rpx;
+}
+.manager-name {
+  margin-top: -4rpx;
+}
+.manager-phone {
+  margin-top: 16rpx;
+}
+.weui-flex {
+  padding-bottom: 30rpx;
+}
+</style>
+<template>
+  <view>
+      <view class="weui-panel weui-panel_access">
+        <view class="weui-panel__bd">
+            <view class="font-size-30 c-646464 manager">管理员</view>
+             <repeat for="{{managerList}}" index="index" key="index" item="item">
+                <view class="weui-cell">
+                    <view class="weui-cell__hd" style="position: relative;margin-right: 10px;">
+                        <image src="{{item.head_icon}}" class="avatar"/>
+                    </view>
+                    <view class="weui-cell__bd">
+                        <view class="font-size-30 c-323232 manager-name">{{item.name}}</view>
+                        <view class="font-size-26 c-909090 manager-phone">{{item.phone}}</view>
+                    </view>
+                    <button @tap="transfer({{item}})" hover-class="none" class="font-size-26 bg-fff c-3DB8C8 ta-center transfer" wx:if="{{userRole === 0}}">
+                        转让
+                    </button>
+                </view>
+           </repeat>
+        </view>
+    </view>
+
+    <view class="weui-panel weui-panel_access">
+        <view class="weui-panel__bd">
+            <view class="font-size-30 c-646464 manager">运营者</view>
+            <view class="weui-flex">
+                <repeat for="{{operatorsList}}" index="index" key="index" item="item">
+                    <view class="staff">
+                        <image src="{{item.head_icon}}" class="avatar"/>
+                        <view class="font-size-26 c-909090">{{item.name}}</view>
+                    </view>
+                </repeat>
+                <botton @tap="addOperators" hover-class="none">
+                    <image src="/assets/images/me/add.png" class="avatar add"/>
+                </botton>
+                <botton @tap="removeOperators" hover-class="none">
+                    <image src="/assets/images/me/minus.png" class="avatar add"/>
+                </botton>
+            </view>
+        </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+export default class enteMgr extends wepy.page {
+  config = {
+    navigationBarTitleText: '管理员设置'
+  }
+  data = {
+    enterprise_id: '',
+    managerList: [],
+    operatorsList: [],
+    userRole: 2
+  }
+  onShow() {
+    if (this.$parent.globalData.refreshPage) {
+      this.onLoad({'enterprise_id': this.enterprise_id})
+      this.$parent.globalData.refreshPage = false
+    }
+  }
+  onLoad(option) {
+    this.enterprise_id = option.enterprise_id
+    companyApi.getmanagerList(this.enterprise_id).then(res => {
+      this.managerList = res.managerList
+      this.operatorsList = res.operatorsList
+      // 限制运营者姓名字数
+      let staffList = this.operatorsList
+      for (let i = 0; i < staffList.length; i++) {
+        let name = staffList[i].name
+        if (name.length > 3) {
+          this.operatorsList[i].name = name.substr(0, 2) + '...'
+        }
+      }
+      this.$apply()
+    })
+    let openid = this.$parent.getNowOpenid()
+    companyApi.getUserRole(this.enterprise_id, openid).then(res => {
+      this.userRole = res
+      this.$apply()
+    })
+  }
+  components = {}
+  methods = {
+    transfer(item) {
+      this.$navigate(
+        `./transfer?enterprise_id=${this.enterprise_id}&staff_id=${item.id}`
+      )
+    },
+    addOperators() {
+      this.$navigate(`./addOperators?enterprise_id=${this.enterprise_id}`)
+    },
+    removeOperators() {
+      this.$navigate(`./removeOperators?enterprise_id=${this.enterprise_id}`)
+    }
+  }
+}
+</script>

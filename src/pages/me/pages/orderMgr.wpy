@@ -1,0 +1,465 @@
+<style lang="scss">
+  @import '../../../assets/css/zanui.scss';
+  @import '../../../assets/css/pages/product/listCard.scss';
+  @import '../../../assets/css/pages/product/order.scss';
+  @import '../../../assets/css/pages/product/orderList.scss';
+  $main_color: #e75152;
+  .zan-tab__item--selected .zan-tab__title{
+    color:$main_color;
+    border-bottom:4rpx solid $main_color;
+  }
+</style>
+<template>
+  <view class="order-list view view-trade">
+    <noticemsg></noticemsg>
+    <!-- 订单状态导航 -->
+    <view class="order-tab">
+      <zanTab :tab.sync="navTab" componentId="navTab"></zanTab>
+    </view>
+    <scroll-view class="list-content"
+                  scroll-y
+                  scroll-top="{{toView}}"
+                  bindscrolltoupper="scrollToUpper"
+                  bindscrolltolower="scrollToLower"
+                  upper-threshold="{{upperThreshold}}" >
+      <repeat for="{{nowTable.list}}" index="index" key="index" item="item">
+        <!-- 标题 -->
+        <view class="zan-panel mt-20">
+          <view class="zan-cell zan-cell--access all-title"
+                @tap="toOrderDetail"
+                data-id="{{item.id}}">
+            <view class="zan-cell__bd main" wx:if="{{item.status === '0'}}">待支付</view>
+            <view class="zan-cell__bd main" wx:elif="{{item.status === '1'}}">已支付</view>
+            <view class="zan-cell__bd main" wx:elif="{{item.status === '2'}}">已取消(用户已取消)</view>
+            <view class="zan-cell__bd main" wx:elif="{{item.status === '3'}}">已取消(超时取消)</view>
+            <view class="zan-cell__bd main" wx:elif="{{item.status === '4'}}">待发货</view>
+            <view class="zan-cell__bd main" wx:elif="{{item.status === '5'}}">已发货</view>
+            <view class="zan-cell__bd main" wx:elif="{{item.status === '6'}}">已完成</view>
+            <view class="zan-cell__ft"><text class="sub-title" wx:if="{{item.status === '0'}}">{{item.status === '0' ? '剩余' + item.remainingTime : ''}}</text></view>
+          </view>
+        </view>
+        <!-- 内容 -->
+        <repeat for="{{item.orderDetails}}"
+                item="ite"
+                index="idx"
+                key="idx">
+          <view class="list-card"
+                @tap="toOrderDetail"
+                data-id="{{item.id}}">
+            <view class="card-box">
+              <image class="card-thumb"
+                src="{{ite.norms_pic}}"
+                mode="aspectFit" />
+              <view class="card-detail">
+                <view class="card-title zan-ellipsis--l2">{{ite.offer_name}}</view>
+                <view class="card-subtitle zan-ellipsis--l2">{{ite.norms_name}}</view>
+                <view class="card-content">
+                  <text class="discount-price">¥{{ite.offer_price_discount || ite.offer_price}}</text>
+                  <text wx:if="{{ite.offer_price_discount && ite.offer_price_discount < ite.offer_price}}" class="zan-text-deleted price">¥{{ite.offer_price}}</text>
+                </view>
+                <view class="card-stepper">
+                  x{{ite.offer_num}}
+                </view>
+              </view>
+            </view>
+          </view>
+        </repeat>
+        <!-- 统计 -->
+        <view class="zan-cell all-count">
+          <view class="zan-cell__bd count-num">共{{item.orderDetails.length}}件</view>
+          <view class="zan-cell__ft">实付款：<text class="count-price">¥{{item.total_price_discount}}</text></view>
+        </view>
+        <!-- 操作 -->
+        <view class="all-btns" wx:if="{{item.status === '1'}}">
+          <!-- <button form-type="submit" hover-class="none" class="zan-btn zan-btn--small" data-index="{{index}}" @tap="handCancelOrder" wx:if="{{item.status === '0'}}"> 取消订单 </button> -->
+          <!-- <button form-type="submit" hover-class="none" class="zan-btn zan-btn--small" data-index="{{index}}" @tap="toSendMsg" wx:if="{{item.status !== '2' || item.status !=='3'}}"> 咨询 </button> -->
+          <!-- <button form-type="submit" hover-class="none" class="zan-btn zan-btn--small light" data-id="{{item.id}}" @tap="toOrderDetail" wx:if="{{item.status === '0'}}"> 去支付 </button> -->
+          <!-- <button form-type="submit" hover-class="none" class="zan-btn zan-btn--small" @tap="toMoreProduct" wx:if="{{item.status === '2' || item.status === '3' || item.status === '6'}}" > 更多商品 </button> -->
+          <!-- <button form-type="submit" hover-class="none" class="zan-btn zan-btn--small light" data-index="{{index}}" @tap="sureReceive" wx:if="{{item.status === '5'}}"> 确认收货 </button> -->
+          <button form-type="submit" hover-class="none" class="zan-btn zan-btn--small light bg-3DB8C8" data-index="{{index}}" @tap="sendGoods"> 发货 </button>
+        </view>
+      </repeat>
+      <view class="list-no-more" wx:if="{{!isNonthing}}">
+        <zanLoadmore :loading.sync="isLoading" wx:if="{{isLoading}}"></zanLoadmore>
+        <text wx:elif="{{isNoMore}}">已经没有更多了</text>
+      </view>
+      <view class="empty" wx:if="{{isNonthing}}">
+          <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png" style="margin:226rpx auto 16rpx;width:192rpx;height:223rpx;"/>
+          <view class="font-size-26 c-909090 ta-center">空空如也</view>
+      </view>
+    </scroll-view>
+</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {orderApi} from '@/api'
+  import {indexMixin} from '@/mixins/index.js'
+  import {getRemainingTime} from '@/utils'
+  import NoticeMsg from '@/components/noticeMsg'
+  import zanTab from '@/components/libs/zanui/zan-tab'
+  import zanLoadmore from '@/components/libs/zanui/zan-loadmore'
+  import { common } from '../../../assets/js/common'
+  import {G_RES_URL} from '@/config'
+  export default class orderMgr extends wepy.page {
+    mixins = [
+      indexMixin
+      // onticeMsgNumberMixin
+    ]
+    // 相当于page.json
+    config = {
+      navigationBarTitleText: '订单管理'
+    }
+    components = {
+      noticemsg: NoticeMsg,
+      zanTab: zanTab,
+      zanLoadmore: zanLoadmore
+    }
+    data = {
+      res_url: G_RES_URL,
+      navTab: {
+        list: [
+          {
+            id: 'all',
+            title: '全部'
+          },
+          {
+            id: '0',
+            title: '待支付'
+          },
+          {
+            id: '4',
+            title: '待发货'
+          },
+          {
+            id: '5',
+            title: '待收货'
+          },
+          {
+            id: '6',
+            title: '已完成'
+          }
+        ],
+        selectedId: 'all',
+        scroll: true,
+        height: 80
+      },
+      nowIndex: 'all',
+      nowTable: {
+        columns: [],
+        list: [],
+        selection: []
+      },
+      nowParams: {
+        pageNum: 1,
+        pageSize: 5
+      },
+      params: {
+        'all': {
+          pageNum: 1,
+          pageSize: 5
+        },
+        0: {
+          pageNum: 1,
+          pageSize: 5,
+          type: '0'
+        },
+        4: {
+          pageNum: 1,
+          pageSize: 5,
+          type: '4'
+        },
+        5: {
+          pageNum: 1,
+          pageSize: 5,
+          type: '5'
+        },
+        6: {
+          pageNum: 1,
+          pageSize: 5,
+          type: '6'
+        }
+      },
+      table: {
+        'all': {
+          columns: [],
+          list: [],
+          selection: []
+        },
+        0: {
+          columns: [],
+          list: [],
+          selection: []
+        },
+        4: {
+          columns: [],
+          list: [],
+          selection: []
+        },
+        5: {
+          columns: [],
+          list: [],
+          selection: []
+        },
+        6: {
+          columns: [],
+          list: [],
+          selection: []
+        }
+      },
+      toView: 0,
+      upperThreshold: 1
+    }
+
+    events = {
+      /**
+       * 标签页切换
+       * @param  {[type]} selectedId 标签页对应的id
+       * @param  {[type]} event      触发事件的组件对象
+       */
+      zanTabChange(selectedId, event) {
+        let { componentId } = event.source
+        this[componentId].selectedId = selectedId
+        this.nowIndex = selectedId
+        this.changeTabpage()
+      }
+    }
+
+    methods = {
+      /**
+       * 前往详情页
+       * @param  {object} e [description]
+       */
+      toOrderDetail(e) {
+        let id = e.currentTarget.dataset.id
+        this.$preload('id', id)
+        this.$navigate('/pages/product/orderDetail?type=staff')
+      },
+      /**
+       * 手动取消订单
+       * @param  {object} e [description]
+       */
+      handCancelOrder(e) {
+        let index = e.currentTarget.dataset.index
+        let id = this.nowTable.list[index].id
+        wepy.showModal({
+          title: '提示',
+          content: '确定要取消订单？'
+        }).then((res) => {
+          if (!res.cancel) {
+            this.getApi().handCancelOrder(id).then(res => {
+              common.tip('取消成功', 'success')
+              this.nowTable.list[index].status = '2'
+              this.table[this.nowIndex].list[index].status = '2'
+              this.$apply()
+            }, () => {
+              common.tip('取消失败', 'none')
+            })
+          }
+        })
+      },
+      /**
+       * 咨询
+       * @return {[type]} [description]
+       */
+      toSendMsg() {
+        let sellerInfo = this.$parent.getSellerInfo(this.sellerId)
+        let userInfo = this.$parent.getUserInfo()
+        let chatUserInfo = this.$parent.getChatUserInfo()
+        let friendId = this.$parent.getEmployeeChatUser(this.sellerId)
+        let loginInfo = {
+          name: chatUserInfo.identifier,
+          nickName: userInfo.nickName,
+          avtor: userInfo.avatarUrl
+        }
+        let friend = {
+          name: friendId,
+          avtor: sellerInfo.head_icon,
+          nickName: sellerInfo.name
+        }
+        this.$parent.goChatRoom(loginInfo, friend)
+      },
+      /**
+       * 发货
+       * @param  {object} e [description]
+       */
+      sendGoods(e) {
+        if (this.sure) {
+          return
+        }
+        this.sure = true
+        wepy.showModal({
+          content: '确定已经发货了吗？'
+        }).then(() => {
+          this.sure = false
+          let index = e.currentTarget.dataset.index
+          let id = this.nowTable.list[index].id
+          orderApi.sendGoodsOrder(id).then(() => {
+            this.sure = false
+            this.nowTable.list.splice(index, 1)
+            wepy.showToast({
+              title: '操作成功'
+            })
+            this.$apply()
+          }, () => {
+            this.sure = false
+            wepy.showToast({
+              title: '请求失败，请重试'
+            })
+          })
+        }, () => {
+          this.sure = false
+        })
+      }
+    }
+
+    onLoad(params, data) {
+      if (data.preload && data.preload.type) {
+        this.nowIndex = data.preload.type
+        this.navTab.selectedId = data.preload.type
+      }
+      this.setEmployee()
+      this.init()
+      this.$parent.setNewOrderAdd(this.sellerId, '')
+    }
+    setEmployee() {
+      let employee = this.$parent.getNowEmployee()
+      this.sellerId = employee.employeeId
+      this.enterpriseId = employee.enterpriseId
+      this.departmentId = employee.departmentId
+    }
+    getApi() {
+      return orderApi
+    }
+    /**
+     * 切换到对应的数据的第一页
+     */
+    changeTabpage() {
+      this.nowTable = {
+        columns: [],
+        list: [],
+        selection: []
+      }
+      this.nowParams.pageNum = 1
+      this.params[this.nowIndex].pageNum = 1
+      this.$apply()
+      this.search()
+    }
+    /**
+     * 滚到顶部
+     * @return {[type]} [description]
+     */
+    scrollToUpper() {
+      this.nowParams.pageNum = 1
+      this.params[this.nowIndex].pageNum = 1
+      wepy.startPullDownRefresh()
+      this.search(1)
+    }
+    /**
+     * 滚到底部部
+     * @return {[type]} [description]
+     */
+    scrollToLower() {
+      let pageNum = this.params[this.nowIndex].pageNum
+      this.search(pageNum)
+    }
+    // 下单24小时后自动取消订单 todo /需要改成自动取消的接口
+    // autoCancelOrder(id) {
+    //   let data = id
+    //   return this.getApi().cancelOrder(data).then((res) => {
+    //   }, () => {})
+    // }
+    // 获取订单列表
+    list(pageNum, pageSize) {
+      let param = {
+        page_num: pageNum,
+        page_size: pageSize
+      }
+      if (parseInt(this.nowIndex) >= 0) {
+        param.type = this.nowIndex
+      }
+      let role = common.getStaffInfo(this).role
+      if (role === 2) {
+        return this.getApi().getOrderListByStaff(param, common.getStaffId(this))
+      } else {
+        return this.getApi().getOrderListByEnterprise(param, common.getEnterpriseId(this))
+      }
+    }
+    /**
+     * 查询成功后执行，可更改list
+     * @param {any} page
+     */
+    afterList(page) {
+      // 处理放这
+      page.data_list.some((value, index) => {
+        // 处理成剩余时间
+        if (value.status === '0') {
+          value.remainingTime = getRemainingTime(value.create_time, 3600 * 24)
+        }
+      })
+      if (this.params[this.nowIndex].pageNum === 1) {
+        wepy.stopPullDownRefresh()
+      }
+    }
+    // 查询列表第一页
+    search(pageNum = 1) {
+      if (this.isLoading) {
+        return
+      }
+      this.isLoading = true
+      this.table[this.nowIndex].selection = []
+      this.params[this.nowIndex].pageNum = pageNum
+      this.nowParams.pageNum = pageNum
+      return this.showList(pageNum)
+    }
+    // 设置页码和每页数量
+    setPageNumSize(pageNum, pageSize, length) {
+      if (!isNaN(+pageNum) && length > 0) {
+        // scroll模拟原生滚动到顶部容易出现同时请求两次第一页
+        this.params[this.nowIndex].pageNum = pageNum + 1
+        this.nowParams.pageNum = this.params[this.nowIndex].pageNum
+      }
+    }
+    // 显示并默认选择某个选项
+    showList(index) {
+      return this.listAndSetPage(this.params[this.nowIndex].pageNum, this.params[this.nowIndex].pageSize).then((page) => {
+        // 判断新数据
+        let list = this.table[this.nowIndex].list
+        this.isLoading = false
+        if (index === 1 && page.data_list.length > 0) {
+          // 第一页，数据不为0
+          list = page.data_list
+          this.isNoMore = false
+          this.isNonthing = false
+        } else if (index === 1 && page.data_list.length === 0) {
+          // 第一页，数据为0
+          this.isNonthing = true
+          // 更新对应的列表数据
+          list = []
+        } else if (page.data_list.length === 0 && index > 1) {
+          // 非第一页，数据为0
+          this.isNoMore = true
+          setTimeout(() => {
+            this.isNoMore = false
+            this.$apply()
+          }, 3000)
+        } else if (page.data_list.length > 0 && index > 1) {
+          // 非第一页，数据不为0
+          page.data_list.some(v => {
+            list.push(v)
+          })
+          // table[].list = list
+        }
+        this.table[this.nowIndex].list = list
+        this.nowTable.list = list
+        this.$apply()
+      }, () => {})
+    }
+    // 更多商品
+    toMoreProduct() {
+      wepy.reLaunch({
+        url: `/pages/product/shopOffer?operate=view&entId=${this.$parent.globalData.curSellerInfo.enterprise_id}`
+      })
+    }
+  }
+</script>

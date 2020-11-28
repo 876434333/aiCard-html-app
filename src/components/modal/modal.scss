@@ -1,0 +1,143 @@
+$main_color: #e75152;
+.dialog{
+}
+.weui-mask{
+    position: fixed;
+    z-index: 900000;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+}
+.weui-dialog{
+    position: fixed;
+    z-index: 9000000;
+    width: 80%;
+    max-width: 300px;
+    top: 50%;
+    left: 50%;
+    -webkit-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
+    background-color: #FFFFFF;
+    text-align: center;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.weui-skin_android .weui-dialog__hd{
+    text-align: left;
+}
+.weui-dialog__hd{
+    padding: 1.3em 1.6em 0.5em;
+}
+.weui-skin_android .weui-dialog__title{
+    font-size: 38rpx;
+}
+.weui-dialog__title{
+    font-weight: 400;
+    font-size: 18px;
+    text-align: center;
+}
+.weui-skin_android .weui-dialog__bd{
+    color: #808080;
+    padding: 0.25em 1.6em 0;
+    font-size: 28rpx;
+    text-align: center;
+}
+.weui-dialog__bd{
+    padding: 0 1.6em 0.8em;
+    min-height: 28px;
+    font-size: 15px;
+    line-height: 1.3;
+    word-wrap: break-word;
+    word-break: break-all;
+    color: #808080;
+}
+.weui-skin_android .weui-dialog__ft{
+    display: block;
+    text-align: right;
+    line-height: 42px;
+    font-size: 16px;
+    padding: 0 1.6em 0.7em;
+}
+.weui-dialog__ft{
+    position: relative;
+    line-height: 48px;
+    font-size: 18px;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: flex;
+}
+.weui-skin_android .weui-dialog__btn{
+    display: inline-block;
+    vertical-align: middle;
+    padding: 0 .8em;
+}
+.weui-dialog__btn{
+    display: block;
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+    text-decoration: none;
+    background-color: transparent;
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+    position: relative;
+}
+.weui-dialog__btn_default{
+    color: #909090;
+}
+.weui-dialog__btn_primary{
+    color: $main_color;
+}
+button.weui-dialog__btn_default::after, .weui-dialog__btn_primary::after{
+    border: none;
+}
+.verify-code{
+    padding: 0.25em 1.7em 0;
+    text-align: left;
+}
+.verify-code view{
+    float:left;border-bottom:$main_color;color: $main_color;font-size: 39px;height: 94rpx;min-height: 20px;font-weight: 300;width:60rpx;
+    text-align: center;
+    width: 80rpx;
+    .btm-line{
+        height:94rpx;width:35rpx;border-bottom:$main_color 2rpx solid;margin:0 auto;display:block;
+        margin-left:29rpx;
+    }
+}
+.resend{
+    color: #909090;
+    text-align: left;
+    padding: 0.25em 2em 0;
+    font-size: 17px;
+    padding-top: 25px;
+}
+.animated{
+    // animation-duration: 1s;
+    // animation-fill-mode: none;
+    animation:.5s ease-out backwards;
+}
+.fadeIn{
+    animation-name: fadeIn;
+}
+.fadeOut{
+    animation-name: fadeOut;
+}
+.card-share, .card-share .weui-dialog__bd{
+    color: #505050;
+}
+.card-share .weui-dialog{
+    border-radius: 12px;
+    width: 90%;
+    max-width: 400px;
+}
+.card-share .weui-dialog__hd{
+    padding:1em 1.6em 1em;
+    border-bottom:1px solid #ddd;
+}
+.card-share .weui-skin_android .weui-dialog__bd{
+    padding:0.25em 1.3em 0;
+}
+.card-share .weui-cells{
+    margin-top: -6px;
+}

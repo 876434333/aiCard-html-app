@@ -1,0 +1,225 @@
+<style lang="scss">
+  .mylabel {
+    margin: 10rpx;
+    padding: 15rpx 15rpx;
+    text-align: center;
+    background-color: #ffe3e3;
+    color: #646464;
+    border-radius: 30rpx;
+    font-size: 24rpx;
+    width: auto;
+    float: left;
+    position: relative;
+  }
+  .mylabel_add {
+    background-color: #f2f2f2;
+    border: solid 1px #c3c3c3;
+    width: 150rpx;
+  }
+  .refer_label_default {
+    color: #323232;
+    background-color: #f7f7f7;
+  }
+  .refer_label_selected {
+    color: #b1b1b1;
+    background-color: #f7f7f7;
+  }
+  .choose-contact {
+    display:-webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    position: relative;
+    padding:20rpx 0;
+    width: 100%;
+    align-items: center;
+    image {
+      position: absolute;
+      top: 40rpx;
+      right: 6rpx;
+      z-index: 999;
+      width: 24rpx;
+      height: 16rpx;
+    }
+  }
+</style>
+<template>
+  <!-- 联系我们 -->
+  <view class="website-components"> 
+    <view class="edit" wx:if="{{area == 'edit'}}">
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_input weui-cell-style">
+          <view class="weui-cell__hd">
+            <view class="weui-label weui-label-style font-lable font-size-30 c-323232">标题</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input font-size-30 c-909090" placeholder="联系我们" value="{{obj.data.title.value}}"  bindinput="titleInput"/>
+          </view>
+          <view class="weui-cell__ft" style="flex:0.1">
+            <image class="component-input-del" @tap="clean" data-target="data.title.value" hidden="{{!obj.data.title.value}}" src="../../../../assets/images/website/delete_video.png"/>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell-style" style="background:#fafafa;">
+          <view class="weui-cell__hd">
+            <view class="weui-label weui-label-style font-lable font-size-30 c-323232">对齐方式</view>
+          </view>
+          <view class="weui-cell__bd icon-tools">
+            <view class="icon-item iconImg" @tap="alignLeft">
+              <image src="{{obj.data.textAlign.value == 'left' ? '/assets/images/website/align_left_check.png' : '/assets/images/website/align_left.png'}}"/>
+            </view>
+            <view class="icon-item iconImg" @tap="alignCenter">
+              <image src="{{obj.data.textAlign.value == 'center' ? '/assets/images/website/align_center_check.png' : '/assets/images/website/align_center.png'}}"/>
+            </view>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input weui-cell-style">
+          <view class="weui-cell__hd choose-contact" @tap="goContact">
+            <view class="weui-label weui-label-style font-lable font-size-30 c-323232">联系我们</view>
+            <view class="weui-label weui-label-style font-lable font-size-30 c-909090">请选择</view>
+            <image src="/assets/images/contact/arrow_down.png"/>
+          </view>
+          <view class="weui-cell__bd">
+            <select class="font-size-30 {{obj.data.textAlign.value == 'center' ? 'ta-center' : 'ta-left'}}" placeholder="选择联系人" value="{{obj.data.employee.value}}"  bindinput="contentInput"/>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input weui-cell-style" style="padding:28rpx 0 0 30rpx;border:0;background-color:#fafafa;">
+            <view class="weui-cell__hd">
+              <view class="weui-label weui-label-style font-lable font-size-30 c-323232" wx:if="{{obj.data.employee.value.length != 0}}">已选择</view>
+            </view>
+            <view class="weui-cell__bd">
+            </view>
+        </view>
+        <!-- 选择的联系人 -->
+        <view style="padding:20rpx 0 0 20rpx;">
+          <repeat for="{{obj.data.employee.value}}" index="index" item="employee">
+            <view class="mylabel">
+              <view>{{employee.name}}</view>
+              <image src="/assets/images/card/close.png" class="close" @tap="delContact" data-index="{{index}}"/>
+            </view>
+          </repeat>
+          <view style="clear:both"></view>
+        </view>
+        <button class="weui-btn submit-btn submit-component-btn" @tap="save" style="margin-top:36rpx;">保存</button>
+     </view>
+    </view>
+    <view class="preview" wx:if="{{area == 'preview'}}" style="border-top:2rpx solid #e8e8e8;">
+      <view class="font-size-30 c-323232 about-title" style="text-align:{{obj.data.textAlign.value}};border-bottom:{{obj.data.employee.value.length == 0 ? '0' : '2rpx solid #e8e8e8'}};">{{obj.data.title.value}}</view>
+      <view class="contact-wrap">
+        <repeat for="{{obj.data.employee.value}}" index="index" item="employee">
+          <view class="contact-part">
+            <image src="{{employee.head_icon}}" class="avatar"/>
+            <view class="contact">
+              <view class="font-size-24 c-646464">{{employee.name}}（{{employee.station == '' || employee.station == null ? '暂无' : employee.station}}）</view>
+              <view class="font-size-24 c-646464">电话：{{employee.phone == '' || employee.phone == null ? '暂无' : employee.phone}}</view>
+              <view class="font-size-24 c-646464">邮箱：{{employee.mail == '' || employee.mail == null ? '暂无' : employee.mail}}</view>
+            </view>
+            <image src="/assets/images/website/tel.png" class="phone"/>
+          </view>
+        </repeat>
+      </view>
+    </view>
+    <view class="show" wx:if="{{area == 'show'}}">
+      <view class="font-size-30 c-323232 about-title" style="text-align:{{obj.data.textAlign.value}};">{{obj.data.title.value}}</view>
+      <view class="contact-wrap">
+        <repeat for="{{obj.data.employee.value}}" index="index" item="employee">
+          <view class="contact-part">
+            <image src="{{employee.head_icon}}" class="avatar"/>
+            <view class="contact">
+              <view class="font-size-24 c-646464">{{employee.name}}（{{employee.station == '' || employee.station == null ? '暂无' : employee.station}}）</view>
+              <view class="font-size-24 c-646464">电话：{{employee.phone == '' || employee.phone == null ? '暂无' : employee.phone}}</view>
+              <view class="font-size-24 c-646464">邮箱：{{employee.mail == '' || employee.mail == null ? '暂无' : employee.mail}}</view>
+            </view>
+            <image src="{{websiteView ? '/assets/images/website/tel_orange.png' : '/assets/images/website/tel.png'}}" class="phone" data-phone="{{employee.phone}}" @tap="callPhone"/>
+          </view>
+        </repeat>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import {common} from '../../../../assets/js/common.js'
+  import {G_RES_URL} from '@/config'
+  export default class contactUs extends wepy.component {
+    props = {
+      obj: {
+        type: Object,
+        default: null,
+        twoWay: true
+      },
+      area: {
+        type: String,
+        default: null,
+        twoWay: true
+      },
+      idx: {
+        type: String,
+        default: null,
+        twoWay: true
+      },
+      websiteView: {
+        type: Boolean,
+        default: null,
+        twoWay: true
+      }
+    }
+    data = {
+      res_url: G_RES_URL
+    }
+    methods = {
+      clean(e) {
+        let k = e.currentTarget.dataset.target.split('.')
+        this.obj[k[0]][k[1]][k[2]] = ''
+      },
+      alignLeft() {
+        this.obj.data.textAlign.value = 'left'
+      },
+      alignCenter() {
+        this.obj.data.textAlign.value = 'center'
+      },
+      contentInput(e) {
+        this.obj.data.employee.value = e.detail.value
+      },
+      titleInput(e) {
+        this.obj.data.title.value = e.detail.value
+      },
+      // 拨打电话
+      callPhone(e) {
+        common.callPhone(e.currentTarget.dataset.phone)
+      },
+      // 跳转到联系人页面
+      goContact() {
+        // 将联系人列表传输到contact页面
+        wepy.navigateTo({url: '/pages/website/contact'})
+        wepy.setStorage({
+          key: 'chooseContact',
+          data: {
+            employee: this.obj.data.employee
+          }
+        })
+      },
+      // 删除联系人
+      delContact(e) {
+        let index = e.currentTarget.dataset.index
+        this.obj.data.employee.value.splice(index, 1)
+      },
+      save() {
+        let _this = this
+        if (_this.obj.data.title.value === '') {
+          _this.obj.data.title.value = '联系我们'
+        }
+        wepy.setStorage({
+          key: 'website_plugin',
+          data: {
+            idx: _this.idx,
+            content: _this.obj,
+            save: true
+          }
+        })
+        wepy.navigateBack({
+          delta: 1
+        })
+        _this.$apply()
+      }
+    }
+  }
+</script>

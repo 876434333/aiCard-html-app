@@ -1,0 +1,272 @@
+<style lang="scss">
+  @import '../css/cardWallpaper.scss';
+</style>
+<template>
+  <!-- 名片码壁纸 -->
+  <view class="wrap">
+    <repeat for="{{wallpaperHead}}" index="index" key="index" item="item">
+        <view class="head">
+          <view class="head-left"></view>
+          <view class="use">
+            <image src="/assets/images/card/use.png"/>
+            如何使用
+          </view>
+        </view>
+    </repeat>
+    <view class="use font-size-24 c-909090" @tap="mask" data-method="maskShow">
+      <image src="/assets/images/card/use.png"/>
+      如何使用
+    </view>
+    
+    <!-- 如何使用弹窗 -->
+    <view class="mask-black" hidden="{{maskHidden}}" @tap="mask" data-method="maskHide"></view>
+    <view class="mask" hidden="{{maskHidden}}">
+      <view class="mask-head">
+        <text class="font-size-30 c-323232">如何设置与使用</text>
+        <image src="/assets/images/card/x.png" @tap="mask" data-method="maskHide"/>
+      </view>
+      <view class="mask-main">
+        <view class="font-size-24 c-323232">1、点击查看大图，<text class="c-3DB8C8">查看-保存图片</text></view>
+        <view class="font-size-24 c-323232">2、回到手机桌面：</view>
+        <view class="font-size-24 c-323232" style="margin-bottom:-6rpx;">苹果用户：打开<text class="c-3DB8C8">“设置-墙纸-选取新的墙纸”</text></view>
+        <view class="font-size-24 c-323232">选取刚才保存的名片壁纸,<text class="c-3DB8C8">“设定-设定锁定屏幕”</text></view>
+        <view class="font-size-24 c-323232" style="margin-bottom:-6rpx;">安卓用户：打开<text class="c-3DB8C8">“设置-壁纸-选择新的壁纸-相册”</text></view>
+        <view class="font-size-24 c-323232">选取刚才保存的名片壁纸,<text class="c-3DB8C8">“应用-应用锁屏”</text></view>
+        <view class="font-size-24 c-323232" style="margin-bottom:-6rpx;">3、设置成功后，你的专属小程序名片码将出现在屏</view>
+        <view class="font-size-24 c-323232">保上，对方扫一扫你的屏保，就能快速收藏你的名片</view>
+      </view>
+    </view>
+
+    <swiper indicator-dots
+            autoplay="{{swiper.autoplay}}"
+            interval="{{swiper.interval}}"
+            indicator-active-color="{{swiper.indActiveColor}}"
+            indicator-color="{{swiper.indColor}}"
+            class="swiper-part" @change="swiper" data-method="change">
+      <repeat for="{{wallpaperList}}" data-index="index" item="item">
+        <swiper-item>
+          <view class="swiper-head">
+            <view class="font-size-36 c-323232 ta-center">{{item.title}}</view>
+            <view class="swiper-hot">
+              <text class="font-size-24 c-909090">热度：</text>
+              <repeat for="{{starList}}" index="index" item="it">
+                <image src="{{item.hots - index >= 1 ? starFull : (item.hots - index > 0 ? starHalf : starEmpty)}}"/>
+              </repeat>
+            </view>
+          </view>
+          <view class="swiper-main" @tap="swiper" data-method="preview">
+            <view wx:if="{{res_url}}" class="wall-bg" style="background-image: url({{res_url}}/dc_card_wallpaper_bg.png);"></view>
+            <image src="{{item.url}}" class="wallpaper"/>
+            <image src="{{qrCode}}" class="qrCode-{{index + 1}}"/>
+          </view>
+        </swiper-item>
+      </repeat>
+    </swiper>
+
+    <button class="save font-size-36 c-ffffff" @tap="canvas" data-method="save">保存壁纸到手机</button>
+    <canvas canvas-id="myCanvas" class="myCanvas"></canvas>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import {common} from '@/assets/js/common.js'
+  import {G_RES_URL} from '@/config'
+  export default class cardWallpaper extends wepy.page {
+    // 相当于page.json
+    config = {
+      navigationBarTitleText: '名片码壁纸'
+    }
+    data = {
+      res_url: G_RES_URL,
+      screenWidth: 350,
+      maskHidden: true,
+      qrCode: '',
+      localQrCode: '',
+      localWallPaper: '',
+      swiper: {
+        autoplay: false,
+        interval: 6000,
+        indActiveColor: '#e75152',
+        indColor: '#b3b3b3'
+      },
+      wallpaperList: [
+        {title: '科技未来', hots: 4, url: G_RES_URL + '/dc_card_bg1.jpg', target: 1},
+        {title: '手绘插图', hots: 5, url: G_RES_URL + '/dc_card_bg2.jpg', target: 2},
+        {title: '唯美女神手表', hots: 5, url: G_RES_URL + '/dc_card_bg3.jpg', target: 3}
+      ],
+      pos: {
+        3: {
+          wall: '',
+          circle: {
+            x: 255,
+            y: 505,
+            r: 109
+          },
+          code: {
+            x: 145,
+            y: 397,
+            w: 218,
+            h: 218
+          }
+        },
+        1: {
+          wall: '',
+          qrCode: '',
+          circle: {
+            x: 260,
+            y: 473,
+            r: 145
+          },
+          code: {
+            x: 115,
+            y: 328,
+            w: 290,
+            h: 290
+          }
+        },
+        2: {
+          wall: '',
+          qrCode: '',
+          circle: {
+            x: 305,
+            y: 278,
+            r: 175
+          },
+          code: {
+            x: 130,
+            y: 103,
+            w: 350,
+            h: 350
+          }
+        }
+      },
+      starList: [0, 1, 2, 3, 4],
+      starEmpty: '/assets/images/card/star_empty.png',
+      starHalf: '/assets/images/card/star_half.png',
+      starFull: '/assets/images/card/star_full.png',
+      number: 0
+    }
+    methods = {
+      cleanCanvas() {
+        let context = wepy.createCanvasContext('myCanvas')
+        context.clearRect(0, 0, 517, 919)
+        context.draw()
+      },
+      drawCanvas(obj) {
+        let context = wepy.createCanvasContext('myCanvas')
+        context.drawImage(obj.wall, 0, 0, 517, 919)
+        context.save()
+        context.arc(obj.circle.x, obj.circle.y, obj.circle.r, 0, 2 * Math.PI, false)
+        // 调试圆 Start
+        // context.setFillStyle('#EEEEEE')
+        // context.fill()
+        // 调试圆 End
+        context.clip()
+        context.drawImage(this.qrCode, obj.code.x, obj.code.y, obj.code.w, obj.code.h)
+        context.restore()
+
+        context.draw(false)
+      },
+      // 弹窗操作
+      mask(e) {
+        let that = this
+        let method = {
+          // 显示弹窗
+          maskShow() {
+            that.maskHidden = false
+          },
+          // 关闭弹窗
+          maskHide() {
+            that.maskHidden = true
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      },
+      // 轮播图操作
+      swiper(e) {
+        let that = this
+        let method = {
+          // 获取当前轮播图显示的图片index
+          change() {
+            console.log('aa')
+            that.methods.cleanCanvas()
+            that.$apply()
+            that.number = e.detail.current
+            wepy.getImageInfo({
+              src: that.wallpaperList[that.number].url
+            }).then(rs => {
+              that.pos[that.wallpaperList[that.number].target].wall = rs.path
+              that.methods.drawCanvas.call(that, that.pos[that.wallpaperList[that.number].target])
+            })
+            // that.methods.drawCanvas(that.pos[that.wallpaperList[that.number].target])
+          },
+          // 预览轮播图
+          preview() {
+            wepy.canvasToTempFilePath({
+              canvasId: 'myCanvas'
+            }).then((r) => {
+              wepy.previewImage({
+                urls: [r.tempFilePath]
+              })
+            })
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      },
+      // 画布操作
+      canvas(e) {
+        let that = this
+        let method = {
+          // 创建画布
+          creatCanvas() {
+            let number = that.number
+            let ctx = wepy.createCanvasContext('myCanvas')
+            // 转换为rpx计算
+            let unit = that.screenWidth / 750
+
+            // 绘制壁纸
+            let wallpaperUrl = that.localWallPaper[number]
+            ctx.drawImage(wallpaperUrl, 0, 0, unit * 517, unit * 919)
+
+            // 绘制小程序码
+            let codeUrl = that.localQrCode
+            if (that.number === 0) {
+              ctx.drawImage(codeUrl, unit * 118, unit * 345, unit * 213, unit * 213)
+            } else if (that.number === 1) {
+              ctx.drawImage(codeUrl, unit * 322, unit * 402, unit * 135, unit * 135)
+            }
+
+            // 将绘制的内容画到画布上
+            ctx.draw()
+          },
+          // 保存画布
+          save() {
+            wepy.canvasToTempFilePath({
+              canvasId: 'myCanvas'
+            }).then((r) => {
+              wepy.saveImageToPhotosAlbum({
+                filePath: r.tempFilePath
+              }).then(() => {
+                common.tip('保存成功', 'success')
+              })
+            })
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      }
+    }
+    onLoad() {
+      let that = this
+      wepy.getSystemInfo().then((res) => {
+        that.screenWidth = res.screenWidth
+      })
+      this.qrCode = this.$parent.globalData.staffInfo.tmp_soft_img_url
+      wepy.getImageInfo({
+        src: that.wallpaperList[that.number].url
+      }).then(rs => {
+        that.pos[that.wallpaperList[that.number].target].wall = rs.path
+        that.methods.drawCanvas.call(that, that.pos[that.wallpaperList[that.number].target])
+      })
+    }
+  }
+</script>

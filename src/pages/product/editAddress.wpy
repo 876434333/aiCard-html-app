@@ -1,0 +1,279 @@
+<style lang="scss">
+  @import '../../assets/css/zanui.scss';
+  @import '../../assets/css/pages/product/editAddress.scss';
+</style>
+<template>
+  <view class="address-edit view-trade">
+    <noticemsg></noticemsg>
+	  <view class="zan-panel no-margin">
+	    <zanField1 :options.sync="name"
+                  :value.sync="value"
+                  componentId="zanField1"
+                  @zanFieldChange.user="changeName"></zanField1>
+	    <zanField2 :options.sync="phone"
+                  :value.sync="value"
+                  componentId="zanField2"
+                  @zanFieldChange.user="changePhone"></zanField2>
+      <view class="zan-cell zan-field">
+        <view class="zan-cell__hd zan-field__title">地址</view>
+        <view class="zan-col zan-col-15 ">
+          <picker mode="region" bindchange="regionChange" value="{{region}}">
+            <textarea wx:if="{{ baseAddress.type === 'textarea' }}"
+                      auto-height
+                      name="{{ baseAddress.name || '' }}"
+                      value="{{ baseAddress.value }}"
+                      placeholder="{{ baseAddress.placeholder }}"
+                      class="zan-field__input zan-cell__bd {{ baseAddress.right ? 'zan-field__input--right' : '' }} width-auto"
+                      placeholder-class="zan-field__placeholder"
+                      disabled="true" maxlength="1000"></textarea>
+          </picker>
+        </view>
+        <view class="zan-col zan-col-5 ta-center">
+          <picker class="" mode="region" bindchange="regionChange" value="{{region}}">
+            <view class="zan-icon zan-icon-location"></view>
+          </picker>
+        </view>
+      </view>
+	    <zanField3 :options.sync="address"
+                  :value.sync="value"
+                  componentId="zanField3"
+                  @zanFieldChange.user="changeAddress"></zanField3>
+	  </view>
+    <button wx:if="{{loading}}"
+            class="zan-btn zan-btn--loading save-btn"></button>
+    <button wx:else
+            class="zan-btn save-btn" @tap="saveAddress">保存</button>
+	</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import zanField from '@/components/libs/zanui/zan-field'
+  import {addressApi} from '@/api'
+  import {mobileValidator} from '@/assets/js/asyncValidator/validators'
+  import NoticeMsg from '@/components/noticeMsg'
+  import {common} from '../../assets/js/common.js'
+  export default class EditAddress extends wepy.page {
+    // 相当于page.json
+    config = {
+      navigationBarBackgroundColor: '#ff7f02',
+      navigationBarTitleText: '收货地址'
+    }
+    components = {
+      zanField1: zanField,
+      zanField2: zanField,
+      zanField3: zanField,
+      noticemsg: NoticeMsg
+    }
+
+    data = {
+      loading: false,
+      id: null,
+      // 基础类型输入框配置
+      name: {
+        title: '联系人',
+        placeholder: '联系人',
+        value: null,
+        maxLength: 10
+      },
+      phone: {
+        title: '手机号码',
+        inputType: 'number',
+        placeholder: '请输入正确的11位手机号码',
+        value: null
+      },
+      address: {
+        title: '详细地址',
+        type: 'textarea',
+        placeholder: '请输入详细地址',
+        value: null,
+        maxLength: 100
+      },
+      baseAddress: {
+        title: '地址',
+        type: 'textarea',
+        placeholder: '省市区/县信息',
+        value: null
+      },
+      region: [],
+      provinceName: null,
+      cityName: null,
+      areaName: null
+    }
+
+    methods = {
+      /**
+       * 表单值改变时
+       * @param  {[type]} e [description]
+       */
+      changeName(e) {
+        this.name.value = e.detail.value.trim()
+      },
+      changePhone(e) {
+        this.phone.value = e.detail.value.trim()
+      },
+      changeAddress(e) {
+        this.address.value = e.detail.value.trim()
+      },
+      /**
+       * datepicker的值发生改变
+       * @param  {[type]} e datepicker对象
+       */
+      regionChange(e) {
+        let value = e.detail.value
+        this.baseAddress.value = `${value[0]}/${value[1]}/${value[2]}`
+        this.provinceName = value[0]
+        this.cityName = value[1]
+        this.areaName = value[2]
+        // this.$apply()
+      }
+    }
+
+    onLoad(params, data) {
+      if (data.preload && data.preload.id) {
+        this.id = data.preload.id
+        this.getAddressDetail()
+      }
+      this.setNavigationBarTitle()
+    }
+
+    setNavigationBarTitle() {
+      let title
+      if (this.id) {
+        title = '修改地址'
+      } else {
+        title = '新增地址'
+      }
+      wepy.setNavigationBarTitle({
+        title: title
+      })
+    }
+
+    /**
+     * 获取地址详情
+     * @return {[type]} [description]
+     */
+    getAddressDetail() {
+      addressApi.getAddressDetail(this.id).then(data => {
+        this.region = [
+          data.province_name,
+          data.city_name,
+          data.area_name
+        ]
+        this.provinceName = data.province_name
+        this.cityName = data.city_name
+        this.areaName = data.area_name
+        this.baseAddress.value = `${this.provinceName}/${this.cityName}/${this.areaName}`
+        this.name.value = data.name
+        this.phone.value = data.phone
+        this.address.value = data.address
+        this.$apply()
+      })
+    }
+    /**
+     * 保存地址
+     */
+    saveAddress() {
+      let res = this.checkForm()
+      if (!res) {
+        return
+      }
+      if (this.loading) {
+        return
+      }
+      let userId = this.$parent.getUserId()
+      let params = {
+        province_name: this.provinceName,
+        city_name: this.cityName,
+        area_name: this.areaName,
+        name: this.name.value,
+        phone: this.phone.value,
+        address: this.address.value,
+        user_id: userId,
+        id: this.id
+      }
+      wepy.showModal({
+        content: '确定保存？'
+      }).then(() => {
+        this.loading = true
+        this.$apply()
+        if (this.id) {
+          this.updateAddress(params)
+        } else {
+          this.addAddress(params)
+        }
+      })
+    }
+    /**
+     * 修改收货地址
+     * @param  {object} params    [description]
+     *         address: string, 地址id
+     *         province_name: string, 省名
+     *         city_name: string, 市名
+     *         area_name: string, 区/县名
+     *         address : string, 详细地址
+     *         name: string, 联系人
+     *         user_id: string, 用户id
+     */
+    updateAddress(params) {
+      return addressApi.updateAddress(params).then(data => {
+        this.saveSuccess()
+      }, () => {
+        this.saveFail()
+      })
+    }
+    /**
+     * 新增收货地址
+     * @param  {object} params    [description]
+     *         address: string, 地址id
+     *         province_name: string, 省名
+     *         city_name: string, 市名
+     *         area_name: string, 区/县名
+     *         address : string, 详细地址
+     *         name: string, 联系人
+     *         user_id: string, 用户id
+     */
+    addAddress(params) {
+      return addressApi.addAddress(params).then(data => {
+        this.saveSuccess()
+      }, () => {
+        this.saveFail()
+      })
+    }
+    /**
+     * 表单验证
+     */
+    checkForm() {
+      if (!this.name.value) {
+        common.tip('请输入联系人姓名', 'none')
+        return false
+      }
+      let resMobile = mobileValidator(this.phone.value)
+      if (!this.phone.value || resMobile.length > 0) {
+        common.tip('请输入正确的手机号码', 'none')
+        return false
+      }
+      if (!this.address.value || !this.provinceName) {
+        common.tip('请输入地址', 'none')
+        return false
+      }
+      return true
+    }
+    saveSuccess() {
+      this.loading = false
+      common.tip('保存成功', 'success')
+      setTimeout(() => {
+        common.goPrevPage()
+        // wepy.navigateTo({
+        //   url: `/pages/product/addressList`
+        // })
+      }, 1000)
+      this.$apply()
+    }
+    saveFail() {
+      this.loading = false
+      common.tip('保存失败', 'none')
+      this.$apply()
+    }
+  }
+</script>

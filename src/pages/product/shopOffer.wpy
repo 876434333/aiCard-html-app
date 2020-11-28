@@ -1,0 +1,734 @@
+<style lang="scss">
+$main_color: #e75152;
+page {
+  background: #f1f1f1;
+  padding-bottom: 140rpx;
+}
+.bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 200rpx;
+}
+.head {
+  height: 200rpx;
+  position: relative;
+  .order {
+    position: absolute;
+    right: 20rpx;
+    bottom: 20rpx;
+    width: 63rpx;
+    height: 63rpx;
+    border-radius: 50%;
+  }
+  .psncenter {
+    right: 103rpx;
+  }
+  .shopcard {
+    right: 186rpx;
+  }
+  .share {
+    padding: 0 !important;
+    border: 0;
+    background-color: none;
+    image {
+      width: 63rpx;
+      height: 63rpx;
+      vertical-align:top;
+    }
+  }
+  .company {
+    display:-webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    position: absolute;
+    top: 50rpx;
+    left: 35rpx;
+    width:100%;
+    image {
+      width: 100rpx;
+      height: 100rpx;
+      display: inline-block;
+      vertical-align: middle;
+      border-radius: 10rpx;
+    }
+    .info {      
+      display: -webkit-box; 
+      margin-left: 22rpx;
+      padding-top: 10rpx;
+      width:47%;
+      font-size: 30rpx;
+      vertical-align: middle;
+      -webkit-box-orient: vertical;    
+      -webkit-line-clamp: 2;          
+      text-overflow:ellipsis;  
+      overflow: hidden;  
+      view {
+        // margin-top: -10rpx;
+      }
+      image {
+        width: 127rpx;
+        height: 28rpx;
+      }
+    }
+  }
+}
+.menu {
+  background: #fff;
+  height: 80rpx;
+  line-height: 80rpx;
+  width: 100%;
+  color: #323232;
+  white-space: nowrap;
+  .category {
+    display: inline-block;
+    font-size: 26rpx;
+    position: relative;
+    text {
+      position: relative;
+      bottom: 5rpx;
+    }
+    .selected {
+      position: absolute;
+      bottom: 0;
+      width: 60%;
+      left: 20%;
+      border-top: solid 10rpx $main_color;
+    }
+    .addCategory {
+      width: 26rpx;
+      height: 26rpx;
+      margin-top: 10rpx;
+      margin-right: 30rpx;
+    }
+    .delCategory {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 60rpx;
+      height: 60rpx;
+    }
+  }
+  .on {
+    color: $main_color;
+  }
+  .category:nth-child(1) {
+    margin-left: 10rpx;
+    padding:0 30rpx 0 16rpx;
+  }
+  .category:nth-child(n + 2) {
+    padding:0 30rpx;
+  }
+}
+.menu-view {
+  .category {
+    .selected {
+      border-top: solid 10rpx #ff7f02;
+    }
+  }
+  .on {
+    color: #ff7f02;
+  }
+}
+.content {
+  margin-right: 20rpx;
+}
+.panel {
+  display: inline-block;
+  width: 50%;
+  margin-top: 20rpx;
+  .panelBody {
+    background: #fff;
+    border-radius: 10rpx;
+    margin-left: 20rpx;
+    box-shadow: rgba(0, 0, 0, 0.08) -1px 0px 20rpx;
+    position: relative;
+    .productImg {
+      position: relative;
+      .product {
+        width: 100%;
+        height: 350rpx;
+        border-top-left-radius: 10rpx;
+        border-top-right-radius: 10rpx;
+      }
+      .productStatus {
+        position: absolute;
+        width: 80rpx;
+        height: 80rpx;
+        right: 0;
+        top: 0;
+      }
+      view {
+        position: absolute;
+        bottom: 14rpx;
+        font-size: 24rpx;
+        width: 100%;
+        padding-top: 10rpx;
+        padding-bottom: 10rpx;
+        background-color: rgba(0, 0, 0, 0.2);
+        text-align: right;
+        text {
+          margin-right: 20rpx;
+          color: #ffffff;
+        }
+      }
+    }
+    .descript {
+      padding: 0 20rpx 20rpx 20rpx;
+      color: #909090;
+      font-size: 24rpx;
+    }
+    .updOfferStatus {
+      position: absolute;
+      right: 24rpx;
+      bottom: 30rpx;
+      width: 30rpx;
+      height: 27rpx;
+    }
+    .delOffer {
+      right: 70rpx;
+    }
+  }
+}
+.add {
+  position: fixed;
+  bottom: 0;
+  background: #f1f1f1;
+  width: 100%;
+  text-align: center;
+  image {
+    width: 120rpx;
+    height: 120rpx;
+  }
+}
+</style>
+
+<template>
+  <view wx:if="{{showAllPage}}">
+    <image wx:if="{{res_url}}" class="bg" src="{{res_url}}/dc_product_head{{operate === 'edit' ? '2':'1'}}.png"/>
+    <view class="head {{operate === 'edit' ? 'bg2':'bg1'}}">
+      <view class="company">
+        <image src="{{enterparise.head_icon}}"/>
+        <view class="info">
+          <view>{{staffInfo.enterprise_name}}</view>
+          <!-- <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_rzqy.png"/> -->
+        </view>
+      </view>
+      <image
+        class="order"
+        wx:if="{{operate === 'edit'}}"
+        src="{{res_url}}/dc_product_dingdan.png" @tap="goOrderList"/>
+      <image
+        class="order shopcard"
+        wx:if="{{operate === 'view'}}"
+        src="{{res_url}}/dc_product_shopcard.png"
+        @tap="shopcard"/>
+      <image
+        class="order psncenter"
+        wx:if="{{operate === 'view'}}"
+        src="{{res_url}}/dc_product_psncenter.png"
+        @tap="psncenter"/>
+      <button open-type="share" plain="true" class="order share" wx:if="{{operate === 'view'}}">
+        <image wx:if="{{res_url}}" class="fenxiang" src="{{res_url}}/dc_product_fenxiang2.png"/>
+      </button>
+    </view>
+    <scroll-view scroll-x class="menu {{operate === 'view' ? 'menu-view' : ''}}">
+      <view class="category {{categoryAll}}" @tap="selectedCategory('-1')">
+        <text style="left:6rpx;">全部</text>
+        <view class="selected" wx:if="{{categoryAll === 'on'}}"></view>
+      </view>
+      <repeat for="{{categoryList}}" key="id" index="index" item="item">
+        <view class="category {{item.selected ? 'on':''}}">
+          <text @tap="selectedCategory('{{index}}')" bindlongtap="longtap('{{index}}')" bindtouchstart="touchstart('{{index}}')" bindtouchend="touchend('{{index}}')">{{item.name}}</text>
+          <view class="selected" wx:if="{{item.selected}}"></view>
+        </view>
+      </repeat>
+      <view class="category" wx:if="{{operate === 'edit'}}" @tap="addCategory">
+        <image wx:if="{{res_url}}" class="addCategory" src="{{res_url}}/dc_product_upload.png"/>
+      </view>
+    </scroll-view>
+    <view class="content">
+      <repeat for="{{offerList}}" key="id" index="index" item="item">
+        <view class="panel">
+          <view class="panelBody">
+            <view class="productImg" @tap="goShopOfferDetails('{{index}}')">
+              <image wx:if="{{res_url}}" class="product" src="{{item.offerImgs[0].img_url}}" mode="aspectFill"/>
+              <image
+                class="productStatus"
+                wx:if="{{operate === 'edit' && item.status === 0}}"
+                src="{{res_url}}/dc_product_yixiajia.png"
+              />
+              <image
+                class="productStatus"
+                wx:elif="{{operate === 'edit' && item.status === 1}}"
+                src="{{res_url}}/dc_product_yishangjia.png"
+              />
+              <view wx:if="{{operate === 'edit'}}">
+                <text>库存：{{item.offer_leave}}</text>
+              </view>
+            </view>
+            <view class="descript">
+              <view class="c-323232 words-break">{{item.offer_name}}</view>
+              <view class="font-size-30" style="color:#ff3a00;">
+                <text class="font-size-18">￥</text>
+                {{item.offer_price}}
+              </view>
+            </view>
+            <image class="updOfferStatus"
+              @tap="updOfferStatus('{{item.id}}',1)"
+              src="{{res_url}}/dc_product_up.png"
+              wx:if="{{operate === 'edit' && item.status === 0}}"/>
+            <image class="updOfferStatus"
+              @tap="updOfferStatus('{{item.id}}',0)"
+              src="{{res_url}}/dc_product_down.png"
+              wx:if="{{operate === 'edit'  && (item.status === 1)}}"/>
+            <image class="updOfferStatus delOffer"
+              @tap="updOfferStatus('{{item.id}}',3)"
+              src="{{res_url}}/dc_product_remove.png"
+              wx:if="{{operate === 'edit'  && item.status === 0}}"/>
+          </view>
+        </view>
+      </repeat>
+      <view class="add" wx:if="{{operate === 'edit'}}" @tap="goShopOfferAdd">
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_add.png"/>
+      </view>
+      <tabBarTemplate :tabBar.sync="tabBarData" wx:if="{{operate === 'view'}}"></tabBarTemplate>
+      <!--模态框-->
+      <deecardmodal :modal.sync="modal">
+        <view style="font-size:24rpx;padding:35rpx 50rpx" wx:if="{{modal.switch === 'addCategory'}}">
+          <input class="bord" focus="true" placeholder="分类名称" bindinput="inputCategory" style="padding-left:14rpx;"/>
+        </view>
+      </deecardmodal>
+      <cover-view class="to-send-msg" @tap="consultProduct" wx:if="{{operate === 'view'}}">
+        <cover-image class="to-send-msg-img" src="{{res_url}}/dc_send_msg.png"/>
+        <cover-view class="text">留言</cover-view>
+      </cover-view>
+      <cover-view class="c-ffffff msg-number" wx:if="{{noReadNum > 0}}">{{noReadNum}}</cover-view>
+    </view>
+    <view class="empty d-n {{offerList.length === 0  && empty ? 'd-b':''}}">
+      <view wx:if="{{operate === 'edit'}}">
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+        <view class="font-size-26 c-909090 ta-center">没有商品哦，快去添加吧……</view>
+      </view>
+      <view wx:else>
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty2.png" 
+                style="width:252rpx;height:220rpx;margin:294rpx 0 8rpx 298rpx"/>
+        <view class="font-size-32 ta-center empty-text c-909090">空空如也</view>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import tabBarTemplate from '../../components/tabBar/tabBarTemplate'
+import { tabBarJs } from '../../components/tabBar/tabBarJs'
+import modal from '../../components/modal/deecardModal'
+import { common } from '../../assets/js/common'
+import { cardManagerApi, loginApi, companyApi } from '@/api'
+import { cardActionMap } from '@/utils'
+import { authorizeFromMap } from '@/constants/pageMap'
+import {
+  getPhoneNumberMixin,
+  onticeMsgNumberMixin,
+  saveFormidMixin
+} from '@/mixins/index.js'
+import {G_RES_URL} from '@/config'
+export default class shopOffer extends wepy.page {
+  mixins = [onticeMsgNumberMixin, getPhoneNumberMixin, saveFormidMixin]
+  config = {
+    navigationBarTitleText: '商品管理',
+    enablePullDownRefresh: true
+  }
+  components = {
+    tabBarTemplate: tabBarTemplate,
+    deecardmodal: modal
+  }
+  data = {
+    showAllPage: false,
+    res_url: G_RES_URL,
+    entId: null,
+    operate: null,
+    tabBarData: {},
+    modal: {},
+    categoryName: '',
+    staffInfo: {},
+    categoryAll: 'on',
+    categoryList: [],
+    offerList: [],
+    selectCategoryId: '*',
+    selectCategoryName: '',
+    enterparise: {},
+    empty: false
+  }
+  onLoad(option) {
+    this.entId = option.entId
+    if (option.operate === 'edit') {
+      // 管名片商城
+      this.showAllPage = true
+      wepy.setNavigationBarTitle({ title: '商品管理' })
+      this.staffInfo = common.getStaffInfo(this)
+    } else {
+      // 看名片的商城
+      this.showAllPage = true
+      wepy.setNavigationBarTitle({ title: '商城' })
+      wepy.setNavigationBarColor({ frontColor: '#ffffff', backgroundColor: '#ff7f02' })
+      this.tabBarData = tabBarJs.selected(1, this)
+      if (option.type === 'share') {
+        // 通过分享进来的
+        this.showAllPage = false
+        this.$parent.saveNowEmployee(option.employee_id, option.entId, option.department_id)
+        this.getOpenId(option.employee_id, option.entId, option.fromOpenid, 2)
+        // 登录
+        this.loginUser(option)
+      } else {
+        // 别的页面跳过来的
+        this.showAllPage = true
+        this.staffInfo = common.getSalerInfo(this)
+      }
+    }
+    this.operate = option.operate
+  }
+  onPullDownRefresh() {
+    this.showOffer()
+    wepy.stopPullDownRefresh()
+  }
+  onShow() {
+    tabBarJs.tabBarObject.list[1].text = '商城'
+    this.showEnt()
+    this.showOffer()
+    this.showCategory()
+  }
+  showEnt() {
+    companyApi.getCurrentEnterpriseInfo(this.entId).then(res => {
+      this.enterparise = res
+      this.$apply()
+    })
+  }
+  showOffer() {
+    if (this.operate === 'edit') {
+      cardManagerApi.getOfferList(this.entId, this.selectCategoryId).then(res => {
+        this.offerList = res
+        console.log(this.offerList)
+        this.empty = true
+        this.$apply()
+      })
+    } else {
+      common.clickAction(this, cardActionMap.seeProductList)
+      cardManagerApi.getOfferListByStatus(this.entId, 1, this.selectCategoryId).then(res => {
+        this.offerList = res
+        this.empty = true
+        this.$apply()
+      })
+    }
+  }
+  showCategory() {
+    cardManagerApi.getCategoryList(this.entId).then(res => {
+      this.categoryList = res
+      this.$apply()
+    })
+  }
+  methods = {
+    // 进入详细页
+    goShopOfferDetails(index) {
+      index = parseInt(index)
+      this.$navigate(`/pages/product/shopOfferDetails?operate=${this.operate}&entId=${this.entId}&offer=${JSON.stringify(this.offerList[index])}`)
+    },
+
+    // 进入商品新增页
+    goShopOfferAdd() {
+      this.$navigate(`/pages/product/shopOfferDetails?operate=add&entId=${this.entId}&categoryId=${this.selectCategoryId}&categoryName=${this.selectCategoryName}`)
+    },
+
+    // 进入订单
+    goOrderList() {
+      this.$navigate(`/pages/me/pages/orderMgr`)
+    },
+
+    // 进入购物车
+    shopcard() {
+      wepy.navigateTo({ url: '/pages/product/shoppingCart' })
+    },
+
+    // 进入个人中心
+    psncenter() {
+      wepy.navigateTo({ url: '/pages/product/personalCenter' })
+    },
+
+    // 更新商品状态，1=上架，0=下架,2=售完,3=旧版本（即删除后隐藏）
+    updOfferStatus(id, status) {
+      let that = this
+      let runApi = function (msg) {
+        cardManagerApi.updOfferStatus(status, id).then(res => {
+          that.showOffer()
+          that.$parent.globalData.refreshPage = true
+          common.tip(msg, 'success')
+        })
+      }
+      if (status === '3') {
+        wepy.showModal({
+          content: '确定要删除吗？删除后商品将隐藏'
+        }).then((res) => {
+          if (!res.cancel) {
+            runApi('删除成功')
+          }
+        })
+      } else if (status === '1') {
+        runApi('上架成功')
+      } else if (status === '0') {
+        runApi('下架成功')
+      }
+    },
+
+    // 删除商品
+    delOffer(id) {
+      cardManagerApi.delOffer(id).then(res => {
+        this.showOffer()
+      })
+    },
+
+    // 添加分类
+    addCategory() {
+      let that = this
+      common.showModal(this, '添加分类', 'addCategory').bind('取消', function (modal) {
+        modal.show = false
+      }).bind('确认', function (modal) {
+        if (!common.isNull(that.categoryName, '分类名称不能为空')) return
+        let param = { name: that.categoryName, create_staff_id: that.staffInfo.staffId, enterprise_id: that.entId }
+        cardManagerApi.addCategory(param).then(res => {
+          modal.show = false
+          common.tip('添加成功', 'success')
+          that.showCategory()
+        })
+      }, '#e75152')
+    },
+
+    // 输入分类
+    inputCategory(e) {
+      this.categoryName = e.detail.value
+    },
+
+    // 选择分类查询
+    selectedCategory(index) {
+      index = parseInt(index)
+      if (index === -1) {
+        this.categoryAll = 'on'
+        this.selectCategoryId = '*'
+        this.selectCategoryName = '全部'
+        for (let i = 0; i < this.categoryList.length; i++) {
+          this.categoryList[i]['selected'] = false
+        }
+      } else {
+        this.categoryList[index]['selected'] = true
+        this.selectCategoryId = this.categoryList[index].id
+        this.selectCategoryName = this.categoryList[index].name
+        this.categoryAll = 'off'
+        for (let i = 0; i < this.categoryList.length; i++) {
+          if (i !== index) {
+            this.categoryList[i]['selected'] = false
+          }
+        }
+      }
+      this.showOffer()
+    },
+    // 分享
+    onShareAppMessage(res) {
+      tabBarJs.tabBarObject.list[1].text = '商城'
+      let that = this
+      return {
+        title: '',
+        path: `/pages/product/shopOffer?operate=view&entId=${that.entId}&type=share&employee_id=${that.staffInfo.staffId}&department_id=${that.staffInfo.departmentId}&fromOpenid=${this.$parent.getNowOpenid()}`
+      }
+    },
+    longtap(index) {
+      if (this.operate === 'edit') {
+        index = parseInt(index)
+        wepy.showModal({
+          content: '删除类别后该类别下商品将清空，确定要删除吗？'
+        }).then((res) => {
+          if (!res.cancel) {
+            cardManagerApi.delCategory(this.categoryList[index].id).then(res => {
+              this.categoryList.splice(index, 1)
+              common.tip('删除成功', 'success')
+              this.$apply()
+            })
+          }
+        })
+      }
+    },
+    touchstart(index) {
+      console.log('长按开始')
+    },
+    touchend() {
+      console.log('结束')
+    }
+  }
+
+  // 获取openid
+  getOpenId(staffId, enterpriseId, fromOpenid, fromType) {
+    let promise = new Promise((resolve, reject) => {
+      // 获取code
+      wepy.login().then(loginDate => {
+        if (loginDate.code) {
+          // 获取openid
+          let param = {
+            code: loginDate.code,
+            staff_id: staffId
+          }
+          loginApi.getOpenidAndCheck(param).then(
+            res => {
+              this.$parent.saveOpenid(res.openid)
+              this.$parent.saveEmployeeChatUser(staffId, staffId)
+              // if (res.status === '0') {
+              //   // 此openid在数据库没记录
+              //   this.whetherAuthorize(enterpriseId, staffId, fromOpenid, fromType)
+              // } else {
+              //   this.createRelation(res.openid, staffId, fromType)
+              //   this.$parent.saveUserInfo(res.userInfo)
+              // }
+              this.whetherAuthorize(enterpriseId, staffId, fromOpenid, fromType)
+              // 获取该名片的信息并保存
+              this.$parent.getSellerCardDetail(staffId).then(res => {
+                this.$parent.saveCurSellerInfo(res)
+              })
+            },
+            err => {
+              wepy.showModal({
+                title: '提示',
+                content: '获取身份失败',
+                showCancel: false
+              })
+              this.hideLoading()
+              setTimeout(() => {
+                reject(err)
+              }, 1000)
+            }
+          )
+        }
+      })
+    })
+    return promise
+  }
+  /**
+    * 登录
+    */
+  loginUser(option) {
+    // 获取wx用户信息
+    return this.$parent.setWxUserInfo().then(
+      res => {
+        let sellerInfo = {
+          employeeId: option.employee_id,
+          enterpriseId: option.entId
+        }
+        let openid = this.$parent.getNowOpenid()
+        if (openid) {
+          // 获取聊天账号
+          this.$parent.getUserChatLoginInfo(
+            openid,
+            option.employee_id,
+            option.entId,
+            () => {
+              // // 显示
+              // this.showMsgNumb()
+              // this.getNotReadFromAnother()
+            }
+          )
+          // 有openid,直接登录
+          return this.$parent.login(
+            sellerInfo,
+            this.$parent.globalData.userInfo,
+            openid,
+            option.fromOpenid,
+            () => {
+              // this.getPhoneNumberAuth()
+            }
+          )
+        } else {
+          // 无openid，获取后登录
+          return this.$parent
+            .getOpenId(option.employee_id, option.entId)
+            .then(res => {
+              openid = res
+              // 获取聊天账号
+              this.$parent.getUserChatLoginInfo(
+                openid,
+                option.employee_id,
+                option.entId,
+                () => {
+                  // // 显示
+                  // this.showMsgNumb()
+                  // this.getNotReadFromAnother()
+                }
+              )
+              return this.$parent.login(
+                sellerInfo,
+                this.$parent.globalData.userInfo,
+                openid,
+                option.fromOpenid,
+                () => {
+                  // this.getPhoneNumberAuth()
+                }
+              )
+            })
+        }
+      },
+      () => { }
+    )
+  }
+  /**
+   * 去授权
+   */
+  whetherAuthorize(enterpriseId, employeeId, fromOpenid, fromType) {
+    let data = {
+      from: authorizeFromMap.shopOffer,
+      employee_id: employeeId,
+      enterprise_id: enterpriseId,
+      from_openid: fromOpenid,
+      from_type: fromType,
+      operate: 'view'
+    }
+    this.$parent.toAuthorize(data)
+  }
+  /**
+   * 用户和销售建立关系
+   */
+  createRelation(openid, staffId, fromType) {
+    if (!openid) {
+      wepy.showToast({
+        title: '参数不全',
+        icon: 'none',
+        duration: 1000
+      })
+      return
+    }
+    let params = {
+      open_id: openid,
+      employee_id: staffId,
+      froms: fromType
+    }
+    loginApi.createRela(params).then(res => {
+      // 返回taken，缓存本地
+      this.$parent.saveSessionId(res, null, null)
+    })
+  }
+  // 留言
+  consultProduct() {
+    let sellerInfo = this.$parent.getCurSellerInfo()
+    let userInfo = this.$parent.getUserInfo()
+    let chatUserInfo = this.$parent.getChatUserInfo()
+    let friendId = this.$parent.getEmployeeChatUser(sellerInfo.staffId)
+    let loginInfo = {
+      name: chatUserInfo.identifier,
+      nickName: userInfo.nickName,
+      avtor: userInfo.avatarUrl
+    }
+    let friend = {
+      name: friendId,
+      avtor: sellerInfo.head_icon,
+      nickName: sellerInfo.name
+    }
+    // this.recordClickAction(cardActionMap.consultProduct)
+    this.$parent.goChatRoom(loginInfo, friend)
+  }
+}
+</script>

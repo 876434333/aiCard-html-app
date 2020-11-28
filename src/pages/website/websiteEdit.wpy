@@ -1,0 +1,337 @@
+<style lang="scss">
+  @import '../../assets/css/pages/website/website.scss';
+</style>
+<template>
+  <!-- 官网编辑 -->
+  <view class="wrap">
+    <view class="component" wx:if="{{componentList.length == 0}}">
+      <view class="component-head">
+        <image src="../../assets/images/website/add.png" class="add" @tap="component" data-method="addComponent" data-index="0"/>
+      </view>
+    </view>
+    <repeat for="{{componentList}}" index="index" item="item"> 
+      <view class="component">
+        <view class="component-head">
+          <image src="../../assets/images/website/add.png" class="add" @tap="component" data-method="addComponent" data-index="{{index}}" data-type='{{item.textContent.type}}'/>
+          <image src="../../assets/images/website/move.png" class="move" wx:if="{{index != 0}}" @tap="component" data-method="moveComponent" data-index="{{index}}"/>
+        </view>
+        <image src="../../assets/images/website/delete.png" class="delete {{item.textContent.data.imageShowMode.value.mode == 'marquee' ? 'delete-marquee' : ''}}" wx:if="{{item.textContent.type != 'playVideo'}}" @tap="component" data-method="removeComponent" data-index="{{index}}"/>
+        <image src="../../assets/images/website/delete_video.png" class="delete" wx:if="{{item.textContent.type == 'playVideo'}}" @tap="component" data-method="removeComponent" data-index="{{index}}" style="opacity:1;"/>
+        <view class="component-part" @tap="component" data-method="editComponent" data-index="{{index}}" data-type="{{item.textContent.type}}">
+          <!-- 企业简介 -->
+          <companyInfo :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'companyInfo'}}"></companyInfo>
+          <!-- 公司电话 -->
+          <companyPhone :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView" wx:if="{{item.textContent.type == 'companyPhone'}}"></companyPhone>
+          <!-- 地址 -->
+          <companyAddress :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'companyAddress'}}"></companyAddress>
+          <!-- 联系我们 -->
+          <contactUs :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView" wx:if="{{item.textContent.type == 'contactUs'}}"></contactUs>
+          <!-- 标题 -->
+          <baseTitle :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'baseTitle'}}"></baseTitle>
+          <!-- 内容 -->
+          <baseContent :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'baseContent'}}"></baseContent>
+          <!-- 图片 -->
+          <poster :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'poster'}}"></poster>
+          <!-- 轮播图 -->
+          <view  style="{{index === 0 ? '' : 'padding:0 30rpx;'}}">
+            <swipe :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView" wx:if="{{item.textContent.type == 'swipe'}}"></swipe>
+          </view>
+          <!-- 视频 -->
+          <playVideo :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" :websiteView.sync="websiteView" wx:if="{{item.textContent.type == 'playVideo'}}"></playVideo>
+          <!-- 占位 -->
+          <relative :area.sync="area" :idx.sync="index" :obj.sync="item.textContent" wx:if="{{item.textContent.type == 'relative'}}"></relative>
+        </view>
+      </view>
+    </repeat>
+    <view class="component" wx:if="{{componentList.length != 0}}">
+      <view class="component-head">
+        <image src="../../assets/images/website/add.png" class="add" @tap="component" data-method="addComponent" data-index="{{componentList.length}}"/>
+      </view>
+    </view>
+    <cover-view class="foot"><button class="save font-size-36 c-ffffff" @tap="save">保存</button></cover-view>
+    <!-- 组件弹窗 -->
+    <view class="mask-black" hidden="{{maskHidden}}" @tap="mask" data-method="maskHide"></view>
+    <cover-view class="mask" hidden="{{maskHidden}}">
+      <cover-view class="mask-head">
+        <cover-view class="mask-head-title font-size-30 ta-center {{modularHidden ? 'mask-head-title-check' : ''}}" @tap="mask" data-method="check">模块组件</cover-view>
+        <cover-view class="mask-head-title font-size-30 ta-center {{!modularHidden ? 'mask-head-title-check' : ''}}" @tap="mask" data-method="check">基本组件</cover-view>
+      </cover-view>
+      <cover-view class="mask-main mask-modular" hidden="{{!modularHidden}}">
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="companyInfo">
+          <cover-image src="../../assets/images/website/introduce.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">企业简介</cover-view>
+        </cover-view>
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="companyAddress">
+          <cover-image src="../../assets/images/website/address.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">地址</cover-view>
+        </cover-view>
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="companyPhone">
+          <cover-image src="../../assets/images/website/phone_gray.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">公司电话</cover-view>
+        </cover-view>
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="contactUs">
+          <cover-image src="../../assets/images/website/contact.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">联系我们</cover-view>
+        </cover-view>
+      </cover-view>
+      <cover-view class="mask-main mask-standard" hidden="{{modularHidden}}">
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="baseTitle">
+          <cover-image src="../../assets/images/website/title.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">标题</cover-view>
+        </cover-view>
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="baseContent">
+          <cover-image src="../../assets/images/website/content.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">内容</cover-view>
+        </cover-view>
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="poster">
+          <cover-image src="../../assets/images/website/picture.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">图片</cover-view>
+        </cover-view>
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="swipe">
+          <cover-image src="../../assets/images/website/swipe.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">轮播图</cover-view>
+        </cover-view>
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="playVideo">
+          <cover-image src="../../assets/images/website/video_gray.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">视频</cover-view>
+        </cover-view>
+        <cover-view class="mask-component" @tap="mask" data-method="chooseComponent" data-type="relative">
+          <cover-image src="../../assets/images/website/relative.png"/>
+          <cover-view class="font-size-22 c-909090 ta-center">占位</cover-view>
+        </cover-view>
+      </cover-view>
+    </cover-view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import companyInfo from './components/modular/companyInfo'
+  import companyPhone from './components/modular/companyPhone'
+  import companyAddress from './components/modular/companyAddress'
+  import contactUs from './components/modular/contactUs'
+  import baseTitle from './components/standard/baseTitle'
+  import baseContent from './components/standard/baseContent'
+  import poster from './components/standard/poster'
+  import swipe from './components/standard/swipe'
+  import playVideo from './components/standard/playVideo'
+  import relative from './components/standard/relative'
+  import { WebComponent } from '../../assets/js/website/template'
+  import { websiteApi } from '@/api'
+  import {common} from '../../assets/js/common'
+  // import { companyInfoApi } from '@/api'
+  export default class websiteEdit extends wepy.page {
+    config = {
+      navigationBarTitleText: '官网编辑'
+    }
+    data = {
+      websiteId: '',
+      maskHidden: true,
+      modularHidden: true,
+      idx: null,
+      obj: {},
+      area: 'preview',
+      websiteView: false,
+      // 选中的组件index
+      componentIndex: '',
+      // type：1.企业简介  2.电话  3.地址  4.联系我们  5.标题  6.文本  7.图片  8.轮播图  9.视频  10.占位符
+      componentList: []
+    }
+    components = {
+      companyInfo: companyInfo,
+      companyPhone: companyPhone,
+      companyAddress: companyAddress,
+      contactUs: contactUs,
+      baseTitle: baseTitle,
+      baseContent: baseContent,
+      poster: poster,
+      swipe: swipe,
+      playVideo: playVideo,
+      relative: relative
+    }
+    onLoad(opt) {
+      let _this = this
+      this.websiteId = opt.id
+      wepy.getStorage({key: 'website_components'}).then(res => {
+        if (res) {
+          _this.componentList = res.data.content
+          _this.$apply()
+        }
+        wepy.removeStorage({key: 'website_components'})
+      })
+    }
+    onShow() {
+      let _this = this
+      wepy.getStorage({key: 'website_plugin'}).then(res => {
+        if (res) {
+          if (res.data.save) {
+            _this.componentList[res.data.idx].textContent = res.data.content
+          } else {
+            _this.componentList.splice(res.data.idx, 1)
+          }
+          _this.$apply()
+          wepy.removeStorage({key: 'website_plugin'})
+        }
+      })
+    }
+    methods = {
+      save() {
+        let _this = this
+        let array = JSON.parse(JSON.stringify(_this.componentList))
+        // 预留字段 公司ID
+        // let enter = this.$parent.globalData.staffInfo.enterprise_id
+        for (let key in array) {
+          array[key].textContent = JSON.stringify(array[key].textContent)
+        }
+        if (!_this.websiteId) {
+          common.tip('数据未加载完成，请稍后再试', 'none')
+          return
+        }
+        wepy.showLoading({
+          title: '正在保存...'
+        })
+        websiteApi.updWebsiteComponent(array, _this.websiteId).then(rs => {
+          wepy.hideLoading()
+          if (rs) {
+            wepy.setStorage({
+              key: 'website_components',
+              data: {
+                content: _this.componentList
+              }
+            })
+            wepy.showToast({
+              title: '保存成功',
+              icon: 'success',
+              duration: 1000
+            }).then(res => {
+              // _this.$navigate('/pages/website/websiteIndex')
+              wepy.navigateBack({
+                delta: 1
+              })
+            })
+          } else {
+            wepy.showToast({
+              title: '保存失败',
+              icon: 'none',
+              duration: 1000
+            })
+          }
+        })
+      },
+      getTitle(type) {
+        let title = ''
+        switch (type) {
+          case 'companyInfo': title = '企业简介'
+            break
+          case 'companyPhone': title = '电话'
+            break
+          case 'companyAddress': title = '地址'
+            break
+          case 'contactUs': title = '联系我们'
+            break
+          case 'baseTitle': title = '标题'
+            break
+          case 'baseContent': title = '文本'
+            break
+          case 'poster': title = '图片'
+            break
+          case 'swipe': title = '轮播图'
+            break
+          case 'playVideo': title = '视频'
+            break
+          case 'relative': title = '占位符'
+            break
+          default: title = ''
+            break
+        }
+        return title
+      },
+      // 组件操作
+      component(e) {
+        let _this = this
+        let index = e.currentTarget.dataset.index
+        let type = e.currentTarget.dataset.type
+        let method = {
+          // 移动组件
+          moveComponent() {
+            let listMove = _this.componentList.slice(index, index + 1)
+            _this.componentList.splice(index, 1)
+            _this.componentList.splice(index - 1, 0, listMove[0])
+            _this.$apply()
+          },
+          // 删除组件
+          removeComponent() {
+            wepy.showModal({
+              content: '您确定删除吗？'
+            }).then(res => {
+              if (res.confirm) {
+                _this.componentList.splice(index, 1)
+                _this.$apply()
+              }
+            })
+          },
+          // 添加组件
+          addComponent() {
+            _this.maskHidden = false
+            _this.componentIndex = index
+          },
+          // 编辑组件
+          editComponent() {
+            wepy.setStorage({
+              key: 'website_plugin',
+              data: {
+                idx: index,
+                type: type,
+                content: _this.componentList[index].textContent,
+                save: true
+              }
+            })
+            // type：1.企业简介  2.电话  3.地址  4.联系我们  5.标题  6.文本  7.图片  8.轮播图  9.视频  10.占位符
+            wepy.navigateTo({
+              url: '/pages/website/components/exports?title=编辑' + _this.methods.getTitle(type)
+            })
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      },
+      // 弹窗操作
+      mask(e) {
+        let _this = this
+        let type = e.currentTarget.dataset.type
+        let method = {
+          // 隐藏弹窗
+          maskHide() {
+            _this.maskHidden = true
+          },
+          // 切换导航栏
+          check() {
+            _this.modularHidden = !_this.modularHidden
+          },
+          // 选择组件
+          chooseComponent() {
+            // let addList = method.buildObj.call(_this, type)
+            let addList = WebComponent.buildObj(type)
+            wepy.setStorage({
+              key: 'website_plugin',
+              data: {
+                idx: _this.componentIndex,
+                type: type,
+                content: addList.textContent
+              }
+            }).then((res) => {
+              wepy.navigateTo({
+                url: '/pages/website/components/exports?title=添加' + _this.methods.getTitle(type)
+              })
+              setTimeout(() => {
+                _this.componentList.splice(_this.componentIndex, 0, addList)
+              }, 1000)
+            })
+            _this.maskHidden = true
+            _this.modularHidden = true
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      }
+    }
+  }
+</script>

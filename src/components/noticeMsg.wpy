@@ -1,0 +1,96 @@
+<template>
+  <view class="msg-notice"
+        @tap="toSendMsgFrom"
+        wx:if="{{show}}">
+    <image src="{{avtor}}" class="msg-notice-avtor" />
+    <view class="msg-notice-content">{{content}}</view>
+    <view class="msg-notice-number">{{noReadNum}}</view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import {chatApi} from '@/api'
+import WebIM from '@/assets/js/webIM/index'
+
+export default class NoticeMsg extends wepy.component {
+  data = {
+    avtor: '',
+    nickName: '',
+    content: '你有一条新的消息',
+    noReadNum: null,
+    show: false,
+    timer: null,
+    employeeId: null,
+    from: null
+  }
+  methods = {
+    toSendMsgFrom() {
+      let app = this.getWxApp()
+      let sellerInfo = app.getSellerInfo(this.employeeId)
+      sellerInfo.employeeId = this.employeeId
+      let userInfo = app.globalData.userInfo
+      let chatUserInfo = app.getChatUserInfo()
+      let loginInfo = {
+        name: chatUserInfo.identifier,
+        nickName: userInfo.nickName,
+        avtor: userInfo.avatarUrl
+      }
+      let friend = {
+        name: this.from,
+        avtor: this.avtor,
+        nickName: this.nickName
+      }
+      app.goChatRoom(loginInfo, friend)
+    }
+  }
+  showMsg(msg, from, unread) {
+    this.noReadNum = unread
+    // this.content = this.changeMsgToShow(msg.getElems())
+    this.from = from
+    let employeeId = this.getWxApp().getEmployeeIdByChatUser(from)
+    this.employeeId = employeeId
+    // 获取员工头像等信息
+    this.getChatFromInfo(employeeId).then(data => {
+      this.avtor = data.head_icon
+      this.nickName = data.name
+      if (this.timer) {
+        clearTimeout(this.timer)
+        this.timer = null
+      }
+      this.show = true
+      this.$apply()
+      this.timer = setTimeout(() => {
+        this.show = false
+        this.$apply()
+      }, 2000)
+    })
+  }
+  getWxApp() {
+    return wepy.$instance
+  }
+  // 获取对方的头像等信息
+  getChatFromInfo(employeeId) {
+    let sessionId = this.getWxApp().getSessionId()
+    return chatApi.getChatFromInfo(employeeId, sessionId)
+  }
+  // 将消息转为可以显示的格式
+  changeMsgToShow(elems) {
+    let content = ''
+    elems.some((val, idnex) => {
+      if (val.type === WebIM.MSG_ELEMENT_TYPE.IMAGE) {
+        content = '[图片]'
+      } else if (val.type === WebIM.MSG_ELEMENT_TYPE.TEXT) {
+        // 解析表情
+        let res = WebIM.parseEmojiSimply(val.content.getText())
+        if (res.length > 0) {
+          res.some((val) => {
+            content += val.data
+          })
+        }
+      }
+    })
+    return content
+  }
+}
+</script>

@@ -1,0 +1,160 @@
+<style lang="scss">
+@import '../../assets/css/pages/me/entOrg.scss';
+@import '../../assets/css/pages/me/transfer.scss';
+</style>
+<template>
+  <!-- 联系人列表 -->
+  <view class="wrap">
+    <view class="search">
+      <image src="../../assets/images/contact/search.png"/>
+      <input type="text" placeholder="搜索" class="font-size-30 c-909090"/>
+    </view>
+    <!-- 空列表 -->
+    <view class="{{staffGroupList.length === 0 ? 'empty' : 'd-n'}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+      <view class="font-size-32 ta-center c-909090">暂无成员，先去添加公司成员吧...</view>
+    </view>
+    <!-- 联系人列表 -->
+    <view class="contact-part {{staffGroupList.length === 0 ? 'contact-part-empty' : ''}}">
+      <repeat for="{{staffGroupList}}" index="firstIndex" key="index" item="item">
+        <view class="contact-list">
+          <view class="staff font-size-24 c-909090">{{item.groupName}}</view>
+          <repeat for="{{item.dataList}}" index="secondIndex" key="index" item="staff">
+            <view class="weui-cell" @tap="choose" data-firstIndex="{{firstIndex}}" data-secondIndex="{{secondIndex}}">
+              <view class="weui-cell__hd">
+                <image src="{{staff.head_icon}}"/>
+              </view>
+              <view class="weui-cell__hd">
+                <view class="branch font-size-30 c-323232">{{staff.name}}</view>
+                <view class="count font-size-26 c-909090">{{staff.station}}</view>
+              </view>
+              <view class="weui-cell__hd" wx:if="{{staff.selected || selectedData[staff.id]}}">
+                <image src="../../assets/images/contact/hook.png" class="hook"/>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </repeat>
+      <view class="load-more" hidden="{{!loadMore}}">正在加载数据....</view>
+    </view>
+    <view class="foot"><button class="save font-size-36 c-ffffff" @tap="save">确定</button></view>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import { companyApi } from '@/api'
+  import { common } from '../../assets/js/common.js'
+  import {G_RES_URL} from '@/config'
+  export default class transfer extends wepy.page {
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '联系人'
+    }
+    data = {
+      res_url: G_RES_URL,
+      staffSelectedId: '',
+      staffGroupList: [],
+      chooseList: [],
+      selectedData: {},
+      page: 1,
+      loadMore: false,
+      enterpriseId: '',
+      openId: '',
+      staffList: []
+    }
+    onReachBottom() {
+      // this.page = this.page + 1
+      // this.loadMore = true
+      companyApi.getDepartmentPerson(this.enterpriseId, -1).then(res => {
+        for (let k in res.onJobPersonList) {
+          this.staffList.push(res.onJobPersonList[k])
+        }
+        this.staffGroupList = common.getGroupListByKey(this.staffList, 'first_letter')
+        this.loadMore = false
+        this.$apply()
+      })
+      this.$apply()
+    }
+    onLoad(option) {
+      let _this = this
+      this.openId = common.getOpenId(_this)
+      _this.staff = common.getStaffInfo(_this)
+      this.enterpriseId = _this.staff.enterprise_id
+      companyApi.getDepartmentPerson(this.enterpriseId, -1).then(res => {
+        _this.staffList = res.onJobPersonList
+        _this.staffGroupList = common.getGroupListByKey(_this.staffList, 'first_letter')
+        try {
+          // 获取上一个页面联系人 设置默认选中
+          wepy.getStorage({key: 'chooseContact'}).then(res => {
+            if (res) {
+              for (let x in res.data.employee.value) {
+                _this.selectedData[res.data.employee.value[x].id] = res.data.employee.value[x].selected
+              }
+              for (let x in _this.staffGroupList) {
+                for (let y in _this.staffGroupList[x].dataList) {
+                  if (_this.selectedData[_this.staffGroupList[x].dataList[y].id]) {
+                    _this.staffGroupList[x].dataList[y].selected = _this.selectedData[_this.staffGroupList[x].dataList[y].id]
+                  }
+                }
+              }
+              _this.$apply()
+            }
+          })
+        } catch (e) {
+          console.log('获取存储失败')
+        }
+        wepy.removeStorage({key: 'chooseContact'})
+        this.$apply()
+      })
+    }
+    methods = {
+      // 选择联系人
+      choose(e) {
+        let that = this
+        let firstIndex = e.currentTarget.dataset.firstindex
+        let secondIndex = e.currentTarget.dataset.secondindex
+        let selected = that.staffGroupList[firstIndex].dataList[secondIndex]
+        let isSelected = selected.selected ? selected.selected : that.selectedData[selected.id]
+        that.staffGroupList[firstIndex].dataList[secondIndex].selected = !isSelected
+        that.selectedData[that.staffGroupList[firstIndex].dataList[secondIndex].id] = that.staffGroupList[firstIndex].dataList[secondIndex].selected
+        // if (selected) {
+        //   // that.selectedData[staffGroupList[firstIndex].dataList[secondIndex].id] = false
+        //   that.methods.delByStaffId(that.chooseList, that)
+        // } else {
+        //   that.chooseList.push(staffGroupList[firstIndex].dataList[secondIndex])
+        // }
+        that.$apply()
+      },
+      // 删除选中的联系人
+      delByStaffId(chooseList, that) {
+        for (let i = 0; i < that.chooseList.length; i++) {
+          if (chooseList[i].selected === false) {
+            that.chooseList.splice(i, 1)
+            break
+          }
+        }
+      },
+      // 点击确定
+      save() {
+        let allEmployee = this.staffGroupList
+        for (let x in allEmployee) {
+          for (let y in allEmployee[x].dataList) {
+            if (this.selectedData[allEmployee[x].dataList[y].id]) {
+              this.chooseList.push(allEmployee[x].dataList[y])
+            }
+          }
+        }
+        wepy.setStorage({
+          key: 'chooseContact',
+          data: this.chooseList
+        }).then((res) => {
+          wepy.navigateBack({
+            delta: 1
+          })
+        })
+      }
+    }
+  }
+</script>

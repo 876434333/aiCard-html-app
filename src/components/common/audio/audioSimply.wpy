@@ -1,0 +1,116 @@
+<style type="scss">
+.audio-cont {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 196rpx;
+  border: 1rpx solid #e9e9e9;
+  border-radius: 10rpx;
+  padding: 0 40rpx;
+  background:#fff;
+  .play-btn {
+    width: 86rpx;
+    height: 86rpx;
+  }
+  .audio-ctrl {
+    margin-left: 36rpx;
+    .ctrl-tit {
+      font-size: 28rpx;
+      color: #666;
+    }
+    .ctrl-time {
+      display: flex;
+      justify-content: space-between;
+      font-size: 24rpx;
+      color: #999;
+    }
+  }
+}
+.progress {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 460rpx;
+  height: 8rpx;
+  background: #ccc;
+  border-radius: 6rpx;
+  margin: 20rpx 0;
+  .progress-bar {
+    background: #32a4f9;
+    height: 100%;
+  }
+  .progress-dot {
+    background: #32a4f9;
+    border: 8rpx solid #bbe2ff;
+    width: 20rpx;
+    height: 20rpx;
+    border-radius: 50%;
+  }
+}
+</style>
+<template>
+  <view class="audio-cont">
+    <image src="../../../../assets/images/card/voice.png"
+            class="play-btn"
+            @tap="tapPlay" />
+    <view class="audio-ctrl">
+      <view class="ctrl-tit">我的语音介绍</view>
+      <view class="progress">
+        <view class="progress-bar" style="width: {{width.current}}rpx;">
+        </view>
+        <view class="progress-dot"></view>
+      </view>
+      <view class="ctrl-time">
+        <view>{{time.currentPosition}}</view>
+        <view>{{time.duration}}</view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import audioSimplyMixin from './audioSimplyMixin'
+
+export default class audioSimply extends wepy.component {
+  props = {
+    src: {
+      type: String
+    },
+    totalTime: {
+      type: Number,
+      default: 4.8
+    },
+    maxWidth: {
+      type: Number,
+      default: 460
+    }
+  }
+  mixins = [
+    audioSimplyMixin
+  ]
+  watch = {
+    src(nVal, oVal) {
+      if (nVal) {
+        this.init()
+      }
+    },
+    maxWidth(nVal, oVal) {
+      if (nVal) {
+        this.width.max = nVal
+      }
+    },
+    totalTime(nVal, oVal) {
+      if (nVal) {
+        this.timestamp.total = nVal
+      }
+    }
+  }
+  init() {
+    this.width.max = this.maxWidth
+    this.timestamp.total = this.totalTime
+    this.create(this.src)
+  }
+}
+
+</script>

@@ -1,0 +1,159 @@
+<style lang="scss">
+@import './css/addStaff.scss';
+</style>
+<template>
+  <!-- 手动输入添加 -->
+  <view class="wrap">
+    <view class="main">
+      <view class="info">
+        <view class="info-left">
+          <text class="font-size-30 c-323232">姓名</text>
+          <text class="font-size-30 symbol">*</text>
+        </view>
+        <input type="text" placeholder="请输入员工姓名" placeholder-style="color:909090" class="font-size-30 c-323232" @input="nameInput" value="{{staffName}}"/>
+      </view>
+      <view class="info">
+        <view class="info-left">
+          <text class="font-size-30 c-323232">手机号</text>
+          <text class="font-size-30 symbol">*</text>
+        </view>
+        <input type="number" placeholder="请输入员工手机号" placeholder-style="color:909090" class="font-size-30 c-323232" @input="phoneInput" value="{{staffPhone}}"/>
+      </view>
+      <view class="info">
+        <view class="info-left">
+          <text class="font-size-30 c-323232">职位</text>
+          <text class="font-size-30 symbol">*</text>
+        </view>
+        <input type="text" placeholder="请输入职位" placeholder-style="color:909090" class="font-size-30 c-323232" @input="positionInput" value="{{staffPosition}}"/>
+      </view>
+    </view>
+    <view class="main">
+      <view class="info" @tap="chooseDept">
+        <text class="font-size-30 c-323232">所属部门</text>
+        <text class="font-size-30 c-909090 branch-type">{{department_name}}</text>
+        <image src="../../../assets/images/card/card_edit_right.png"/>
+      </view>
+      <view class="info">
+        <text class="font-size-30 c-323232">身份</text>
+        <view class="font-size-30 c-909090 identity ordinary {{number == 2 ? 'identity-check' : ''}}" data-role="2" @tap="checkIdentity">普通成员</view>
+        <view class="font-size-30 c-909090 identity {{number == 1 ? 'identity-check' : ''}}" data-role="1" @tap="checkIdentity">上级</view>
+      </view>
+    </view>
+    <!-- 确定按钮 -->
+    <button class="save font-size-36 c-ffffff" hidden="{{sureBtnHidden}}" @tap="sure">确定</button>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+import { mobileValidator } from '../../../assets/js/asyncValidator/validators/index.js'
+export default class addStaff extends wepy.page {
+  // 相当于page.json
+  config = {
+    navigationBarTitleText: '手动输入添加'
+  }
+  data = {
+    enterprise_id: '',
+    sureBtnHidden: false,
+    number: 2,
+    role: 2,
+    staffName: '',
+    staffPhone: '',
+    staffPosition: '',
+    department_id: '',
+    department_name: ''
+  }
+  onLoad(option) {
+    this.enterprise_id = option.enterprise_id
+  }
+  onShow(option) {
+    let that = this
+    wx.getStorage({
+      key: 'chooseDept',
+      success: function(res) {
+        that.department_id = res.data.deptId
+        that.department_name = res.data.deptName
+        that.$apply()
+      }
+    })
+  }
+  methods = {
+    // 输入姓名
+    nameInput(e) {
+      this.staffName = e.detail.value
+    },
+    // 输入手机号
+    phoneInput(e) {
+      this.staffPhone = e.detail.value
+    },
+    // 输入职位
+    positionInput(e) {
+      this.staffPosition = e.detail.value
+    },
+    // 选择身份
+    checkIdentity(e) {
+      this.role = e.currentTarget.dataset.role
+      this.number = e.currentTarget.dataset.role
+    },
+    // 选择部门
+    chooseDept(e) {
+      this.$navigate('./chooseDept')
+    },
+    // 点击确定
+    sure() {
+      if (!mobileValidator(this.staffPhone)) {
+        wepy.showToast({
+          title: '请输入正确的手机号',
+          icon: 'none'
+        })
+        return
+      }
+      let that = this
+      let msg = ''
+      if (!this.staffName) {
+        msg = '请填写员工姓名'
+      } else if (!this.staffPhone) {
+        msg = '请填写员工手机号'
+      } else if (!this.staffPosition) {
+        msg = '请填写员工职位'
+      }
+      if (msg) {
+        wepy.showToast({
+          title: msg,
+          icon: 'none',
+          duration: 1000
+        })
+        return
+      }
+      let params = {
+        name: that.staffName,
+        phone: that.staffPhone,
+        station: that.staffPosition,
+        department_id: that.department_id,
+        enterprise_id: that.enterprise_id,
+        role: that.role
+      }
+      wepy.showLoading({
+        title: '添加中...'
+      })
+      companyApi.addStaff(params).then(
+        res => {
+          wepy.hideLoading()
+          wepy.navigateBack({
+            delta: 1
+          })
+        },
+        err => {
+          wepy.hideLoading()
+          wepy.showToast({
+            title: err.err_msg,
+            icon: 'none',
+            duration: 2000
+          })
+        }
+      )
+    }
+  }
+}
+</script>

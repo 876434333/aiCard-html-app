@@ -1,0 +1,16 @@
+<style lang="scss">
+</style>
+<template>
+  <!-- 服务协议 -->
+  <view class="wrap">服务协议</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  // import companyInfo from './components/modular/companyInfo'
+  export default class websiteEdit extends wepy.page {
+    config = {
+      navigationBarTitleText: '服务协议'
+    }
+  }
+</script>

@@ -1,0 +1,681 @@
+<style lang="scss">
+  @import '../../../../assets/css/pages/card/card.scss';
+  $main_color: #e75152;
+  page {
+    // padding-bottom:220rpx;
+    padding-bottom:178rpx;
+  }
+  .edit-my-card {
+    width: 280rpx;
+    height: 70rpx;
+    border-radius: 40rpx;
+    background: #ffffff;
+    border:2rpx solid $main_color;
+    margin-bottom: 10rpx;
+    font-size: 30rpx;
+    color: $main_color;
+    line-height: 70rpx;
+  }
+  .edit-my-card:after {
+    border:0;
+  }
+  .foot {
+    position:fixed;
+    bottom:0;
+    padding:40rpx 0;
+    width:100%;
+    border-top:1px solid #e8e8e8;
+    overflow: hidden;
+    background: #ffffff;
+    button{
+      position: relative;
+      left: 0;
+      bottom: 0;
+    }
+  }
+</style>
+<template>
+  <view style="background:#ffffff;overflow-y:hidden;">
+    <view style="min-height:882rpx;">
+      <!-- 名片模板 -->
+      <view style="margin-top:0rpx" wx:if="{{templateId == 1}}">
+        <templateone :syncData.sync="cardInfo" :isPreview.sync="isPreview"></templateone>
+      </view>
+      <view style="margin-top:0rpx" wx:elif="{{templateId == 2}}">
+        <templatetwo :syncData.sync="cardInfo" :isPreview.sync="isPreview"></templatetwo>
+      </view>
+      <view style="margin-top:0rpx" wx:elif="{{templateId == 3}}">
+        <templatethree :syncData.sync="cardInfo" :isPreview.sync="isPreview"></templatethree>
+      </view>
+      <view style="margin-top:0rpx" wx:elif="{{templateId == 4}}">
+        <templatefour :syncData.sync="cardInfo" :isPreview.sync="isPreview"></templatefour>
+      </view>
+      <view style="margin-top:0rpx;" wx:if="{{templateId === 5}}">
+        <templatefive :syncData.sync="cardInfo" :isMyself.sync="isMyself"></templatefive>
+      </view>
+      <view style="margin-top:0rpx;" wx:elif="{{templateId === 6}}">
+        <templatesix :syncData.sync="cardInfo" :isMyself.sync="isMyself"></templatesix>
+      </view>
+      <view style="margin-top:0rpx" wx:elif="{{templateId === 7}}">
+        <templateseven :syncData.sync="cardInfo" :isMyself.sync="isMyself"></templateseven>
+      </view>
+      <view style="margin-top:0rpx" wx:elif="{{templateId === 8}}">
+        <templateeight :syncData.sync="cardInfo" :isMyself.sync="isMyself"></templateeight>
+      </view>
+      <view style="margin-top:0rpx;" wx:if="{{templateId === 9}}">
+        <templatenine :syncData.sync="cardInfo" :isMyself.sync="isMyself"></templatenine>
+      </view>
+      <view style="margin-top:0rpx;" wx:elif="{{templateId === 10}}">
+        <templateten :syncData.sync="cardInfo" :isMyself.sync="isMyself"></templateten>
+      </view>
+      <view style="margin-top:0rpx" wx:elif="{{templateId === 11}}">
+        <templateeleven :syncData.sync="cardInfo" :isMyself.sync="isMyself"></templateeleven>
+      </view>
+
+      <!-- 浏览点赞 -->
+      <view class="card-history-vist">
+          <view>
+              <view class="vist-icon">
+                  <repeat for="{{cardInfo.user_icons}}" item="item" key="index">
+                      <image src="{{item}}" />
+                  </repeat>
+                  <text wx:if="{{cardInfo.view_num > 6}}">...</text>
+              </view>
+              <view class="">
+                  <text class="card-history-label">浏览</text>
+                  <text class="card-history-number">{{cardInfo.view_num}}</text>
+              </view>
+          </view>
+          <view @tap="dianZan">
+              <view class="like-icon">
+                  <image wx:if="{{cardInfo.is_zan === 0}}" src="{{img_url[0]}}" />
+                  <image wx:else src="{{img_url[1]}}" />
+              </view>
+              <view>
+                  <text class="card-history-label">点赞</text>
+                  <text class="card-history-number">{{cardInfo.zan_num}}</text>
+              </view>
+          </view>
+      </view>
+      <!-- 名片信息详情(左右滑) -->
+      <view>
+          <showCardDetail :syncData.sync="cardDetails"  :isView.sync="isView"></showCardDetail>
+      </view>
+      <!-- 分享和存入手机通讯录-->
+      <view class="more-give more-give-view">
+          <view><button class="btn btn-more-play" open-type="share">分享名片</button></view>
+          <view>
+            <button class="btn btn-give-card" @tap="saveToPhoneContact">存入手机通讯录</button>
+          </view>
+      </view>
+      <!-- 标签-->
+      <view wx:if="{{labels.length > 0}}">
+          <view class="pt-22">
+              <view class="vertical-bar"></view>
+              <view class="title-text">印象标签</view>
+              <view class="labelList">
+                <block wx:for="{{labels}}" wx:key="referLabels">
+                  <view class="label" wx:if="{{item.is_refer === '1'}}">
+                    <view class="labelText" style="margin-right:20rpx;">{{item.label_name}}<text style="display:inline-block;position:absolute;top:8rpx;margin-left:14rpx;width:4rpx;height:26rpx;opacity:0.7;background:#e75152;"></text></view>                    
+                    <view><image wx:if="{{res_url}}" src="{{res_url}}/dc_card_zan.png"/></view>
+                  </view>
+                </block>
+              </view>
+          </view>
+      </view>
+      <!-- 推荐商品-->
+      <view>
+          <view  class="pt-22" wx:if="{{recommendOfferList.length > 0}}">
+              <view class="vertical-bar"></view>
+              <view class="title-text">推荐商品</view>
+              <scroll-view scroll-x style="margin-top:14rpx;">
+                <view class="productList">
+                  <repeat for="{{recommendOfferList}}" key="id" index="index" item="item">
+                    <view class="panelBody" @tap="goShopOfferDetails('{{index}}')">
+                        <view class="productImg">
+                            <image class="product" src="{{item.offerImgs[0].img_url}}" mode="aspectFill"/>
+                        </view>
+                        <view class="descript">
+                            <view class="c-323232 font-size-26 words-break">{{item.offer_name}}</view>
+                            <view class="font-size-26" style="color:#ff3a00"><text class="font-size-18">￥</text>{{item.offer_price}}</view>
+                        </view>
+                    </view>
+                  </repeat>
+                </view>
+              </scroll-view>
+          </view>
+      </view>
+      <!-- 我的个人介绍-->
+      <view>
+          <view class="pt-22" wx:if="{{cardInfo.signature}}">
+              <view class="vertical-bar"></view>
+              <view class="title-text">我的个人介绍</view>
+              <view class="weui-flex" style="margin:0 20rpx;flex-wrap:wrap;font-size:24rpx;color:#646464;padding:8rpx 20rpx 0 30rpx;line-height:32rpx;">
+                {{cardInfo.signature}}
+              </view>
+          </view>
+      </view>
+      <!-- 我的音屏-->
+      <view>
+            <view style="padding-top:18rpx;" wx:if="{{record.url}}">
+              <view class="vertical-bar"></view>
+              <view class="title-text">我的音频</view>
+              <view class="weui-flex bord bord-radius box-shadow pd-all" style="height:64rpx;margin:16rpx 36rpx 0;padding-left:36rpx;" wx:if="{{record.url != null}}">
+              <view class="ta-center" @tap="play">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_me_voice.png" class="v-middle" style="width:40rpx;height:40rpx"/>
+              </view>
+              <view class="weui-flex__item ta-left font-size-24 c-909090">
+                  <view class="weui-flex">
+                      <view class="weui-flex__item">
+                          <view style="position:relative;padding-left:48rpx;padding-right:40rpx">
+                              <view style="position:absolute;top:-64rpx;left:38rpx;">我的语音介绍</view>
+                              <view class="record-slider" style="position:relative;top:-8rpx;">
+                                  <view class="record-slider-line">
+                                      <view style="width: {{record.progress}}%;"  class="record-slider-line-track"></view>
+                                      <view style="left: {{record.progress}}%;" class="record-slider-handler"></view>
+                                      <view style="left: {{record.progress}}%;" class="record-slider-handler2"></view>
+                                  </view>
+                              </view>
+                              <view class="weui-flex font-size-18" style="width:100%;margin-top:0rpx;margin-left:-8rpx;">
+                                  <view>{{record.currentProgress_m_s}}</view>
+                                  <view class="weui-flex__item ta-right">{{record.progress_m_s}}</view>
+                              </view>
+                          </view>
+                      </view>
+                  </view>
+                </view>
+            </view>
+          </view>
+        </view>
+      <!-- 我的视频-->
+      <view>
+        <view class="pt-22" wx:if="{{video.source}}">
+          <view class="vertical-bar"></view>
+          <view class="title-text">我的视频</view>
+          <view class="upload-cover" wx:if="{{video.source && !show}}"  @tap="playVideo" style="height:240px">
+            <image wx:if="{{res_url}}" style="height:100rpx;width:100rpx;position:absolute;margin-top:200rpx;left:45%" src="{{res_url}}/dc_card_play_b.png"/>
+            <image class="video-cover" wx:if="{{video.cover}}" src="{{video.cover}}" style="width:680rpx;border-radius:10rpx"/>
+          </view>
+          <video wx:if="{{show}}" id="perview" src="{{video.source}}" style="margin: 20rpx 70rpx 0" bindended="playVideoEnd"></video>
+        </view>
+      </view>     
+      <!-- 我的照片-->
+      <view>
+          <view class="pt-22" wx:if="{{images.length > 0}}">
+              <view class="vertical-bar"></view>
+              <view class="title-text">我的照片</view>
+              <view style="margin-top:22rpx;padding:0 36rpx;">
+                  <block wx:for="{{images}}" wx:key="referLabels">
+                        <image src="{{item.url}}" class="bord-radius" style="width:100%;border-radius:20rpx;" mode="widthFix"/>
+                  </block>
+              </view>
+          </view>
+      </view>
+      <!-- 我的文件夹 -->
+      <view class="{{fileList.length === 0 ? 'pt-40' : 'pt-22'}} file-part" wx:if="{{fileList.length > 0}}">
+          <view class="vertical-bar"></view>
+          <view class="title-text">我的文件夹</view>
+          <repeat for="{{fileList}}" index="index" key="index" item="file" wx:if="{{fileList.length > 0}}">
+            <view class="file-main">
+              <view class="file-head" @tap="file('{{index}}')">
+                <view class="font-size-30 c-909090 ellipse">{{file.dirName}}</view>
+                <image src="/assets/images/card/lock.png" class="lock" wx:if="{{file.dirPassword && !file.fileListShow}}"/>
+                <image src="/assets/images/card/arrow_down.png" wx:if="{{!file.fileListShow}}"/>
+                <image src="/assets/images/card/arrow_up_red.png" wx:if="{{file.fileListShow}}"/>
+              </view>
+              <view class="file-list" wx:if="{{file.fileListShow && docList.length > 0}}">
+                <repeat for="{{docList}}" index="index" key="index" item="item">
+                  <view class="file" @tap="viewFile('{{item.fileUrl}}')">
+                    <view class="font-size-30 c-909090 ellipse">{{item.fileName}}</view>
+                    <image src="/assets/images/card/eye_red.png" class="eye"/>
+                    <image src="/assets/images/card/download_red.png" class="download" catchtap="downLoad"/>
+                  </view>
+                </repeat>
+                <view class="font-size-24 c-909090 ta-center file-more" wx:if="{{haveNextPage}}" @tap="fileMore('{{file.id}}')">加载更多</view>
+                <view class="font-size-24 c-909090 ta-center file-more" wx:if="{{!haveNextPage}}">已经没有更多了</view>
+              </view>
+              <view class="font-size-30 c-909090 ta-center file-empty" wx:if="{{file.fileListShow && docList.length === 0}}">暂无内容</view>
+            </view>
+          </repeat>
+      </view>
+      <!-- 文件夹口令弹窗 -->
+      <view class="mask-black" wx:if="{{passwordMaskShow}}" @tap="passwordMaskCancel"></view>
+      <view class="mask-password" wx:if="{{passwordMaskShow}}">
+        <view class="font-size-30 c-909090 ta-center mask-title ellipse">{{selectFile.dirName}}</view>
+        <view class="font-size-36 c-323232 ta-center password-text">输入口令</view>
+        <view class="font-size-24 c-909090 ta-center">没有密码？请联系我的主人吧！</view>
+        <form bindsubmit="passwordMaskSure">
+          <view class="password flex" @tap="setFocus">
+            <view>{{password[0]}}</view>
+            <view>{{password[1]}}</view>
+            <view>{{password[2]}}</view>
+            <view>{{password[3]}}</view>
+            <view>{{password[4]}}</view>
+            <view>{{password[5]}}</view>
+          </view>
+          <input type="number" maxlength="6" focus="{{isFocus}}" @input="passwordInput"  @blur="passwordBlur" style="height:0;min-height:0;opacity:0;"/>
+          <view class="mask-foot flex">
+            <button class="font-size-36 c-323232 ta-center cancel" @tap="passwordMaskCancel">取消</button>
+            <button class="font-size-36 c-3DB8C8 ta-center" formType="submit">确定</button>
+          </view>
+        </form>
+      </view>
+      <view class="foot">
+        <button class="save font-size-36 c-ffffff save-btn" @tap="gotoEditCardMenu">编辑我的名片</button>
+      </view>
+    </view>
+    <!-- 底部内容 -->
+    <view class="foot-copyright">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_bottom_msg.png"/>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import CardTypeOne from '../../components/cardDetail/cardTypeOne/cardTypeOne'
+  import CardTypeTwo from '../../components/cardDetail/cardTypeTwo/cardTypeTwo'
+  import CardTypeThree from '../../components/cardDetail/cardTypeThree/cardTypeThree'
+  import CardTypeFour from '../../components/cardDetail/cardTypeFour/cardTypeFour'
+  import CardTypeFive from '../../components/cardDetail/cardTypeFive/cardTypeFive'
+  import CardTypeSix from '../../components/cardDetail/cardTypeSix/cardTypeSix'
+  import CardTypeSeven from '../../components/cardDetail/cardTypeSeven/cardTypeSeven'
+  import CardTypeEight from '../../components/cardDetail/cardTypeEight/cardTypeEight'
+  import CardTypeNine from '../../components/cardDetail/cardTypeNine/cardTypeNine'
+  import CardTypeTen from '../../components/cardDetail/cardTypeTen/cardTypeTen'
+  import CardTypeEleven from '../../components/cardDetail/cardTypeEleven/cardTypeEleven'
+  import showCardDetail from '../../components/cardDetail/showCardDetail/showCardDetail'
+  import { cardManagerApi, cardApi, resumeApi } from '@/api'
+  import { common } from '@/assets/js/common'
+  import { cardActionMap } from '@/utils'
+  import {G_RES_URL} from '@/config'
+  export default class previewCard extends wepy.page {
+    config = {
+      navigationBarTitleText: '预览名片'
+    }
+    components = {
+      templateone: CardTypeOne,
+      templatetwo: CardTypeTwo,
+      templatethree: CardTypeThree,
+      templatefour: CardTypeFour,
+      templatefive: CardTypeFive,
+      templatesix: CardTypeSix,
+      templateseven: CardTypeSeven,
+      templateeight: CardTypeEight,
+      templatenine: CardTypeNine,
+      templateten: CardTypeTen,
+      templateeleven: CardTypeEleven,
+      showCardDetail: showCardDetail
+    }
+    data = {
+      playAudio: true,
+      res_url: G_RES_URL,
+      img_url: [G_RES_URL + '/dc_card_collection_icon.png', G_RES_URL + '/dc_card_collection_icon_pre_blue.png'],
+      salerId: '',
+      labels: [],
+      images: [],
+      record: {},
+      cardInfo: {},
+      cardDetails: [],
+      video: {},
+      show: false,
+      loading: false,
+      templateId: null,
+      swiperCom: {
+        autoplay: true,
+        interval: 6000,
+        circular: false,
+        indActiveColor: '#666',
+        indColor: '#ccc'
+      },
+      recomList: [],
+      discount: 1,
+      discountShow: 10,
+      isView: 1,
+      recommendOfferList: [],
+      isPreview: 1,
+      fileList: [],
+      docList: [],
+      filePage: {
+        page_size: 10,
+        page_num: 1
+      },
+      haveNextPage: null,
+      passwordMaskShow: false,
+      selectFile: null,
+      isFocus: false,
+      password: null
+    }
+    onLoad(option) {
+      this.init(option)
+      this.getFileDir()
+    }
+
+    init(option) {
+      this.salerId = option.employee_id
+      this.getMoreInfo()
+    }
+    getMoreInfo() {
+      this.cardInfo = this.$parent.getStaffInfo()
+      this.salerId = this.cardInfo.staffId
+      this.templateId = this.cardInfo.temlate_id
+      this.cardDetail(this.cardInfo)
+
+      resumeApi.resume(this.salerId, 'null').then(res => {
+        for (let i = 0; i < res.labels.length; i++) {
+          if (res.labels[i].is_refer === '1') {
+            this.labels.push(res.labels[i])
+          }
+        }
+        this.images = res.images
+        this.audio = res.audio
+        this.audioLoad(res.audio)
+        this.$apply()
+      })
+      cardManagerApi.getVideo({ staffId: this.salerId }).then(res => {
+        this.video.source = res.url
+        this.video.cover = res.cover_imageurl
+        this.video.duration = res.duration
+        this.video.size = res.size
+        this.$apply()
+      })
+      // 获取推荐商品
+      cardApi.getShopType(this.cardInfo.enterprise_id).then(res => {
+        if (res === 2) {
+          cardManagerApi.getOfferListByStatus(this.cardInfo.enterprise_id, 1, '*').then(res => {
+            let offerList = res
+            let _recommendOfferList = []
+            cardManagerApi.getRecommendOfferList(this.cardInfo.staffId, this.cardInfo.enterprise_id).then(res => {
+              let recList = res.data_list
+              for (let i = 0; i < offerList.length; i++) {
+                for (let j = 0; j < recList.length; j++) {
+                  if (offerList[i].id === recList[j].id) {
+                    _recommendOfferList.push(offerList[i])
+                  }
+                }
+              }
+              this.recommendOfferList = _recommendOfferList
+              this.$apply()
+            })
+          })
+        }
+      })
+    }
+    audioLoad(audio) {
+      this.record = {
+        id: null, // 录音ID
+        url: null, // 路径
+        temppath: '', // 录制时未确认前的临时存放路径
+        success: false, // 是否录制完成
+        duration: 0, // 总时长
+        progress: 0, // 进度条数值
+        currentProgress_m_s: '00:00', // 当前播放进度显示数值
+        progress_m_s: '00:00' // 总进度显示数值
+      }
+      if (audio !== null) {
+        this.record.id = audio.id
+        this.record.url = audio.url
+        this.record.duration = audio.duration
+        this.record.progress_m_s =
+          audio.duration > 0 ? common.getMMSS(audio.duration * 1000) : '00:00'
+      } else {
+        this.record.id = null
+      }
+    }
+
+    cardDetail(staffInfo) {
+      this.cardDetails = []
+      // 电话
+      if (staffInfo.phone) {
+        let phone = {
+          icon: this.res_url + '/dc_card_phone_b.png',
+          title: '呼叫',
+          connect: staffInfo.phone,
+          type: 1
+        }
+        this.cardDetails.push(phone)
+      }
+      // 加微信
+      if (staffInfo.weixin) {
+        let weixin = {
+          icon:
+            this.res_url + '/dc_card_wechat_b.png',
+          title: '加微信',
+          connect: staffInfo.weixin,
+          type: 2
+        }
+        this.cardDetails.push(weixin)
+      }
+      // 邮箱
+      if (staffInfo.mail) {
+        let mail = {
+          icon:
+            this.res_url + '/dc_card_email_b.png',
+          title: '复制邮箱',
+          connect: staffInfo.mail,
+          type: 2
+        }
+        this.cardDetails.push(mail)
+      }
+      // 地址
+      if (staffInfo.address) {
+        let address = {
+          icon:
+            this.res_url + '/dc_card_address_b.png',
+          title: '复制地址',
+          connect: staffInfo.address,
+          type: 2
+        }
+        this.cardDetails.push(address)
+      }
+    }
+    methods = {
+      play(e) {
+        let that = this
+        if (that.playAudio) {
+          that.playAudio = false
+          let type = e.currentTarget.dataset.type
+          let audio = wepy.createInnerAudioContext()
+          audio.src = type === 'temp' ? that.record.temppath : that.record.url
+          audio.play()
+          if (type !== 'temp') {
+            let intervalNumber = setInterval(() => {
+              let currentmm = Math.ceil(audio.currentTime)
+              that.record.progress = (currentmm / that.record.duration) * 100
+              that.record.currentProgress_m_s = common.getMMSS(currentmm * 1000)
+              that.$apply()
+              if (currentmm >= that.record.duration) {
+                clearInterval(intervalNumber)
+                that.record.progress = 0
+                that.record.currentProgress_m_s = '00:00'
+                that.$apply()
+                that.playAudio = true
+              }
+            }, 1000)
+          }
+        }
+      },
+      // 进入商品详细详细页
+      goShopOfferDetails(index) {
+        index = parseInt(index)
+        this.$navigate(`/pages/product/recommendOffer`)
+      },
+      // 跳到编辑名片菜单主页
+      gotoEditCardMenu() {
+        wepy.redirectTo({
+          url: '/pages/card/subPackage/pages/editCardMenu'
+        })
+      },
+      // 显示文件列表
+      file(index) {
+        this.selectFile = this.fileList[index]
+        this.selectFile.index = index
+        for (let key in this.fileList) {
+          if (index !== Number(key)) {
+            this.fileList[key].fileListShow = false
+          }
+        }
+        if (this.selectFile.dirPassword && !this.fileList[index].fileListShow) {
+          this.password = null
+          this.passwordMaskShow = true
+        } else {
+          this.fileList[index].fileListShow = !this.fileList[index].fileListShow
+          this.docList = []
+          this.filePage.page_num = 1
+          this.getFileList(this.selectFile.id)
+        }
+      },
+      // 加载更多文件列表
+      fileMore(dirId) {
+        this.filePage.page_num += 1
+        this.getFileList(dirId)
+      },
+      // 设置焦点
+      setFocus() {
+        this.isFocus = true
+      },
+      // 监听密码输入
+      passwordInput(e) {
+        this.password = e.detail.value
+        if (this.password.length === 6) {
+          if (this.password !== this.selectFile.dirPassword) {
+            common.tip('输入的文件口令不对', 'none')
+          }
+        }
+      },
+      // 监听密码输入框失去焦点
+      passwordBlur() {
+        this.isFocus = false
+      },
+      // 点击弹窗取消按钮
+      passwordMaskCancel() {
+        this.passwordMaskShow = false
+      },
+      // 点击弹窗确定按钮
+      passwordMaskSure() {
+        let selectIndex = this.selectFile.index
+        if (!this.password) {
+          common.tip('请输入的文件口令', 'none')
+        } else if (this.password !== this.selectFile.dirPassword) {
+          common.tip('输入的文件口令不对', 'none')
+        } else {
+          this.passwordMaskShow = false
+          this.fileList[selectIndex].fileListShow = !this.fileList[selectIndex].fileListShow
+          this.getFileList(this.selectFile.id)
+        }
+      },
+      // 预览文件
+      viewFile(url) {
+        wepy.downloadFile({
+          url: url
+        }).then(res => {
+          let filePath = res.tempFilePath
+          wepy.openDocument({
+            filePath,
+            success(res) {
+              console.log('打开文档成功')
+            },
+            fail(res) {
+              console.log('fail', res)
+            }
+          })
+        })
+      },
+      // 下载文件
+      downLoad() {
+        wepy.showModal({
+          content: '请跟我的主人联系吧！'
+        })
+      }
+    }
+    playVideo() {
+      this.show = true
+      let t = wepy.createVideoContext('perview')
+      t.play()
+      this.$apply()
+    }
+    playVideoEnd() {
+      this.show = false
+      this.$apply()
+    }
+    // 写入手机系统通讯录
+    saveToPhoneContact() {
+      wepy.addPhoneContact({
+        firstName: this.cardInfo.name,
+        mobilePhoneNumber: this.cardInfo.phone,
+        weChatNumber: this.cardInfo.weixin,
+        title: this.cardInfo.station,
+        workPhoneNumber: this.cardInfo.phone,
+        email: this.cardInfo.mail,
+        workAddressStreet: this.cardInfo.address
+      })
+    }
+    // 分享名片
+    onShareAppMessage(ops) {
+      let openid = this.$parent.getNowOpenid()
+      let path = `/pages/card/cardView?employee_id=${this.salerId}&from_openid=${openid}&enterprise_id=${this.cardInfo.enterprise_id}&department_id=${this.cardInfo.department_id}`
+      let title = ``
+      if (this.cardInfo.share_setup) {
+        title = `${this.cardInfo.share_setup}`
+      } else {
+        title = `我是${this.cardInfo.name},这是我的名片,请惠存`
+      }
+      return {
+        title: title,
+        path: path,
+        // imageUrl: imageUrl,
+        success: res => {
+          // 转发成功
+          this.recordClickAction(cardActionMap.forwardCard)
+          this.cardInfo.zhuan_num++
+          this.$apply()
+        },
+        fail: res => {
+          // 转发失败
+        }
+      }
+    }
+
+    dianZan() {
+      if (this.cardInfo.is_zan === 0) {
+        this.recordClickAction(cardActionMap.praiseCard)
+        this.cardInfo.is_zan = 1
+        this.cardInfo.zan_num++
+        common.tip('点赞成功', 'none')
+      } else {
+        this.recordClickAction(cardActionMap.cancelPraiseCard)
+        this.cardInfo.is_zan = 0
+        this.cardInfo.zan_num--
+        common.tip('取消点赞', 'none')
+      }
+    }
+
+    // 点击行为
+    recordClickAction(action, callbackSuc, callbackFail) {
+      let params = {
+        action_code: action,
+        employee_id: this.salerId
+      }
+      this.$parent.recordClickAction(params, callbackSuc, callbackFail)
+    }
+
+    // 获取文件目录
+    getFileDir() {
+      cardManagerApi.getFileDir(this.cardInfo.enterprise_id).then(res => {
+        this.fileList = res
+        for (let key in this.fileList) {
+          this.fileList[key].fileListShow = false
+        }
+        this.$apply()
+      })
+    }
+    // 获取文件列表
+    getFileList(dirId) {
+      cardManagerApi.getFileList(dirId, this.filePage).then(res => {
+        this.docList = this.docList.concat(res.data_list)
+        this.haveNextPage = res.haveNextPage
+        this.$apply()
+      })
+    }
+  }
+</script>

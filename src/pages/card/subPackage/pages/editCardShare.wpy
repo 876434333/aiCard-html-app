@@ -1,0 +1,118 @@
+<style>
+.btm-line {
+  border-bottom: 1px solid #ddd;
+}
+.share-title {
+  font-size: 30rpx;
+  color: #323232;
+}
+</style>
+<template>
+    <view class="mainbody">
+        <view class="weui-flex">
+            <view class="weui-flex__item share-title">分享文案内容编辑</view>
+            <view class="weui-flex__item font-size-28 c-909090 ta-right">{{introTextNum}}/50</view>
+        </view>
+        <textarea class="font-size-28 btm-line mt-30" placeholder="你好，我是XX的XXX，这是我的电子名片，请惠存~" value="{{setup.content}}" maxlength='50' bindinput="introTextInput" style="width:100%;height:75px;" wx:if="{{!show}}"/>
+        <view class="font-size-28 btm-line mt-30" wx:if="{{show}}">{{setup.content === null ? '你好，我是XX的XXX，这是我的电子名片，请惠存~' : setup.content}}</view>
+        <view class="weui-flex mt-20">
+            <view class="weui-flex__item font-size-28 c-3DB8C8" @tap="restore">还原默认</view>
+            <view class="weui-flex__item font-size-28 c-3DB8C8 ta-right" @tap="showTips">不会写简介?戳这里</view>
+        </view>
+        <view class="weui-flex mt-40">
+            <view class="weui-flex__item share-title">效果展示</view>
+        </view>
+        <view style="height: 672rpx;background-color: #F6F6F6;margin-top:40rpx;">
+            <image wx:if="{{res_url}}" src="{{res_url}}/dc_card_demo1.jpeg" style="width:100%;height:100%;"/>
+        </view>
+        <button class="weui-btn submit-btn" @tap="save">保存</button>
+        <modal @copyShareSetup.user="copyShareSetup"></modal>
+    </view>
+</template>
+<script>
+import wepy from 'wepy'
+import Modal from '@/components/modal/modal'
+import { cardManagerApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class EditCardShare extends wepy.page {
+  data = {
+    res_url: G_RES_URL,
+    introTextNum: 0,
+    setup: {
+      content: '',
+      staffId: ''
+    },
+    show: false
+  }
+  config = {
+    navigationBarTitleText: '名片分享编辑'
+  }
+  components = {
+    modal: Modal
+  }
+  onLoad() {
+    let shareSetup = this.$parent.globalData.staffInfo.share_setup
+    if (shareSetup === null) {
+      this.setup.content = `你好，我是${
+        this.$parent.globalData.staffInfo.enterprise_name
+      }的${this.$parent.globalData.staffInfo.name}，这是我的电子名片，请惠存~`
+    } else {
+      this.setup.content = shareSetup
+    }
+    this.introTextNum = this.setup.content.length
+  }
+  methods = {
+    showTips() {
+      this.$invoke('modal', 'openDialog', {
+        msg: 'card-share',
+        enterprise_name: this.$parent.globalData.staffInfo.enterprise_name,
+        name: this.$parent.globalData.staffInfo.name
+      })
+      this.show = true
+    },
+    introTextInput(e) {
+      this.introTextNum = e.detail.cursor
+      this.setup.content = e.detail.value
+    },
+    // 还原默认设置
+    restore() {
+      this.setup.content = `你好，我是${
+        this.$parent.globalData.staffInfo.enterprise_name
+      }的${this.$parent.globalData.staffInfo.name}，这是我的电子名片，请惠存~`
+      this.$apply()
+    },
+    save() {
+      wepy.showLoading({
+        title: '正在保存...'
+      })
+      let param = this.setup
+      param['staffId'] = this.$parent.globalData.staffInfo.staffId
+      cardManagerApi.updShareSetup(param).then(rs => {
+        this.$parent.globalData.staffInfo.share_setup = this.setup.content
+        wepy.hideLoading()
+
+        wepy.showToast({
+          title: '保存成功',
+          icon: 'success',
+          duration: 1000
+        })
+        setTimeout(() => {
+          let pages = this.getCurrentPages()
+          for (let i = 0; i < pages.length; i++) {
+            if (pages[i].route.indexOf('editCardMenu') > -1) {
+              wepy.navigateBack({ delta: i })
+              break
+            }
+          }
+        }, 1000)
+      })
+    },
+    copyShareSetup(content) {
+      this.setup.content = content
+      this.introTextNum = content.length
+      this.show = false
+      this.$apply()
+    }
+  }
+}
+</script>

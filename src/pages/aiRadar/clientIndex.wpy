@@ -1,0 +1,150 @@
+<style lang="scss">
+  $main_color: #e75152;
+  .c-3DB8C8{
+    color:$main_color!important;
+  }
+  .wrap-main {
+    overflow: hidden;
+  }
+  .client-mask {
+    position: fixed;
+    width: 100%;
+    z-index:10001;
+    overflow: hidden;
+    background:#ffffff;
+    .client-title {
+      position: relative;
+      padding-top:24rpx;
+      height:68rpx;
+      line-height: auto;
+      cover-image {
+        position: absolute;
+        top: 34rpx;
+        right: 34%;
+        width: 24rpx;
+        height: 16rpx;
+      }
+    }
+    .client-box {
+      margin-top:28rpx;
+      width:100%;
+    }
+    .client-main {
+      display:-webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      padding:0 28rpx 28rpx;
+      justify-content: space-between;
+      cover-view {
+        width: 208rpx;
+        height: 76rpx;
+        line-height: 76rpx;
+        border-radius: 5rpx;
+        border:1px solid #e1e1e1;
+      }
+      .time-check {
+        color: #ffffff!important;
+        background: $main_color;
+      }
+    }
+  }
+  .mask-black{
+    top:330rpx;
+    z-index:10000;
+  }
+</style>
+<template>
+  <!-- 雷达 -->
+  <view class="wrap-main">
+    <cover-view class="cardList-order-mask client-mask">
+      <cover-view class="client-title" @tap="clientChoose">
+        <cover-view class="font-size-30 c-323232 ta-center">{{showTitle}}</cover-view>
+        <cover-image src="./assets/images/arrow_black.png" class="cardList-order-arrow"/>
+      </cover-view>
+      <cover-view class="client-box" wx:if="{{clientMask}}">
+        <cover-view class="client-main">
+          <cover-view class="font-size-24 c-909090 ta-center {{isCheck === 4 ? 'time-check' : ''}}" @tap="getRequestParam(4,'预计成交率')">预计成交率</cover-view>
+          <cover-view class="font-size-24 c-909090 ta-center {{isCheck === 5 ? 'time-check' : ''}}" @tap="getRequestParam(5,'最后跟进时间')">最后跟进时间</cover-view>
+          <cover-view class="font-size-24 c-909090 ta-center {{isCheck === 6 ? 'time-check' : ''}}" @tap="getRequestParam(6,'最后活动时间')">最后活动时间</cover-view>
+        </cover-view>
+        <cover-view class="client-main">
+          <cover-view class="font-size-24 c-909090 ta-center {{isCheck === 3 ? 'time-check' : ''}}" @tap="getRequestParam(3,'工作交接')">工作交接</cover-view>
+          <cover-view class="font-size-24 c-909090 ta-center {{isCheck === 1 ? 'time-check' : ''}}" @tap="getRequestParam(1,'扫码')">扫码</cover-view>
+          <cover-view class="font-size-24 c-909090 ta-center {{isCheck === 2 ? 'time-check' : ''}}" @tap="getRequestParam(2,'转发')">转发</cover-view>
+        </cover-view>
+      </cover-view>
+    </cover-view>
+    <cover-view class="mask-black" wx:if="{{clientMask}}"></cover-view>
+    <scroll-view style="margin-top:92rpx;height:{{scrollHeight}}rpx" scroll-y="true" bindscrolltolower="onReachBottom">
+      <!-- 客户 -->
+      <client wx:if="{{clientChoose}}"></client>
+    </scroll-view>  
+    <radarTabar :tabBar.sync="tabBarData"></radarTabar>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import client from './components/client'
+  import radarTabar from '../../components/radartabBar/tabBarTemplate'
+  import { tabBarJs } from '../../components/radartabBar/tabBarJs'
+  import { managerChatMixin } from '@/mixins'
+  export default class clientIndex extends wepy.page {
+    // 相当于page.json
+    config = {
+      navigationBarTitleText: '客户',
+      navigationBarBackgroundColor: '#e75152'
+    }
+    mixins = [managerChatMixin];
+    data = {
+      tabBarData: {},
+      clientChoose: true,
+      clientMask: false,
+      number: '0',
+      showTitle: '最后活动时间',
+      isCheck: 6,
+      scrollHeight: 960
+    }
+    components = {
+      client: client,
+      radarTabar: radarTabar
+    }
+    onLoad() {
+      this.tabBarData = tabBarJs.selected(2, this)
+      this.setScrollHeight()
+      // 判断管名片是否登录IM，如果登录了，则不需要再次登录
+      let staffInfo = this.$parent.getStaffInfo()
+      let isLoginIm = this.$parent.getManagerIMLogin(staffInfo.staffId)
+      if (!isLoginIm) {
+        this.initChat(this)
+        this.$parent.setManagerIMLogin(staffInfo.staffId, true)
+      }
+    }
+    // 设置滚动高度
+    setScrollHeight() {
+      wepy.getSystemInfo().then(res => {
+        this.scrollHeight = (res.screenHeight - res.screenWidth / 750 * 394) * 2
+        this.$apply()
+      })
+    }
+    methods = {
+      // 选择客户
+      clientChoose() {
+        this.clientChoose = true
+        this.clientMask = true
+        this.$apply()
+      },
+      // 选择最后活动时间
+      getRequestParam(type, title) {
+        this.clientMask = false
+        this.isCheck = Number(type)
+        this.showTitle = title
+        this.$broadcast('client-getdatalist', this.isCheck)
+      }
+    }
+    // 加载更多
+    onReachBottom() {
+      this.$invoke('client', 'loadMoreData')
+    }
+  }
+</script>

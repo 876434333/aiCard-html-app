@@ -1,0 +1,42 @@
+<style lang="scss"> </style>
+<template name="pie">
+  <!-- 饼状图 -->
+  <canvas canvas-id="pieCanvas" class="echart-canvas" style="height:640rpx;"></canvas>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import echarts from './js/echarts.js'
+  export default class pie extends wepy.component {
+    props = {
+      pieData: {
+        type: Array,
+        default: null,
+        twoWay: true
+      }
+    }
+    data = {
+      pieChart: null
+    }
+    pie(e) {
+      var windowWidth = 320
+      try {
+        var res = wepy.getSystemInfoSync()
+        windowWidth = res.windowWidth
+      } catch (e) {
+        console.error('getSystemInfoSync failed!')
+      }
+      this.pieChart = new echarts({
+        animation: true,
+        canvasId: 'pieCanvas',
+        type: 'pie',
+        series: this.pieData,
+        width: windowWidth,
+        height: 300,
+        calculable: true,
+        dataLabel: true
+      })
+      this.$apply()
+    }
+  }
+</script>

@@ -1,0 +1,526 @@
+<style lang="scss">
+  $main_color: #ff7f02;
+  page {
+    padding-bottom:160rpx;
+  }
+  .panel{
+    border-radius: 10rpx;
+    position: relative;
+    .properties{
+      margin-left:20rpx;
+      margin-right:20rpx;
+      font-size:30rpx;position: relative;color:#323232;border-bottom: solid 1rpx #ddd;
+      padding-top:15rpx;
+      padding-bottom:15rpx;
+      input{
+        position:absolute;
+        right:0;
+        top:15rpx;
+        width:100%;
+        text-align:right;
+      }
+    }
+    .productImg{
+      margin:20rpx 20rpx 0 20rpx;
+      image{
+        width:100%;
+        height:600rpx;
+        border-radius: 10rpx;
+      }
+      .upload{
+        background: #dddddd;
+        text-align:center;
+        color:#909090;
+        font-size:30rpx;
+        .main{
+          padding:200rpx 200rpx;
+        }
+        image{
+          width: 100rpx;
+          height:100rpx;
+        }
+      }
+    }
+    .productImg2{
+      margin:20rpx 20rpx;
+      image{
+        width:100%;
+        border-radius: 10rpx;
+      }
+      .upload{
+        background: #dddddd;
+        text-align:center;
+        color:#909090;
+        .main{
+          padding:200rpx 200rpx;
+        }
+        image{
+          width: 66rpx;
+          height:66rpx;
+        }
+      }
+    }
+    .descript{
+      padding:0 20rpx;color:#323232;font-size:24rpx;position: relative;
+      text{
+        position: absolute;right:20rpx;top:0;color:#909090;
+      }
+      textarea{
+        height:100rpx;width:100%;
+      }
+      image{
+        position: absolute;left:20rpx;top:6rpx;height:28rpx;width:24rpx;
+      }
+      .descript{
+        padding-left:30rpx;
+      }
+    }
+  }
+  .foot{
+    position: fixed;
+    bottom:0;
+    background:#fff;
+    border-top: solid 1rpx #e8e8e8;
+    width:100%;
+    z-index: 999999;
+    .button {
+      margin: 20rpx;
+      height:100rpx;
+      line-height:100rpx;
+      text-align:center;
+    }
+  }
+  .foot2{
+    display:inline-flex;
+    display:-webkit-flex;
+    display:-webkit-inline-flex;
+    text-align:center;
+    height:110rpx;
+    .share{
+      padding:0;
+      border:0;
+      line-height:auto;
+      image{
+        width:34rpx;
+        height:40rpx;
+      }
+      view {
+        position:relative;
+        top:-28rpx;
+      }
+    }
+    .button-hover {
+      color: #323232;
+    }
+    .btn:nth-child(1),.btn:nth-child(2),.btn:nth-child(3){
+      width:20%;border-right:solid 1rpx #e8e8e8;font-size:26rpx;vertical-align:middle;padding-top:10rpx;
+      view{
+        color:#323232;
+      }
+    }
+    .btn:nth-child(4),.btn:nth-child(5){
+      width:30%;font-size:26rpx;height:110rpx;line-height:110rpx;
+    }
+    .home {
+      image{
+        width:47rpx;height:44rpx;
+      }
+      view {
+        margin-top:-4rpx;
+      }
+    }
+    .consult image{
+      width:40rpx;height:40rpx;
+    }
+     .btn:nth-child(3) image{
+      width:40rpx;height:40rpx;
+    }
+    .btn:nth-child(5){
+      background: $main_color;
+      color:#fff;
+    }
+  }
+  .red{
+    color:red;
+  }
+  .remove{
+    position: absolute;
+    top:20rpx;
+    right:20rpx;
+    width:44rpx !important;
+    height:44rpx !important;
+  }
+  .properties {
+    position: relative;
+    .price {
+      position: absolute;
+      top:15rpx;
+      right: 0;
+      z-index: 999;
+      image {
+        margin-right: 4rpx;
+        width: 13rpx;
+        height: 17rpx;
+      }
+      text {
+        color:#ff3a00;
+      }
+    }
+  }
+</style>
+
+<template>
+<view class="wrap">
+    <view class="panel">
+        <view class="properties">
+            <text class="red" wx:if="{{operate !== 'view'}}">*</text>名称
+            <input class="font-size-30" placeholder="请输入名称" @input="input" maxlength="12" data-name="offer_name" value="{{offer.offer_name}}" wx:if="{{operate !== 'view'}}"/>
+            <view class="price" wx:if="{{operate == 'view'}}">
+              <text class="font-size-30 c-909090">{{offer.offer_name}}</text>
+            </view>
+        </view>
+        <view class="properties">
+            <text class="red" wx:if="{{operate !== 'view'}}">*</text>价格
+            <input class="font-size-30" placeholder="请输入价格" @input="input" data-name="offer_price" value="{{offer.offer_price}}" wx:if="{{operate !== 'view'}}" maxlength='8'/>
+            <view class="price" wx:if="{{operate == 'view'}}">
+              <image src="../../assets/images/product/money.png" />
+              <text class="font-size-36">{{offer.offer_price}}</text>
+            </view>
+        </view>
+        <view class="properties" wx:if="{{operate !== 'view'}}" @tap="goCategory">
+            <text class="red" wx:if="{{operate !== 'view'}}" style="padding-left:10rpx"></text>分类
+            <!-- <input class="font-size-28" placeholder="请选择分类"/> -->
+            <view class="price">
+              <text class="font-size-30 c-323232" wx:if="{{offer.category_name}}">{{offer.category_name}}</text>
+              <text class="font-size-30 c-909090" wx:else>请选择商品分类</text>
+            </view>
+        </view>
+        <view class="properties" wx:if="{{operate !== 'view'}}">
+            <text class="red" wx:if="{{operate !== 'view'}}">*</text>库存
+            <input class="font-size-30" placeholder="请输入库存" type="number" @input="input" data-name="offer_leave" value="{{offer.offer_leave}}" maxlength='8'/>
+        </view>
+        <view class="productImg">
+            <image src="{{offer.coverImg}}" wx:if="{{offer.coverImg && operate === 'view'}}" mode="widthFix"/>
+            <image src="{{offer.coverImg}}" wx:if="{{offer.coverImg && operate !== 'view'}}" mode="widthFix" @tap="chooseImage('1')" />
+            <view class="upload" wx:if="{{operate === 'add' && !offer.coverImg}}" @tap="chooseImage('1')">
+              <view class="main">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_upload.png"/>
+                <view>点击上传封面</view>
+              </view>
+            </view>
+        </view>
+        <view class="descript">
+            <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_descript.png"/>
+            <view class="descript">描述</view>
+            <text wx:if="{{operate !== 'view'}}">{{descriptLen}}/{{descriptMaxLen}}</text>
+            <textarea wx:if="{{operate !== 'view'}}" class="font-size-24" placeholder="请输入商品描述"  @input="input" data-name="descript" value="{{offer.descript}}" maxlength="1000"/>
+            <view class="font-size-24" wx:else>{{offer.descript === null ? '暂无描述……':offer.descript}}</view>
+        </view>
+        <view class="properties ta-center">
+            详情介绍
+        </view>
+        <view class="productImg2">
+            <repeat for="{{offer.offerImgs}}" key="id" index="index" item="item">
+              <view style="position: relative;" wx:if="{{item.type === '2'}}">
+                <image src="{{item.img_url}}" mode="widthFix"/>
+                <image wx:if="{{operate !== 'view'}}" class="remove" src="{{res_url}}/dc_product_img_remove2.png" @tap="deleteImg('{{index}}')"/>
+              </view>
+            </repeat>
+            <view class="upload" wx:if="{{operate !== 'view' && imgCount < 15}}" @tap="chooseImage('2')">
+              <view class="main">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_upload.png"/>
+                <view class="font-size-30 c-909090">点击上传图片</view>
+              </view>
+            </view>
+        </view>
+    </view>
+    <cover-view class="foot" wx:if="{{operate !== 'view' && save}}">
+      <cover-view class="bg-3DB8C8 c-ffffff bord-radius font-size-36 button" @tap="save">保存</cover-view>
+    </cover-view>
+    <view class="foot foot2 bord-top" wx:if="{{operate === 'view'}}">
+        <view class="btn home" wx:if="{{homeShow}}" @tap="goHome">
+            <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_home.png" />
+            <view>首页</view>
+        </view>
+        <view class="btn consult" @tap="consultProduct">
+            <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_zixun.png" />
+            <view>咨询</view>
+        </view>
+        <button open-type="share" plain="true" class="btn share">
+          <image class="share-img" src="/assets/images/product/share_gray.png" wx:if="{{res_url}}"/>
+          <view>分享</view>
+        </button>
+        <view class="btn" wx:if="{{!homeShow}}" @tap="goShopcard">
+            <image wx:if="{{res_url}}" src="/assets/images/product/shop_car.png" />
+            <view>购物车</view>
+        </view>
+        <view class="btn" @tap="addShopCart">加入购物车</view>
+        <view class="btn" @tap="buyNow">立即购买</view>
+    </view>
+</view>
+</template>
+<script>
+import wepy from 'wepy'
+import {cardManagerApi, shopCartApi} from '@/api'
+import {common} from '../../assets/js/common'
+import {cardActionMap} from '@/utils'
+import {
+  getPhoneNumberMixin,
+  onticeMsgNumberMixin,
+  saveFormidMixin
+} from '@/mixins/index.js'
+import {G_RES_URL} from '@/config'
+export default class shopOfferDetails extends wepy.page {
+  mixins = [onticeMsgNumberMixin, getPhoneNumberMixin, saveFormidMixin]
+  config = {
+    navigationBarTitleText: '商品详情'
+  }
+  data = {
+    res_url: G_RES_URL,
+    operate: null,
+    offer: {
+      offer_name: null,
+      offer_price: null,
+      offer_leave: null,
+      descript: null,
+      enterprise_id: null,
+      create_staff_id: null,
+      coverImg: null,
+      category_id: null,
+      category_name: null,
+      offerImgs: []
+    },
+    images: {},
+    imgCount: 0,
+    categoryName: '请选择分类',
+    openStorage: false,
+    descriptLen: 0,
+    descriptMaxLen: 100,
+    save: true,
+    homeShow: false,
+    departmentId: null
+  }
+  onLoad(option) {
+    let staffInfo = common.getStaffInfo(this)
+    this.departmentId = this.$parent.getStaffInfo().department_id
+    this.offer.create_staff_id = staffInfo.staffId
+    this.offer.enterprise_id = option.entId
+    if (option.operate === 'edit') {
+      wepy.setNavigationBarTitle({title: '商品编辑'})
+      this.offer = JSON.parse(option.offer)
+      this.offer.coverImg = this.offer.offerImgs[0].img_url
+      this.descriptLen = this.offer.descript === null ? 0 : this.offer.descript.length
+    } else if (option.operate === 'add') {
+      wepy.setNavigationBarTitle({title: '商品新增'})
+      if (option.categoryId !== '*') {
+        this.offer.category_name = option.categoryName
+      }
+      this.offer.category_id = option.categoryId
+      this.offer.offer_price = 1
+      this.offer.offer_leave = 1
+      this.$apply()
+    } else {
+      wepy.setNavigationBarTitle({title: '商品详情'})
+      wepy.setNavigationBarColor({frontColor: '#ffffff', backgroundColor: '#ff7f02'})
+      this.offer = JSON.parse(option.offer)
+      console.log(this.offer)
+      this.offer.coverImg = this.offer.offerImgs[0].img_url
+      common.clickActionOffer(this, cardActionMap.seeProductDetail, this.offer.id, this.offer.offer_name)
+    }
+    this.operate = option.operate
+    this.imgCount = this.getImgCount()
+    // 通过分享进来的
+    if (option.type === 'share') {
+      this.homeShow = true
+    }
+  }
+  getImgCount() {
+    let count = 0
+    let imgs = this.offer.offerImgs
+    for (let i = 0; i < imgs.length; i++) {
+      if (imgs[i].type === '2') {
+        count++
+      }
+    }
+    return count
+  }
+  methods = {
+    input(e) {
+      this.offer[e.currentTarget.dataset.name] = e.detail.value
+      if (e.currentTarget.dataset.name === 'descript') {
+        this.descriptLen = e.detail.value.length
+      }
+    },
+    chooseImage(type) {
+      let count = 1
+      if (type === '2') {
+        count = 15 - this.getImgCount()
+      } else if (type === '1') {
+        if (this.offer.coverImg) {
+          cardManagerApi.deleteResouces(this.offer.coverImg)
+        }
+      }
+      let that = this
+      var apiURL = this.$parent.globalData.api.apiUrl + '/push/v1.0/upload_files'
+      let upload = function(filePath) {
+        wepy.showLoading({
+          title: '正在上传图片……',
+          mask: true
+        })
+        wx.uploadFile({
+          url: apiURL,
+          filePath: filePath,
+          name: 'editormd-image-file',
+          success: function(rs) {
+            if (type === '1') {
+              that.offer.coverImg = JSON.parse(rs.data).url
+            } else {
+              that.offer.offerImgs.push({
+                img_url: JSON.parse(rs.data).url,
+                type: type
+              })
+            }
+            that.imgCount = that.getImgCount()
+            that.$apply()
+            wepy.hideLoading()
+          }
+        })
+      }
+      wepy.chooseImage({
+        count: count,                           // 默认9
+        sizeType: ['original', 'compressed'],   // 可以指定是原图还是压缩图，默认二者都有
+        sourceType: ['album', 'camera']         // 可以指定来源是相册还是相机，默认二者都有
+      }).then(res => {
+        let files = res.tempFilePaths
+        for (let i = 0; i < files.length; i++) {
+          upload(files[i])
+        }
+      })
+    },
+    save() {
+      let offer = this.offer
+      let excute = function(e) {
+        e.save = false
+        wepy.showLoading({
+          title: '正在保存商品信息……',
+          mask: true
+        })
+        let offerImgs = e.offer.offerImgs
+        let newOfferImgs = []
+        for (let i = 0; i < offerImgs.length; i++) {
+          if (offerImgs[i].type + '' === '2') {
+            newOfferImgs.push(offerImgs[i])
+          }
+        }
+        newOfferImgs.push({
+          img_url: e.offer.coverImg,
+          type: '1'
+        })
+        e.offer.offerImgs = newOfferImgs
+      }
+      if (!common.isNull(offer.offer_name, '商品名称不能为空')) return
+      if (!common.isNull(offer.offer_price, '商品价格不能为空')) return
+      if (!common.isNumber('float', offer.offer_price, '商品价格必须大于0，最多保留两位小数')) return
+      if (Number(offer.offer_price) > 9999999) {
+        common.tip('商品价格超限', 'none')
+        return false
+      }
+      // if (!common.isNull(offer.category_id, '商品类型必须选择')) return
+      if (!common.isNull(offer.offer_leave, '商品库存不能为空')) return
+      if (!common.isNumber('integer', offer.offer_leave, '商品库存必须是大于0的整数')) return
+      if (!common.isNull(offer.coverImg, '商品封面必须上传')) return
+      if (this.operate === 'add') {
+        excute(this)
+        cardManagerApi.addOffer(this.offer).then(res => {
+          common.tip('保存成功', 'success')
+          this.$parent.globalData.refreshPage = true
+          common.goPrevPage()
+        })
+      } else if (this.operate === 'edit') {
+        excute(this)
+        cardManagerApi.updOffer(this.offer).then(res => {
+          common.tip('保存成功', 'success')
+          this.$parent.globalData.refreshPage = true
+          common.goPrevPage()
+        })
+      }
+    },
+    deleteImg(index) {
+      index = parseInt(index)
+      cardManagerApi.deleteResouces(this.offer.offerImgs[index].img_url)
+      this.offer.offerImgs.splice(index, 1)
+      this.imgCount = this.getImgCount()
+    },
+    // 选择分类
+    goCategory() {
+      this.openStorage = true
+      this.$navigate(`/pages/product/category?id=${this.offer.category_id}`)
+    },
+    // 进入首页
+    goHome() {
+      wepy.redirectTo({
+        url: `/pages/product/shopOffer?operate=view&entId=${this.offer.enterprise_id}&type=share&employee_id=${this.offer.create_staff_id}&department_id=${this.departmentId}&fromOpenid=${this.$parent.getNowOpenid()}`
+      })
+    },
+    // 加入购物车
+    addShopCart() {
+      let param = {
+        offer_id: this.offer.id,
+        norms_id: this.offer.norms_id,
+        offer_num: 1
+      }
+      shopCartApi.addShopCart(param).then(res => {
+        common.tip('加入成功', 'success')
+      })
+    },
+    // 立即购买
+    buyNow() {
+      let buyOffer = {
+        norms_id: this.offer.norms_id,
+        norms_name: this.offer.offer_name,
+        norms_pic: this.offer.coverImg,
+        num: 1,
+        offer_id: this.offer.id,
+        offer_leave: this.offer.offer_leave,
+        offer_name: this.offer.offer_name,
+        offer_num: 1,
+        offer_price: this.offer.offer_price
+      }
+      this.$preload('norms', [buyOffer])
+      this.$preload('discount', 1)
+      this.$navigate('/pages/product/orderNew')
+    },
+    // 分享
+    onShareAppMessage(res) {
+      return {
+        title: '',
+        path: `/pages/product/shopOfferDetails?operate=view&type=share&entId=${this.offer.enterprise_id}&offer=${JSON.stringify(this.offer)}`
+      }
+    }
+  }
+  // 咨询
+  consultProduct() {
+    // let sellerInfo = common.getStaffInfo(this)
+    let sellerInfo = this.$parent.getCurSellerInfo()
+    let userInfo = this.$parent.getUserInfo()
+    let chatUserInfo = this.$parent.getChatUserInfo()
+    let friendId = this.$parent.getEmployeeChatUser(sellerInfo.staffId)
+    let loginInfo = {
+      name: chatUserInfo.identifier,
+      nickName: userInfo.nickName,
+      avtor: userInfo.avatarUrl
+    }
+    let friend = {
+      name: friendId,
+      avtor: sellerInfo.head_icon,
+      nickName: sellerInfo.name
+    }
+    // this.recordClickAction(cardActionMap.consultProduct)
+    this.$parent.goChatRoom(loginInfo, friend)
+  }
+  // 进入购物车
+  goShopcard() {
+    wepy.navigateTo({ url: '/pages/product/shoppingCart' })
+  }
+}
+</script>

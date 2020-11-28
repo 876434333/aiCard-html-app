@@ -1,0 +1,129 @@
+<template>
+  <!-- 企业简介 -->
+  <view class="website-components">
+    <view class="edit" wx:if="{{area == 'edit'}}">
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_input weui-cell-style">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable font-size-30 c-323232">标题</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input font-size-30 c-323232" placeholder="公司简介" value="{{obj.data.title.value}}"  bindinput="titleInput"/>
+          </view>
+          <view class="weui-cell__ft" style="flex:0.1">
+            <image class="component-input-del" @tap="clean" data-target="data.title.value" hidden="{{!obj.data.title.value}}" src="../../../../assets/images/website/delete_video.png"/>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell-style" style="background:#fafafa">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable font-size-28 c-323232">对齐方式</view>
+          </view>
+          <view class="weui-cell__bd icon-tools">
+            <view class="icon-item iconImg" @tap="alignLeft">
+              <image src="{{obj.data.textAlign.value == 'left' ? '/assets/images/website/align_left_check.png' : '/assets/images/website/align_left.png'}}"/>
+            </view>
+            <view class="icon-item iconImg" @tap="alignCenter">
+              <image src="{{obj.data.textAlign.value == 'center' ? '/assets/images/website/align_center_check.png' : '/assets/images/website/align_center.png'}}"/>
+            </view>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell-style">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable font-size-28 c-323232">内容</view>
+          </view>
+        </view>
+        <view  class="weui-cell weui-cell-style">
+          <view class="weui-cell__bd weui-cell_textarea">
+            <textarea class="font-size-24 c-646464 about-content" placeholder="请填写简介信息" value="{{obj.data.content.value}}" bindinput="contentInput" style="height:250rpx;" maxlength='{{cInfo.textLength}}'/>
+            <view class="weui-flex__item ta-right font-size-24 c-909090">{{cInfo.text.length>0 ? cInfo.text.length : obj.data.content.value.length}}/{{cInfo.textLength}}</view>
+          </view>
+        </view>
+      </view>
+      <button class="weui-btn submit-btn saveBtn" @tap="save">保存</button>
+    </view>
+    <view class="preview" wx:if="{{area == 'preview'}}">
+      <view class="about">
+        <view class="font-size-30 c-323232 about-title" style="text-align:{{obj.data.textAlign.value}};">{{obj.data.title.value}}</view>
+        <text class="font-size-24 c-646464 about-content" style="word-break:break-all;width:90%;">{{obj.data.content.value}}</text>
+      </view>
+    </view>
+    <view class="show" wx:if="{{area == 'show'}}">
+      <view class="about">
+        <view class="font-size-30 c-323232 about-title" style="padding-bottom:0;text-align:{{obj.data.textAlign.value}};">{{obj.data.title.value}}</view>
+        <text class="font-size-24 c-646464 about-content" style="word-break:break-all;width:90%;">{{obj.data.content.value}}</text>
+      </view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import {common} from '../../../../assets/js/common.js'
+export default class companyInfo extends wepy.component {
+  props = {
+    area: {
+      type: String,
+      default: null,
+      twoWay: true
+    },
+    idx: {
+      type: String,
+      default: null,
+      twoWay: true
+    },
+    obj: {
+      type: Object,
+      default: null,
+      twoWay: true
+    }
+  }
+  data = {
+    cInfo: {
+      text: '',
+      textLength: 500
+    }
+  }
+  methods = {
+    clean(e) {
+      let k = e.currentTarget.dataset.target.split('.')
+      this.obj[k[0]][k[1]][k[2]] = ''
+    },
+    alignLeft() {
+      this.obj.data.textAlign.value = 'left'
+    },
+    alignCenter() {
+      this.obj.data.textAlign.value = 'center'
+    },
+    contentInput(e) {
+      if (e.detail.value.length <= this.cInfo.textLength) {
+        this.cInfo.text = e.detail.value
+        this.obj.data.content.value = this.cInfo.text
+      } else {
+        common.tip('最多输入500个字符', 'none')
+        this.cInfo.text = e.detail.value.substring(0, 500)
+        this.obj.data.content.value = this.cInfo.text
+      }
+    },
+    titleInput(e) {
+      this.obj.data.title.value = e.detail.value
+    },
+    save() {
+      let _this = this
+      if (!_this.obj.data.title.value) {
+        _this.obj.data.title.value = '企业简介'
+      }
+      wepy.setStorage({
+        key: 'website_plugin',
+        data: {
+          idx: _this.idx,
+          type: _this.type,
+          content: _this.obj,
+          save: true
+        }
+      })
+      wepy.navigateBack({
+        delta: 1
+      })
+    }
+  }
+}
+</script>

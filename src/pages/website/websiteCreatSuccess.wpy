@@ -1,0 +1,115 @@
+<style lang="scss">
+  page{
+    background-color: #ffffff;
+  }
+  .wrap {
+    overflow:hidden;
+    .hook {
+      display:block;
+      margin:78rpx auto 48rpx;
+      width:228rpx;
+      height:228rpx;
+    }
+    .website-part {
+      margin:118rpx auto 0;
+      padding-bottom: 24rpx;
+      width: 650rpx;
+      border-bottom:1px solid #e8e8e8;
+      overflow: hidden;
+      .website {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        width: 100%;
+        line-height: 66rpx;
+        view:nth-child(1) {
+          width: 25%;
+        }
+        view:nth-child(2) {
+          width: 75%;
+          text-align: right;
+        }
+      }
+    }
+    .phone-part {
+      position: relative;
+      display:-webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      margin:36rpx auto 0;
+      width: 650rpx;
+      .phone {
+        margin:6rpx 8rpx 0 0;
+        width:19rpx;
+        height:26rpx;
+      }
+      .contact {
+        position:absolute;
+        right:0;
+      }
+    }
+    .save {
+      bottom:50rpx;
+    }
+  }
+</style>
+<template>
+  <!-- 官网创建成功 -->
+  <view class="wrap">
+    <image src="../../assets/images/website/hook.png" class="hook"/>
+    <view class="font-size-40 c-323232 ta-center">创建成功</view>
+    <view class="website-part">
+      <view class="website">
+        <view class="font-size-26 c-909090">网站名称</view>
+        <view class="font-size-26 c-909090">{{website.name}}</view>
+      </view>
+      <view class="website">
+        <view class="font-size-26 c-909090">当前版本</view>
+        <view class="font-size-26 c-909090">{{website.version}}</view>
+      </view>
+      <view class="website">
+        <view class="font-size-26 c-909090">到期时间</view>
+        <view class="font-size-26 c-909090">{{website.expirationTime}}</view>
+      </view>
+    </view>
+    <view class="phone-part">
+      <image src="../../assets/images/website/phone.png" class="phone"/>
+      <view class="font-size-26 c-323232">专属客服经理  {{phone}}</view>
+      <view class="font-size-26 c-3DB8C8 contact" data-phone="{{phone}}" @tap="tel">马上联系 ></view>
+    </view>
+    <button class="save font-size-36 c-ffffff" @tap="goEdit">去编辑</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {common} from '../../assets/js/common.js'
+  export default class websiteCreatSuccess extends wepy.page {
+    config = {
+      navigationBarTitleText: '官网创建成功'
+    }
+    data = {
+      website: {
+        name: '南京深卡网络技术有限公司',
+        version: '单页展示型',
+        expirationTime: '2019-09-30'
+      },
+      websiteId: '',
+      phone: '18895332578'
+    }
+    onLoad(opt) {
+      this.websiteId = opt.id
+    }
+    methods = {
+      // 拨打电话
+      tel(e) {
+        let phone = e.currentTarget.dataset.phone
+        common.callPhone(phone)
+      },
+      // 去编辑
+      goEdit() {
+        this.$navigate('/pages/website/websiteIndex?id=' + this.websiteId)
+      }
+    }
+  }
+</script>

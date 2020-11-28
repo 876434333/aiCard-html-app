@@ -1,0 +1,206 @@
+<style lang="scss">
+  @import '../css/cardBlood.scss';
+</style>
+<template>
+  <!-- 鸡血海报 -->
+  <view class="wrap">
+    <view class="head">
+      <view hover-class="none" class="{{ number == 0 ? 'head-check' : ''}}" @tap="checkBar" data-index="0">励志
+        <view></view>
+      </view>
+      <view hover-class="none" class="{{ number == 1 ? 'head-check' : ''}}" @tap="checkBar" data-index="1">自定义
+        <view></view>
+      </view>
+    </view>
+    <!-- 励志 -->
+    <view class="main">
+      <image src="{{imgPath}}" class="myCanvas"/>
+      <view class="upload" wx:if="{{imgSelect}}">
+        <view class="weui-uploader__input-box weui-uploader__input-box-new">
+          <view class="weui-uploader__input" bindtap="chooseImage"></view>
+        </view>
+      </view>
+      <canvas canvas-id="myCanvas" style="width:540px;height:800px;position:absolute;top:-999px;left:-999px;">
+        <!-- 上传照片 -->
+        <!-- <uploadImg :imgObj.sync="imgObj" class="weui-uploader-wrap"></uploadImg> -->
+      </canvas>
+     </view>
+
+    <view class="foot">
+      <button class="foot-btn" @tap="change">换一换</button>
+      <button class="foot-btn save-btn" @tap="canvas" data-method="save">保存海报</button>
+    </view>   
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import {common} from '@/assets/js/common.js'
+  import uploadImgTem from '@/components/uploadImgTem'
+  import {G_RES_URL} from '@/config'
+  export default class cardBlood extends wepy.page {
+    // 相当于page.json
+    config = {
+      navigationBarTitleText: '鸡血海报'
+    }
+    data = {
+      res_url: G_RES_URL,
+      // canvasHidden: false,
+      staff: undefined,
+      number: 0,
+      screenWidth: 350,
+      qrCode: '',
+      headIcon: '',
+      imgPath: '',
+      imgIdx: 0,
+      imgList: [
+        G_RES_URL + '/dc_card_blood_18.png',
+        G_RES_URL + '/dc_card_blood_17.png',
+        G_RES_URL + '/dc_card_blood_16.png',
+        G_RES_URL + '/dc_card_blood_15.png',
+        G_RES_URL + '/dc_card_blood_14.jpg',
+        G_RES_URL + '/dc_card_blood_13.png',
+        G_RES_URL + '/dc_card_blood_12.jpg',
+        G_RES_URL + '/dc_card_blood_11.png',
+        G_RES_URL + '/dc_card_blood_10.jpg',
+        G_RES_URL + '/dc_card_blood_9.jpg',
+        G_RES_URL + '/dc_card_blood_house.png',
+        G_RES_URL + '/dc_card_blood_hard.png',
+        G_RES_URL + '/dc_card_blood_today.png',
+        G_RES_URL + '/dc_card_blood_light.png',
+        G_RES_URL + '/dc_card_blood_way.png'
+      ],
+      imgTarget: '',
+      imgSelect: false
+    }
+    methods = {
+      chooseImage() {
+        var _this = this
+        wepy.chooseImage({
+          count: 1,
+          sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+          sourceType: ['album', 'camera'] // 可以指定来源是相册还是相机，默认二者都有
+        }).then(res => {
+          _this.imgSelect = false
+          _this.imgTarget = res.tempFilePaths[0]
+          _this.methods.canvas(null, _this).creatCanvas1()
+        })
+      },
+      // 切换导航栏
+      checkBar(e) {
+        let that = this
+        this.number = parseInt(e.currentTarget.dataset.index)
+        if (this.number === 0) {
+          this.imgSelect = false
+          this.imgTarget = this.imgList[this.imgIdx]
+          wepy.getImageInfo({
+            src: this.imgTarget
+          }).then(rs => {
+            that.imgTarget = rs.path
+            that.methods.canvas(null, that).creatCanvas1()
+          })
+        } else {
+          this.imgSelect = true
+        }
+        this.$apply()
+      },
+      // 画布操作
+      canvas(e, that) {
+        let method = {
+          // 创建画布
+          creatCanvas1() {
+            let ctx = wepy.createCanvasContext('myCanvas')
+            ctx.setFillStyle('#ffffff')
+            ctx.fillRect(0, 0, 540, 800)
+
+            ctx.drawImage(that.imgTarget, 0, 0, 540, 640)
+            // 绘制图片
+            ctx.drawImage(that.staff.tmp_head_icon, 22, 658, 69, 69)
+            ctx.drawImage(that.staff.tmp_soft_img_url, 414, 665, 108, 108)
+
+            // 绘制文本，样式要写在绘制的文本内容之前
+            ctx.setFontSize(26)
+            ctx.setFillStyle('#323232')
+            ctx.fillText(that.staff.name, 100, 692)
+            ctx.setFontSize(16)
+            ctx.fillText(that.staff.station, 150 + ctx.measureText(that.staff.name).width, 692)
+            ctx.setFontSize(20)
+            ctx.setFillStyle('#909090')
+            ctx.fillText(that.staff.enterprise_name, 100, 720)
+            ctx.setFontSize(16)
+            // ctx.fillText('长按识别二维码', 410, 777)
+            ctx.setFontSize(24)
+            ctx.setFillStyle('#646464')
+            ctx.fillText('手机  ' + that.staff.phone, 32, 774)
+
+            // 将绘制的内容画到画布上
+            ctx.draw(false, function() {
+              wepy.canvasToTempFilePath({
+                canvasId: 'myCanvas',
+                fileType: 'jpg'
+              }).then((r) => {
+                wepy.hideLoading()
+                that.imgPath = r.tempFilePath
+                that.$apply()
+              })
+            })
+          },
+          // 保存画布
+          save() {
+            let that = this
+            let unit = that.screenWidth / 750
+            common.saveCanvas(unit, 541, 806, '', function(callback) {})
+          }
+        }
+        if (typeof (that) === 'undefined') {
+          method[e.currentTarget.dataset.method]()
+        } else {
+          return method
+        }
+      },
+      // 换一换
+      change(e) {
+        let that = this
+        if (this.number === 0) {
+          this.imgIdx ++
+          if (!this.imgList[this.imgIdx]) {
+            this.imgIdx = 0
+          }
+          this.imgTarget = this.imgList[this.imgIdx]
+          wepy.showLoading({
+            title: '图片加载中...'
+          })
+          wepy.getImageInfo({
+            src: this.imgTarget
+          }).then(rs => {
+            that.imgTarget = rs.path
+            that.methods.canvas(null, that).creatCanvas1()
+          })
+        } else {
+          this.imgSelect = true
+          this.$apply()
+        }
+      }
+    }
+    components = {
+      uploadImg: uploadImgTem
+    }
+    onLoad() {
+      let that = this
+      this.staff = this.$parent.globalData.staffInfo
+      wepy.showLoading({
+        title: '图片加载中...'
+      })
+      wepy.getSystemInfo().then((res) => {
+        that.screenWidth = res.screenWidth
+        that.imgTarget = that.imgList[that.imgIdx]
+        wepy.getImageInfo({
+          src: that.imgTarget
+        }).then(rs => {
+          that.imgTarget = rs.path
+          that.methods.canvas(null, that).creatCanvas1()
+        })
+      })
+    }
+  }
+</script>

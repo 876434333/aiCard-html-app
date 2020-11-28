@@ -1,0 +1,531 @@
+<style lang="scss">
+  @import '../../assets/css/zanui.scss';
+  @import '../../assets/css/pages/product/shopCart.scss';
+  @import '../../assets/css/pages/product/listCard.scss';
+  @import '../../assets/css/pages/product/trade.scss';
+  @import '../../assets/css/pages/product/mod.scss';
+  @import '../../assets/css/pages/product/stepper.scss';
+</style>
+<template>
+	<view class="shop-cart {{buy.show && discount < 1 ? 'count' : ''}} view-trade">
+    <noticemsg></noticemsg>
+    <view class="top-menu" wx:if="{{table.list.length > 0}}">
+      购物车
+      <text wx:if="{{del.show}}"
+            class="menu-btn"
+            @tap="closeDelete">完成</text>
+      <text wx:else
+            class="menu-btn"
+            @tap="openDelete">编辑</text>
+    </view>
+    <repeat for="{{table.list}}" item="item" index="index" key="index">
+      <view class="list-card mt-20">
+        <view class="card-check" style="">
+          <view wx:if="{{del.show}}"
+                class="zan-icon zan-icon-{{item.delChecked  ? 'checked c-15aefa' : 'check'}}"
+                data-id="{{item.id}}"
+                data-index="{{index}}"
+                @tap="addDel"></view>
+          <view wx:else
+                class="zan-icon zan-icon-{{item.checked ? 'checked c-15aefa' : 'check'}}"
+                data-id="{{item.id}}"
+                data-index="{{index}}"
+                @tap="addBuy"></view>
+        </view>
+        <view class="card-box">
+          <image class="card-thumb"
+            src="{{item.norms_pic}}"
+            mode="aspectFit" />
+          <view class="card-detail">
+            <view class="card-title zan-ellipsis--l2">{{item.offer_name}}</view>
+            <view class="card-subtitle zan-ellipsis--l2">{{item.norms_name}}</view>
+            <view class="card-content">
+              <text class="discount-price"><text class="money-mark">¥</text>{{item.discount_price || item.offer_price}}</text>
+              <text wx:if="{{discount < 1}}" class="zan-text-deleted price"><text class="money-mark">¥</text>{{item.offer_price}}</text>
+            </view>
+            <view class="card-stepper">
+              <stepper :max.sync="item.offer_leave"
+                        :min.sync="min"
+                        :stepper.sync="item.num"
+                        :size="size"
+                        :componentId="index"></stepper>
+            </view>
+          </view>
+        </view>
+      </view>
+    </repeat>
+    <view class="list-no-more" wx:if="{{!isNonthing && (isNoMore || isLoading)}}">
+      <zanLoadmore :loading.sync="isLoading" wx:if="{{isLoading}}"></zanLoadmore>
+      <text wx:elif="{{isNoMore}}">已经没有更多了</text>
+    </view>
+    <view class="empty" wx:if="{{isNonthing}}" style="padding:0">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty2.png" class="empty-img" style="margin:294rpx 0 8rpx 298rpx"/>
+      <view class="empty-text">空空如也</view>
+    </view>
+    <view class="trade-opts-note shop-cart-stati boder-top ta-left {{discount === 1 ? 'center' : ''}}"
+          wx:if="{{table.list.length > 0 && discount < 1 && buy.show}}">
+      <image src="{{avtor}}" class="avtor" />
+      <view>
+        <view>来自{{name}}的特权折扣优惠</view>
+        <view class="price">-<text class="money-mark">¥</text> {{dValue}}</view>
+      </view>
+    </view>
+    <view class="trade-opts" wx:if="{{table.list.length > 0}}">
+      <view class="trade-opt flex-1 check-all" @tap="checkOrCancelAll({{buy.show}})">
+        <text wx:if="{{buy.show}}"
+              class="zan-icon zan-icon-{{allChecked.buy ? 'checked' : 'check'}} check-icon-{{allChecked.buy ? 'checked c-15aefa' : 'check'}}"></text>
+        <text wx:if="{{del.show}}"
+              class="zan-icon zan-icon-{{allChecked.del ? 'checked' : 'check'}} check-icon-{{allChecked.buy ? 'checked c-15aefa' : 'check'}}"></text>
+        <text>全选</text>
+      </view>
+      <view class="flex-1">
+        <text class="last-price"
+              wx:if="{{buy.show}}"><text class="money-mark">¥</text>{{lastPrice}}</text>
+      </view>
+      <button wx:if="{{buy.show}}"
+              class="trade-opt-buy flex-1 {{noneChecked.buy ? 'bg-999' : ''}}"
+              style="background:#ff7f02;border-radius:0;border:0"
+              @tap="toOrder"
+              form-type="submit"
+              plain="true"
+              hover-class="none">
+          结算
+      </button>
+      <button wx:if="{{del.show}}"
+              class="trade-opt-buy flex-1 {{noneChecked.del ? 'bg-999' : ''}}"
+              style="background:#ff7f02;border-radius:0;border:0"
+              @tap="delAllChecked"
+              form-type="submit"
+              plain="true"
+              hover-class="none">
+          删除
+      </button>
+    </view>
+	</view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {
+    indexMixin,
+    setEmployeeMixin
+  } from '@/mixins/index.js'
+  import stepper from '@/components/common/stepper/stepper'
+  import {shopCartApi} from '@/api'
+  import zanLoadmore from '@/components/libs/zanui/zan-loadmore'
+  import NoticeMsg from '@/components/noticeMsg'
+  import {common} from '../../assets/js/common.js'
+  import {G_RES_URL} from '@/config'
+  export default class ShopCart extends wepy.page {
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarBackgroundColor: '#ff7f02',
+      navigationBarTitleText: '购物车'
+    }
+    mixins = [
+      setEmployeeMixin,
+      indexMixin
+    ]
+    components = {
+      stepper: stepper,
+      zanLoadmore: zanLoadmore,
+      noticemsg: NoticeMsg
+    }
+
+    data = {
+      res_url: G_RES_URL,
+      stepper: 1,
+      max: 100,
+      min: 1,
+      size: 'small',
+      pullDown: false,
+      del: {
+        show: false,
+        data: {}
+      },
+      buy: {
+        show: true,
+        data: {}
+      },
+      allChecked: {
+        buy: false,
+        del: false
+      },
+      noneChecked: {
+        buy: true,
+        del: true
+      },
+      avtor: null,
+      name: null,
+      firstList: true,
+      params: {
+        pageNum: 1,
+        pageSize: 10
+      },
+      discount: 1,
+      dValue: 0,
+      lastPrice: 0
+    }
+
+    events = {
+      /**
+       * 计数器数值变化
+       * @param  {[string]} options.componentId 组件的key
+       * @param  {[number]} options.stepper     计数
+       * @param  {[object]} event               组件对象
+       */
+      stepperChange({ componentId, stepper }, event) {
+        this.table.list[componentId].num = stepper
+        this.computeLastPrice()
+        let params = {
+          id: this.table.list[componentId].id,
+          norms_id: this.table.list[componentId].norms_id,
+          num: stepper
+        }
+        shopCartApi.editShopcart(params)
+      }
+    }
+
+    methods = {
+      /**
+       * 删除的勾选
+       * @param {[type]} e 绑定的元素
+       */
+      addDel(e) {
+        this.addCheck(e, 'del', 'delChecked')
+      },
+      /**
+       * 结算的勾选
+       * @param {[type]} e 绑定的元素
+       */
+      addBuy(e) {
+        this.addCheck(e, 'buy', 'checked', () => {
+          this.computeLastPrice()
+        })
+      }
+    }
+
+    onLoad() {
+      this.init()
+    }
+
+    onShow() {
+      if (!this.firstList) {
+        this.search()
+      }
+      if (this.firstList) {
+        this.firstList = false
+      }
+      this.$parent.setNewShopCart(this.sellerId, false)
+    }
+
+    /**
+     * 打开选择删除菜单
+     */
+    openDelete() {
+      this.buy.show = false
+      this.del.show = true
+      this.$apply()
+    }
+    /**
+     * 关闭选择删除菜单
+     */
+    closeDelete() {
+      this.del.show = false
+      this.buy.show = true
+      this.$apply()
+    }
+
+    /**
+     * 新增时，检查是否全选/全不选，以及是否最少有一个勾选
+     * @param {string} e [description]
+     */
+    addCheck(e, type, key, callback) {
+      let id = e.currentTarget.dataset.id
+      let index = e.currentTarget.dataset.index
+      if (this[type].data[id]) {
+        // 取消已选
+        delete this[type].data[id]
+        this.table.list[index][key] = false
+      } else {
+        // 添加到已选
+        this[type].data[id] = this.table.list[index]
+        this.table.list[index][key] = true
+      }
+      // 选择中的个数
+      let checkedNum = (Object.keys(this[type].data)).length
+      // 判断是否全选/全不选
+      if (checkedNum === this.table.list.length) {
+        // 刚好全选
+        this.allChecked[type] = true
+      } else if (checkedNum < this.table.list.length && this.allChecked[type]) {
+        // 取消全选状态
+        this.allChecked[type] = false
+      }
+      // 检查按钮是否高亮
+      this.inspectActive(type)
+      callback && callback()
+    }
+
+    /**
+     * 全选/取消全选
+     */
+    checkOrCancelAll() {
+      let type, key
+      if (this.buy.show) {
+        type = 'buy'
+        key = 'checked'
+      } else {
+        type = 'del'
+        key = 'delChecked'
+      }
+      // 选择中的个数
+      let checkedNum = (Object.keys(this[type].data)).length
+      if (checkedNum === this.table.list.length) {
+        // 全不选
+        this.cancelCheckAll(type, key)
+      } else {
+        // 全选
+        this.checkAll(type, key)
+      }
+    }
+    /**
+     * 全选
+     * @return {[type]} [description]
+     */
+    checkAll(type, key) {
+      if (!type || !key) {
+        if (this.buy.show) {
+          type = 'buy'
+          key = 'checked'
+        } else {
+          type = 'del'
+          key = 'delChecked'
+        }
+      }
+      // 添加到已选
+      this.table.list.some((val, idx) => {
+        if (!val[key]) {
+          this.table.list[idx][key] = true
+          this[type].data[val.id] = val
+        }
+      })
+      this.allChecked[type] = true
+      // 统计价格
+      if (type === 'buy') {
+        this.computeLastPrice()
+      }
+      // 按钮是否高亮
+      this.inspectActive(type)
+    }
+    /**
+     * 全不选
+     * @return {[type]} [description]
+     */
+    cancelCheckAll(type, key) {
+      if (!type || !key) {
+        if (this.buy.show) {
+          type = 'buy'
+          key = 'checked'
+        } else {
+          type = 'del'
+          key = 'delChecked'
+        }
+      }
+      // 取消已选
+      this.table.list.some((val, idx) => {
+        this.table.list[idx][key] = false
+        delete this[type].data[val.id]
+      })
+      this.allChecked[type] = false
+      // 统计价格
+      if (type === 'buy') {
+        this.computeLastPrice()
+      }
+      // 按钮是否高亮
+      this.inspectActive(type)
+    }
+    /**
+     * 删除所有选中的
+     */
+    delAllChecked() {
+      if (this.noneChecked.del) {
+        return
+      }
+      let data = []
+      let i
+      for (i in this.del.data) {
+        data.push(this.del.data[i].id)
+      }
+      wepy.showModal({
+        title: '删除',
+        content: `从购物车中删除选定的${data.length}件商品？`
+      }).then(() => {
+        shopCartApi.delShopCarts(data).then((res) => {
+          common.tip('删除成功', 'success')
+          this.search()
+          this.clearCheckedData('del')
+        }, () => {
+          common.tip('删除失败', 'none')
+        })
+      })
+    }
+    /**
+     * 检查是否最少选了一个，按钮是否高亮
+     * @param  {string} type 结算/删除
+     */
+    inspectActive(type) {
+      let checkedNum = (Object.keys(this[type].data)).length
+      if (checkedNum === 0) {
+        // 从有到无
+        this.noneChecked[type] = true
+      } else if (checkedNum > 0 && this.noneChecked[type]) {
+        // 从无到有
+        this.noneChecked[type] = false
+      }
+      this.$apply()
+    }
+    /**
+     * 去结算/下单
+     */
+    toOrder() {
+      if (this.noneChecked.buy) {
+        return
+      }
+      let data = []
+      let i
+      for (i in this.buy.data) {
+        this.buy.data[i].offer_num = this.buy.data[i].num
+        data.push(this.buy.data[i])
+      }
+      console.log(data)
+      this.$preload('norms', data)
+      this.$preload('discount', this.discount)
+      this.$navigate('/pages/product/orderNew')
+    }
+    /**
+     * 清除选中的参数
+     * @param  {[type]} type [description]
+     */
+    clearCheckedData(type) {
+      this[type].data = []
+      this.noneChecked[type] = true
+      if (this.allChecked[type]) {
+        this.allChecked[type] = false
+      }
+      this.$apply()
+    }
+    /**
+     * 查询列表数据
+     * @param {any} pageNum
+     * @param {any} pageSize
+     */
+    list(pageNum, pageSize) {
+      console.log(this)
+      wepy.showLoading({
+        title: '加载中'
+      })
+      let params = {
+        page_num: pageNum,
+        page_size: pageSize
+      }
+      return shopCartApi.getShopCartList(params)
+    }
+    /**
+     * 查询成功后执行，可更改list
+     * @param {any} list
+     */
+    // afterList(list) {
+    //   if (this.pullDown) {
+    //     // wepy.stopPullDownRefresh()
+    //     this.pullDown = false
+    //   }
+    // }
+    /**
+     * 设置列表数据
+     * @param {any} data
+     */
+    afterList(data) {
+      // 折扣处理
+      this.discount = Number((data.discount / 10).toFixed(2))
+      let checkFlg
+      if (this.buy.show && data.page_num === 1) {
+        checkFlg = true
+      }
+      data.data_list.some((val, idx) => {
+        if (this.discount < 1) {
+          val.discount_price = this.changeFlaot(val.offer_price * this.discount)
+        }
+        if (checkFlg) {
+          val.checked = true
+          this.buy.data[val.id] = val
+        }
+      })
+      if (checkFlg) {
+        this.allChecked.buy = true
+      }
+      this.getSellerInfo()
+    }
+    /**
+     * 设置列表数据
+     */
+    setTableList(data) {
+      wepy.hideLoading()
+    }
+    /**
+     * 显示完列表/页码数据后，可以做一些全局统计
+     */
+    afterSetListAndPage() {
+      if (this.buy.show && this.params.pageNum === 2) {
+        this.computeLastPrice()
+        this.inspectActive('buy')
+      }
+    }
+    changeFlaot(num) {
+      let res = Number((num).toFixed(2))
+      if (res === 0) {
+        res = 0.01
+      }
+      return res
+    }
+    /**
+     * 计算总价
+     */
+    computeLastPrice() {
+      let lastOp = 0
+      let lastDp = 0
+      let dValue = 0
+      this.table.list.some((val, idx) => {
+        if (val.checked) {
+          if (this.discount < 1) {
+            // 折后价
+            lastDp += val.discount_price * val.num
+            lastDp = Number((lastDp).toFixed(2))
+          }
+          // 折前价
+          lastOp += val.offer_price * val.num
+          lastOp = Number((lastOp).toFixed(2))
+        }
+      })
+      if (this.discount < 1) {
+        dValue = Number((lastOp - lastDp).toFixed(2))
+        this.dValue = dValue
+        this.lastPrice = lastDp
+      } else {
+        this.lastPrice = lastOp
+      }
+      this.$apply()
+    }
+    /**
+     * 获取销售者姓名、头像
+     */
+    getSellerInfo() {
+      if (this.discount < 1 && !this.name) {
+        let sellerInfo = this.$parent.getSellerInfo(this.sellerId)
+        this.name = sellerInfo.name
+        this.avtor = sellerInfo.head_icon
+      }
+    }
+  }
+</script>

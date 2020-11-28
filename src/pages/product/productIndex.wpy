@@ -1,0 +1,28 @@
+<template>
+  <view class="mainbody">
+      <scroll-view scroll-y class="scroll-view">
+        客户访问的商城主页
+      </scroll-view>
+      <tabBarTemplate :tabBar.sync="tabBarData"></tabBarTemplate>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import tabBarTemplate from '../../components/tabBar/tabBarTemplate'
+  import {tabBarJs} from '../../components/tabBar/tabBarJs'
+  export default class productIndex extends wepy.page {
+    config = {
+      navigationBarTitleText: '商城'
+    }
+    components = {
+      tabBarTemplate: tabBarTemplate
+    }
+    data = {
+      tabBarData: {}
+    }
+    onLoad () {
+      this.tabBarData = tabBarJs.selected(1, this)
+    }
+  }
+</script>

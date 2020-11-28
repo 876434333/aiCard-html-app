@@ -1,0 +1,146 @@
+<style lang="scss">
+  .avator {
+    display: block;
+    margin-left: 14rpx;
+    width: 104rpx!important;
+    height: 104rpx!important;
+  }
+  .weui-cell-client {
+    padding:8rpx!important;
+    border-bottom:2rpx solid #e8e8e8!important;
+  }
+  .weui-cell-client:before {
+    border: 0;
+  }
+  .name {
+    position: relative;
+    top: -10rpx;
+  }
+  .msg {
+    position: relative;
+    top: 8rpx;
+  }
+  .c-bbbbbb {
+    color:#bbbbbb;
+  }
+</style>
+<template>
+  <view class="wrap">
+    <view class="msg-list">
+      <view class="empty" wx:if="{{dataList.length === 0 && emptyShow}}">
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png" style="margin:226rpx auto 16rpx;width:192rpx;height:223rpx;"/>
+        <view class="font-size-26 c-909090 ta-center">空空如也</view>
+      </view>
+      <view class="font-size-30 ta-center c-909090" style="line-height:100rpx;border-bottom:2rpx solid #e8e8e8;" wx:if="{{dataList.length > 0}}">共{{totalNum}}名客户</view>
+      <repeat for="{{dataList}}" key="index" item="item">
+        <view class="weui-cell weui-cell-client" @tap="goClientMsg('{{item.id}}')">
+          <view class="weui-cell__hd" style="margin-right:30rpx;">
+            <image src="{{item.head_icon}}" class="avator"/>
+          </view>
+          <view class="weui-cell__hd" style="width: 54%;">
+            <view class="name font-size-26 c-323232">{{item.nick_name}}</view>
+            <view class="msg font-size-24 c-3DB8C8" >{{item.lastAttachTime}}</view>
+          </view>
+          <view class="weui-cell__hd" style="width:23%;white-space:nowrap;">
+            <view class="name font-size-26 ta-right c-323232" wx:if="{{type.type === 5}}">最后跟进</view>
+            <view class="name font-size-26 ta-right c-323232" wx:elif="{{type.type === 6}}">最后活动</view>
+            <view class="name font-size-26 ta-right c-323232" wx:else>AI成交率：{{item.rate}}%</view>
+            <view class="msg font-size-24 ta-right c-bbbbbb" wx:if="{{type.type === 5}}">{{item.last_attach_time}}</view>
+            <view class="msg font-size-24 ta-right c-bbbbbb" wx:elif="{{type.type === 6}}">{{item.last_action_time}}</view>
+            <view class="msg font-size-24 ta-right c-bbbbbb" wx:else>来源：{{item.froms}}</view>
+          </view>
+        </view>
+      </repeat>
+    </view>
+    <view class="font-size-30 ta-center c-909090" style="line-height:100rpx;" wx:if="{{noMore}}">没有更多数据</view>
+  </view>
+</template>
+<script>
+  import wepy from 'wepy'
+  import {G_RES_URL} from '@/config'
+  import { pagingMixin } from '@/mixins'
+  import { aiRadarApi } from '@/api'
+  import {common} from '../../../assets/js/common.js'
+  export default class client extends wepy.component {
+    data = {
+      res_url: G_RES_URL,
+      emptyShow: false,
+      type: {
+        type: 6
+      },
+      dataList: []
+    }
+    mixins = [pagingMixin]
+    onLoad() {
+      this.init()
+    }
+    // 加载数据
+    getDataList() {
+      this.addRequestParams(this.type)
+      return aiRadarApi.clientListPromise(this.params).then(res => {
+        if (res.data_list.length === 0) {
+          this.emptyShow = true
+        }
+        let tepmDataList = res.data_list
+        for (let i = 0; i < tepmDataList.length; i++) {
+          tepmDataList[i].lastAttachTime = this.calculateDiffTime(tepmDataList[i].last_attach_time)
+          tepmDataList[i].last_action_time = common.formatDateTimeToDateString(tepmDataList[i].last_action_time)
+          tepmDataList[i].last_attach_time = common.formatDateTimeToDateString(tepmDataList[i].last_attach_time)
+          tepmDataList[i].froms = this.getFroms(tepmDataList[i].froms)
+        }
+        this.dataList = this.dataList.concat(tepmDataList)
+        this.$apply()
+        return res
+      })
+    }
+    events = {
+      'client-getdatalist': (...args) => {
+        let event = args[args.length - 1]
+        this.type.type = event.source.isCheck
+        this.dataList = []
+        this.resetRequestParams()
+        this.init()
+      }
+    }
+    methods = {
+      goClientMsg(userId) {
+        wepy.navigateTo({url: `/pages/aiRadar/detail/clientMsg?userId=${userId}`})
+      }
+    }
+    // 计算两个时间的差值（天）
+    calculateDiffTime(lastAttachTime) {
+      if (!lastAttachTime) {
+        return '从未跟进'
+      }
+      var startTime = 0
+      var endTime = 0
+      startTime = lastAttachTime
+      endTime = new Date().getTime()
+      var timeDiff = endTime - startTime
+      var hours = Math.floor(timeDiff / (3600 * 1000))
+      if (hours > 24) {
+        var day = Math.floor(timeDiff / (24 * 3600 * 1000))
+        return day + ' 天前跟进'
+      } else {
+        return hours + ' 小时前跟进'
+      }
+    }
+    getFroms (froms) {
+      if (froms === '0') {
+        return '创建企业'
+      }
+      if (froms === '1') {
+        return '扫码'
+      }
+      if (froms === '2') {
+        return '分享'
+      }
+      if (froms === '3') {
+        return '工作交接'
+      }
+      if (froms === '4') {
+        return '平台推送'
+      }
+    }
+  }
+</script>

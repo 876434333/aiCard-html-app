@@ -1,0 +1,87 @@
+$main_color: #e75152;
+.page .cover{
+    background-color: white;
+    height: 100%;
+}
+.none{
+    display: none;
+}
+.cropper-wrapper{
+    position: relative;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    height: 75%;
+    background-color: #e5e5e5;
+}
+.cropper-buttons{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    line-height: 50px;
+}
+.cropper-buttons .upload, .cropper-buttons .getCropperImage{
+    width: 50%;
+    text-align: center;
+}
+.cropper{
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+.cropper-buttons{
+    height: 25%;
+    background-color: rgba(0, 0, 0, 0.95);
+    color: $main_color;
+}
+.selectImgBtn {
+  border: 1px solid #eeeeee;
+  margin-left: 8%;
+  width: 30%;
+  background-color:#0D0D0D;
+  color:#eeeeee;
+  margin-bottom: -70rpx;
+  font-size: 30rpx
+}
+.okBtn {
+  width: 30%;
+  border:1px solid $main_color;
+  margin-bottom: -70rpx;
+  margin-right: 8%;
+  font-size: 30rpx
+}
+  .onSelect{
+    border:4rpx solid $main_color
+  }
+  .onImgSelect{
+    border:2rpx solid $main_color
+  }
+  .uploader-img{
+    width: 105rpx; 
+    height: 105rpx;
+    border-radius: 10rpx;
+  }
+  .delView{
+    display: flex;
+    display: -webkit-inline-flex;
+    display: -webkit-flex;
+  }
+  .delImgView{
+    margin-left: 40rpx;
+    position: relative;
+  }
+  .delImg{
+    position:absolute;
+    width: 30rpx;
+    height: 30rpx;
+    top: -13rpx !important;
+    right: -13rpx !important;
+  }

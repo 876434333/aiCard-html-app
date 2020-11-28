@@ -1,0 +1,49 @@
+<style lang="scss">
+  @import './cardTypeFour.scss';
+</style>
+<template>
+  <view class="card-type-four">
+    <view class="card-bg" style="background-image: url({{res_url + '/dc_card_template_4.png'}});">
+      <view class="name-station flex">
+        <view style="padding-top:24rpx;width:74%;">
+          <view class="font-size-30 c-323232 enterprise-name ellipsis-2">{{syncData.enterprise_name}}</view>
+          <view style="padding-top:10rpx;">
+            <text class="font-size-30 c-323232 name">{{syncData.name}}</text>
+            <text class="font-size-18 c-646464 station">{{syncData.station}}</text>
+          </view>
+        </view>
+        <view class="card-avatar"> 
+          <image class="head-icon" src="{{syncData.head_icon}}"/>
+        </view>
+      </view>
+      <view class="bottom" style="padding:26rpx 0 0 50rpx;">
+        <view class="info">
+          <view class="phone" wx:if="{{syncData.phone}}">
+            <image src="/assets/images/card/tel_4.png"/>
+            <text class="font-size-22 c-323232">{{syncData.phone}}</text>
+          </view>
+          <view class="mail" wx:if="{{syncData.mail}}">
+            <image src="/assets/images/card/email_4.png"/>
+            <text class="font-size-22 c-323232">{{syncData.mail}}</text>
+          </view>
+          <view class="address" wx:if="{{syncData.address}}">
+            <image src="/assets/images/card/address_4.png"/>
+            <view class="font-size-22 c-323232 address-text ellipsis-2">{{syncData.address}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import cardDetailMixin from '../../../mixins/cardDetailMixins.js'
+import {G_RES_URL} from '@/config'
+export default class CardTypeFour extends wepy.component {
+  mixins = [cardDetailMixin]
+  data = {
+    res_url: G_RES_URL
+  }
+}
+</script>

@@ -1,0 +1,684 @@
+<style lang="scss">
+$main_color: #e75152;
+.mylabel {
+  margin: 10rpx;
+  padding: 15rpx 15rpx;
+  text-align: center;
+  background-color: #ffe3e3;
+  color: #646464;
+  border-radius: 30rpx;
+  font-size: 24rpx;
+  width: auto;
+  float: left;
+  position: relative;
+}
+.mylabel_add {
+  background-color: #f2f2f2;
+  border: solid 1px #c3c3c3;
+  width: 150rpx;
+}
+.refer_label_default {
+  color: #323232;
+  background-color: #f7f7f7;
+}
+.refer_label_selected {
+  color: #b1b1b1;
+  background-color: #f7f7f7;
+}
+
+.record-slider {
+  padding: 52rpx 0;
+  user-select: none;
+  flex: 1;
+}
+
+.record-slider-line {
+  position: relative;
+  height: 2px;
+  background-color: #e9e9e9;
+}
+
+.record-slider-line-track {
+  height: 2px;
+  background-color: $main_color;
+  width: 0;
+}
+
+.record-slider-handler {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  margin-top: -2px;
+  border-radius: 50%;
+  background-color: $main_color;
+  box-shadow: 0 0 4px rgba(61, 184, 200, 0.2);
+  z-index: 1000;
+}
+.record-slider-handler2 {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  margin-left: -5px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background-color: rgba(231,81,82,0.5);
+  z-index: 1001;
+}
+
+.out-div {
+  line-height: 80rpx;
+  display: inline-block;
+  height: 80rpx;
+  width: 300rpx;
+  text-align: center;
+  border-radius: 10rpx;
+  margin-left: 30rpx;
+  vertical-align: top;
+  background-color: #fff;
+  border: solid 1px #ccc;
+}
+.arrow {
+  width: 0rpx;
+  height: 0rpx;
+  border-top: 20rpx solid transparent;
+  border-right: 20rpx solid;
+  border-bottom: 20rpx solid transparent;
+  position: absolute;
+  margin-left: -20rpx;
+  margin-top: 23rpx;
+  border-right-color: #ccc;
+}
+.arrow-border {
+  margin-left: -18rpx;
+  border-right-color: #fff;
+}
+.demo2 {
+  transform-origin: 55px 55px;
+  transform: rotate(-90deg);
+  transition: stroke-dasharray 0.3s ease-in;
+}
+.neon {
+  position: relative;
+  .position {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    border-radius: 50%;
+    .circle {
+      width: 250rpx;
+      height: 250rpx;
+      position: relative;
+      left: -50%;
+      top: 29rpx;
+    }
+    .ranking-neon {
+      color: $main_color;
+      transition: all 0.5s;
+    }
+    .ranking-neon {
+      color: #fff;
+      -webkit-animation: neon1 1.5s ease-in-out infinite alternate;
+      -moz-animation: neon 1.5s ease-in-out infinite alternate;
+      animation: neon 1.5s ease-in-out infinite alternate;
+    }
+  }
+}
+@keyframes neon {
+  from {
+    box-shadow: 0 0 10px $main_color;
+  }
+  to {
+    box-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 15px #fff, 0 0 20px $main_color,
+      0 0 30px $main_color;
+  }
+}
+button[type='default'].default-btn {
+  color: $main_color;
+  border: 1px solid $main_color;
+  background: #fff;
+}
+.foot {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  border-top: 1px solid #e8e8e8;
+  overflow: hidden;
+  background: #fff;
+  z-index: 10000;
+}
+</style>
+<template>
+<view class="mainbody" style="padding-bottom: 174rpx;">
+    <view class="weui-flex" id="d1">
+        <view class="weui-flex__item ta-left font-size-30 c-323232">我的个人简介</view>
+        <view class="weui-flex__item ta-right font-size-24 c-909090">{{signature.text.length}}/{{signature.textLength}}</view>
+    </view>
+    <textarea class="weui-textarea font-size-24" style="height:300rpx" placeholder="请输入个人简介" maxlength='{{signature.textLength}}' bindinput="resumeOperate" data-method="input" disabled="{{modal.show ? 'disabled' : ''}}" value="{{signature.text}}" wx:if="{{!modal.show}}"/>
+    <view class="font-size-28" wx:if="{{modal.show}}">{{signature.text}}</view>
+    <view class="ta-right c-3DB8C8 font-size-24" bindtap="resumeOperate" data-method="browseInputRemark">不会写简介？戳这里 ></view>
+    
+    <view class="font-size-30 c-323232 mt-40">我的声音</view>
+    <view class="c-323232 mt-20">
+        <view class="weui-cell weui-cell_access pd-0" bindtap="recordOperate" data-method="openRecord" wx:if="{{record.url === null}}">
+            <view class="weui-cell__hd">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_me_voice.png" style="width:80rpx;height:80rpx;"/>
+            </view>
+            <view class="weui-cell__bd">
+                <view class="c-3DB8C8 font-size-28 ml-40">录制我的声音</view>
+            </view>
+        </view>
+        <view class="weui-flex bord bord-radius box-shadow pd-all" style="height:100rpx" wx:if="{{record.url !== null}}">
+             <view class="ta-center" style="line-height:100rpx" bindtap="recordOperate" data-method="play">
+                  <image wx:if="{{res_url}}" src="{{res_url}}/dc_me_voice.png" class="v-middle" style="width:50rpx;height:50rpx"/>
+             </view>
+            <view class="weui-flex__item ta-left font-size-24 c-909090">
+                <view class="weui-flex">
+                    <view class="weui-flex__item">
+                        <view style="position:relative;padding-left:40rpx;padding-right:40rpx">
+                            <view style="position:absolute;top:-15rpx;">我的语音介绍</view>
+                            <view class="weui-flex font-size-18" style="position:absolute;bottom: 4rpx;width:100%">
+                                <view>{{record.currentProgress_m_s}}</view>
+                                <view class="weui-flex__item ta-right" style="padding-right:80rpx">{{record.progress_m_s}}</view>
+                            </view>
+                            <view class="record-slider">
+                                <view class="record-slider-line">
+                                    <view style="width: {{record.progress}}%;"  class="record-slider-line-track"></view>
+                                    <view style="left: {{record.progress}}%;" class="record-slider-handler"></view>
+                                    <view style="left: {{record.progress}}%;" class="record-slider-handler2"></view>
+                                </view>
+                            </view>
+                        </view>
+                    </view>
+                    <view class="c-3DB8C8" style="line-height:100rpx" bindtap="recordOperate" data-method="del">删除</view>
+                    <view class="c-e8e8e8" style="line-height:100rpx;padding-left:20rpx;padding-right:20rpx">|</view>
+                    <view class="c-3DB8C8" style="line-height:100rpx" bindtap="recordOperate" data-method="openRecord">重录</view>
+                </view>
+            </view>
+        </view>
+    </view>
+    
+    <view class="weui-flex mt-40">
+        <view class="weui-flex__item ta-left font-size-30 c-323232">我的标签</view>
+        <view class="weui-flex__item ta-right font-size-24 c-909090">{{label.myLabels.length}}/10</view>
+    </view>
+    <view class="mt-20">
+        <block wx:for="{{label.myLabels}}" wx:key="myLabels">
+            <view class="mylabel">
+                <view>{{item.label_name}}</view>
+                <image src="/assets/images/card/close.png" class="close" bindtap="labelOperate" data-method="del" data-index="{{index}}"/>
+            </view>
+        </block>
+        <view class="mylabel mylabel_add" bindtap="labelOperate" data-method="add" wx:if="{{label.myLabels.length < 10}}">+</view>
+    </view>
+    <view style="clear:both"></view>
+    
+    <view class="font-size-30 c-323232 mt-40">可参考标签</view>
+    <view class="mt-20">
+        <block wx:for="{{label.referLabels}}" wx:key="referLabels">
+            <view class="mylabel refer_label_default" bindtap="labelOperate" data-method="addReferLabel" data-index="{{index}}">
+                <text class="{{item.selected}}">{{item.label_name}}</text>
+            </view>
+        </block>
+    </view>
+    <view style="clear:both"></view>
+    
+    <view class="weui-flex mt-40">
+        <view class="weui-flex__item ta-left font-size-30 c-323232">我的照片</view>
+        <view class="weui-flex__item ta-right font-size-24 c-909090">{{imgObj.files.length}}/9</view>
+    </view>
+    <uploadImg class="mt-20" :imgObj.sync="imgObj"></uploadImg>
+    <view style="clear:both"></view>
+    <view class="font-size-24 c-909090">建议尺寸:680*380(宽*高)</view>
+    <view class="foot" style="padding:40rpx 0 40rpx">
+      <button class="weui-btn submit-btn" @tap="save">保存</button>
+    </view>
+
+    
+    <!--模态框-->
+    <deecardmodal :modal.sync = "modal">
+        <!--浏览个人简介参考窗体-->
+        <view class="pd-30 font-size-30 ta-left" wx:if="{{modal.switch === 'browseInputRemark'}}">
+            <view class="indent-2"> Hi!欢迎来到我的个人名片。我是XXX，在XXX公司XXX部（部门）担任XXX（职位），负责XXX工作（工作职责，如销售）。进入XXX公司以前，我曾在XXX、XXX（过往任职公司）任XXX、XXX（职位），</view>
+            <view class="indent-2">拥有X年的XXX能力（核心能力，如：软件销售），在XXX领域（专业领域，如：软件销售）经验丰富。 </view>
+            <view class="indent-2">工作之外，我喜欢阅读和跑步，与家人一起探索新的旅程是我最大的乐趣。（兴趣爱好）</view>
+            <view class="indent-2">您可以通过名片中的官网、企业动态、商城更多的了解深卡人工智能名片系统，如有业务合作或其他任何问题，请通过IM功能与我联系，我会第一时间回复您！</view>
+            <view style="margin: 0 20%;padding-top:15px;">
+                <button class="weui-btn default-btn" @tap="quote" style="line-height:2;" type="default">引用参考</button>
+            </view>
+        </view>
+
+        <!--添加标签窗体-->
+        <view style="font-size:24rpx;padding:35rpx 50rpx" wx:if="{{modal.switch === 'addLabel'}}">
+            <input class="weui-input bord" focus="true" placeholder="请输入自定义标签" bindinput="labelOperate" data-method="input"/>
+        </view>
+
+        <!--添加录音窗体-->
+        <view wx:if="{{modal.switch === 'record'}}">
+            <view style="margin:0 auto" class="pd-30 font-size-30 ta-left" wx:if="{{record.success === false}}">
+                <view class="ta-center neon" bindlongtap="recordOperate" bindtouchstart="recordOperate" bindtouchend="recordOperate">
+                  <view class="position">
+                    <view class="circle {{onRecord ? 'ranking-neon' : ''}}"></view>
+                  </view>
+                  <image wx:if="{{res_url}}" src="{{res_url}}/dc_me_record.png" style="width:307rpx;height:307rpx;"/>
+                </view>
+                <view class="ta-center mt-40 font-size-28 c-323232">长按录入语音</view>
+                <view class="c-909090 font-size-26 mt-40">语音录制参考</view>
+                <view class="c-909090 font-size-26 mt-30">hi, 你好，能认识你是缘分，欢迎来到我的电子名片，我叫Xxx，是xxx公司的xXx (职位)，希望为更多有需要xXX (你们公司的产品/服务)的人提供更好的产品服务，坐不了生意可以交个朋友哦，请收下我的名片~</view>
+            </view>
+            <view style="margin:0 auto" class="pd-30 font-size-30 ta-left" wx:if="{{record.success === true}}" bindtap="recordOperate" data-type="temp" data-method="play">
+                <view class="weui-flex ta-center" style="margin:175rpx 50rpx 142rpx">
+                    <image class="bord-radius" src="{{headIcon}}" style="width:80rpx;height:80rpx"/>
+                    <view class="weui-flex out-div">
+                        <view class="arrow" ></view>
+                        <view class="arrow arrow-border"></view>
+                        <view class="ta-left">
+                            <image  wx:if="{{res_url}}" src="{{res_url}}/dc_me_voice.png" style="width:40rpx;height:40rpx;margin-top:24rpx;margin-left:20rpx"/>
+                        </view>
+                    </view>
+                    <view class="c-909090 font-size-30 pd-left" style="line-height:80rpx">{{record.duration}}"</view>
+                </view>
+            </view>
+        </view>
+    </deecardmodal>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import uploadImgTem from '@/components/uploadImgTem'
+import modal from '@/components/modal/deecardModal'
+import { common } from '@/assets/js/common'
+import {G_RES_URL} from '@/config'
+import {cardManagerApi, resumeApi} from '@/api'
+export default class resume extends wepy.page {
+  config = {
+    navigationBarTitleText: '编辑名片'
+  }
+  components = {
+    uploadImg: uploadImgTem,
+    deecardmodal: modal
+  }
+  data = {
+    playAudio: true,
+    res_url: G_RES_URL,
+    staffId: null,
+    userId: null,
+    modal: {},
+    onRecord: false,
+    headIcon: '',
+    signature: {
+      text: '',
+      textLength: 500
+    },
+    record: {
+      id: null, // 录音ID
+      url: null, // 路径
+      temppath: '', // 录制时未确认前的临时存放路径
+      success: false, // 是否录制完成
+      duration: 0, // 总时长
+      progress: 0, // 进度条数值
+      currentProgress_m_s: '00:00', // 当前播放进度显示数值
+      progress_m_s: '00:00' // 总进度显示数值
+    },
+    label: {
+      inputLabelName: '',
+      myLabels: [],
+      referLabels: [],
+      requestLabels: []
+    },
+    imgObj: {
+      imgLengthShow: true,
+      files: [],
+      tempFiles: []
+    }
+  }
+  methods = {
+    // 我的个人简介操作
+    resumeOperate(e) {
+      let dataset = e.currentTarget.dataset
+      let method = this.signatureInst(e)
+      method[dataset.method]()
+    },
+    // 声音相关操作
+    recordOperate(e) {
+      let method = this.audioInst(e)
+      let methodName = e.currentTarget.dataset.method
+      typeof methodName !== 'undefined'
+        ? method[methodName]()
+        : method[e.type]()
+    },
+    // 我的标签操作
+    labelOperate(e) {
+      let dataset = e.currentTarget.dataset
+      let method = this.labelInst(e, this)
+      method[dataset.method]()
+    },
+    // 保存
+    save(e) {
+      let requestObj = {
+        staffId: this.staffId,
+        userId: this.userId,
+        signature: this.signature.text,
+        labels: this.label.requestLabels,
+        images: this.imgObj.tempFiles,
+        audio: {
+          id: this.record.id,
+          url: this.record.url,
+          duration: this.record.duration
+        }
+      }
+      this.$parent.globalData.refreshPage = true
+      resumeApi.save(requestObj).then(res => {
+        this.$parent.globalData.staffInfo['signature'] = this.signature.text
+        this.label.requestLabels = []
+        this.label.tempFiles = []
+        common.tip('保存成功', 'none')
+        wepy.navigateBack({ delta: 1 })
+      })
+    }
+  }
+  onLoad() {
+    // 获取staffInfo
+    let staffInfo = common.getStaffInfo(this)
+    this.staffId = staffInfo.staffId
+    this.userId = staffInfo.userId
+    this.headIcon = staffInfo.head_icon
+    resumeApi.resume(this.staffId, this.userId).then(res => {
+      // 加载我的标签以及参考标签
+      this.labelInst(undefined, this).load(res.labels)
+
+      // 加载我的个人简介
+      this.signatureInst().load(staffInfo.signature)
+
+      // 加载我的声音
+      this.audioInst().load(res.audio)
+
+      // 加载我的图片
+      this.myphotoInst().load(res.images)
+      this.$apply()
+    })
+  }
+  // label实例
+  labelInst(e, that) {
+    // let label = that.label
+    let dataset
+    if (typeof e !== 'undefined') {
+      dataset = e.currentTarget.dataset
+    }
+    let method = {
+      // 加载标签
+      load(res) {
+        let _myLables = []
+        let _referLabels = []
+        let searchMyLables = function(id) {
+          let flag = false
+          for (let i = 0; i < _myLables.length; i++) {
+            if (_myLables[i].label_id === id) {
+              flag = true
+              break
+            }
+          }
+          return flag
+        }
+        for (let i = 0; i < res.length; i++) {
+          if (res[i].is_refer === '1') {
+            _myLables.push(res[i])
+          } else {
+            if (searchMyLables(res[i].label_id)) {
+              res[i]['selected'] = 'c-909090'
+            }
+            _referLabels.push(res[i])
+          }
+        }
+        that.label.myLabels = _myLables
+        that.label.referLabels = _referLabels
+      },
+      // 录入标签
+      input() {
+        that.label.inputLabelName = e.detail.value
+      },
+      // 添加标签
+      add() {
+        common
+          .showModal(that, '添加标签', 'addLabel')
+          .bind('取消', function(modal) {
+            modal.show = false
+          })
+          .bind(
+            '确认',
+            function(modal) {
+              let labelName = that.label.inputLabelName
+              let currentLabel = {
+                label_id: common.getUUID(),
+                label_name: labelName
+              }
+              that.label.myLabels.push(currentLabel)
+              currentLabel['state'] = 'add'
+              currentLabel['type'] = 1
+              that.label.requestLabels.push(currentLabel)
+              modal.show = false
+            },
+            '#e75152'
+          )
+      },
+      // 添加参考标签
+      addReferLabel() {
+        if (that.label.myLabels.length >= 10) {
+          wx.showToast({
+            title: '标签不能超过10个',
+            icon: 'none'
+          })
+          return
+        }
+        let currentLabel = that.label.referLabels[dataset.index]
+        if (
+          typeof currentLabel['selected'] === 'undefined' ||
+          currentLabel['selected'] === 'noselected'
+        ) {
+          currentLabel['is_refer'] = '1'
+          currentLabel['selected'] = 'c-909090'
+          that.label.myLabels.push(currentLabel)
+          let labelIndex = method.findRequestLabels(currentLabel.label_id)
+          if (labelIndex > -1) {
+            that.label.requestLabels.splice(labelIndex, 1)
+          } else {
+            currentLabel['state'] = 'add'
+            that.label.requestLabels.push(currentLabel)
+          }
+        }
+      },
+      // 删除标签
+      del() {
+        let currentLabel = that.label.myLabels[dataset.index]
+        // 如果删除的为参考标签，将下方参考标签设置为选中
+        if (currentLabel.type === 0) {
+          let findReferLabel = function() {
+            let referLabels = that.label.referLabels
+            for (let i = 0; i < referLabels.length; i++) {
+              if (currentLabel.label_id === referLabels[i].label_id) {
+                referLabels[i]['selected'] = 'noselected'
+                break
+              }
+            }
+          }
+          findReferLabel()
+        }
+        // 如果当前删除的数据在requestLabels里面存在，表示该label是当前添加的，不是后台数据，直接清除掉，否则存储为需要删除的数据
+        let labelIndex = method.findRequestLabels(currentLabel.label_id)
+        if (labelIndex > -1) {
+          that.label.requestLabels.splice(labelIndex, 1)
+        } else {
+          currentLabel['state'] = 'del'
+          that.label.requestLabels.push(currentLabel)
+        }
+        that.label.myLabels.splice(dataset.index, 1)
+      },
+      findRequestLabels(labelId) {
+        let requestLabels = that.label.requestLabels
+        let labelIndex = -1
+        for (let i = 0; i < requestLabels.length; i++) {
+          if (labelId === requestLabels[i].label_id) {
+            labelIndex = i
+            break
+          }
+        }
+        return labelIndex
+      }
+    }
+    return method
+  }
+
+  // 个人简介实例
+  signatureInst(e) {
+    let that = this
+    let method = {
+      load(signature) {
+        that.signature.text =
+          signature === null || typeof signature === 'undefined'
+            ? ''
+            : signature
+      },
+      // 输入字数统计
+      input() {
+        if (that.signature.text.length <= that.signature.textLength) {
+          that.signature.text = e.detail.value
+        }
+      },
+      // 浏览说明
+      browseInputRemark() {
+        common.showModal(that, '个人简介参考', 'browseInputRemark')
+      }
+    }
+    return method
+  }
+
+  // 我的声音实例
+  audioInst(e) {
+    let that = this
+    let recorderManager = wepy.getRecorderManager()
+    let method = {
+      load: function(audio) {
+        if (audio !== null) {
+          that.record.id = audio.id
+          that.record.url = audio.url
+          that.record.duration = audio.duration
+          that.record.progress_m_s =
+            audio.duration > 0 ? common.getMMSS(audio.duration * 1000) : '00:00'
+        } else {
+          that.record.id = null
+        }
+      },
+      openRecord: function() {
+        if (that.record.url) {
+          cardManagerApi.deleteResouces(that.record.url)
+        }
+        that.record.success = false
+        common.showModal(that, '录制语音', 'record')
+      },
+      touchstart: function() {
+      },
+      longtap: function() {
+        that.onRecord = true
+        recorderManager.start({
+          duration: 60000
+        })
+      },
+      touchend: function() {
+        recorderManager.stop()
+        recorderManager.onStop(res => {
+          that.onRecord = false
+          let mmss = common.getMMSS(res.duration)
+          that.record.duration = parseInt(res.duration / 1000)
+          that.record.temppath = res.tempFilePath
+          that.record.progress_m_s = mmss
+          that.record.success = true
+          common.showModal(that, '录制语音', 'record')
+            .bind('重录', function(modal) {
+              that.record.success = false
+              modal.btns = null
+            })
+            .bind(
+              '使用',
+              function(modal) {
+                that.record.url = that.record.temppath
+                var apiURL =
+                  that.$parent.globalData.api.apiUrl + '/push/v1.0/upload_files'
+                wx.uploadFile({
+                  url: apiURL,
+                  filePath: that.record.url,
+                  name: 'editormd-image-file',
+                  success(e) {
+                    that.record.url = JSON.parse(e.data).url
+                  }
+                })
+                modal.show = false
+              },
+              '#e75152'
+            )
+          that.$apply()
+        })
+      },
+      play: function() {
+        let type = e.currentTarget.dataset.type
+        if (that.playAudio) {
+          that.playAudio = false
+          let audio = wepy.createInnerAudioContext()
+          audio.src = type === 'temp' ? that.record.temppath : that.record.url
+          audio.play()
+          if (type !== 'temp') {
+            let i = 1
+            let intervalNumber = setInterval(() => {
+              progress(i)
+              i++
+            }, 1000)
+            let progress = function(i) {
+              that.record.progress = (i / that.record.duration) * 100
+              that.record.currentProgress_m_s = common.getMMSS(i * 1000)
+              that.$apply()
+              if (i >= that.record.duration) {
+                clearInterval(intervalNumber)
+                that.record.progress = 0
+                that.record.currentProgress_m_s = '00:00'
+                that.$apply()
+                that.playAudio = true
+              }
+            }
+          }
+        }
+      },
+      del: function() {
+        cardManagerApi.deleteResouces(that.record.url)
+        that.record.url = null
+        that.$apply()
+      }
+    }
+    return method
+  }
+
+  // 我的照片实例
+  myphotoInst() {
+    let that = this
+    let method = {
+      load: function(images) {
+        that.imgObj.files = images
+      }
+    }
+    return method
+  }
+  // 引用个人简介参考
+  quote() {
+    let p1 = '    Hi!欢迎来到我的个人名片。我是XXX，在XXX公司XXX部（部门）担任XXX（职位），负责XXX工作（工作职责，如销售）。进入XXX公司以前，我曾在XXX、XXX（过往任职公司）任XXX、XXX（职位），\n'
+    let p2 = '    拥有X年的XXX能力（核心能力，如：软件销售），在XXX领域（专业领域，如：软件销售）经验丰富。\n'
+    let p3 = '    工作之外，我喜欢阅读和跑步，与家人一起探索新的旅程是我最大的乐趣。（兴趣爱好）\n'
+    let p4 = '    您可以通过名片中的官网、企业动态、商城更多的了解深卡人工智能名片系统，如有业务合作或其他任何问题，请通过IM功能与我联系，我会第一时间回复您！'
+    this.signature.text = p1 + p2 + p3 + p4
+    this.modal.show = false
+  }
+}
+</script>

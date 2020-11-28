@@ -1,0 +1,187 @@
+<style lang="scss">
+  page {
+    background: #f1f1f1;
+    padding-bottom:120rpx;
+  }
+  .panel{
+    background: #fff;
+    border-radius: 10rpx;
+    margin:20rpx;
+    position: relative;
+    .title{
+        padding:10rpx 20rpx;font-size:30rpx;position: relative;color:#323232;
+        image{
+          position: absolute;right:5rpx;top:5rpx;height:60rpx;width:60rpx;border-radius: 10rpx;
+        }
+    }
+    .productImg{
+      margin:0 20rpx 0 20rpx;
+      height:600rpx;
+      image{
+        width:100%;
+        height:100%;
+        border-radius: 10rpx;
+      }
+    }
+    .descript{
+      padding:10rpx 20rpx 10rpx 20rpx;color:#909090;font-size:24rpx;position: relative;
+      image{
+        position: absolute;left:20rpx;top:16rpx;height:28rpx;width:24rpx;
+      }
+    }
+  }
+  .add{
+    position: fixed;
+    bottom:0;
+    background:#f1f1f1;
+    width:100%;
+    text-align: center;
+    image{
+       width:120rpx;height:120rpx;
+    }
+  }
+</style>
+
+<template>
+<view class="wrap">
+   <view class="empty d-n {{productList.length === 0 && empty ? 'd-b':''}}">
+      <view wx:if="{{operate === 'edit'}}">
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png" />
+        <view class="font-size-26 c-909090 ta-center">没有产品哦，快去添加吧……</view>
+      </view>
+      <view wx:else>
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty2.png" style="width:252rpx;height:220rpx;margin:294rpx 0 8rpx 298rpx"/>
+        <view class="font-size-32 ta-center empty-text c-909090">空空如也</view>
+      </view>
+   </view>
+   <repeat for="{{productList}}" key="id" index="index" item="item">
+      <view class="panel">
+          <view class="title">
+              {{item.name}}
+              <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_img_remove.png"  wx:if="{{operate === 'edit'}}" @tap="delProduct('{{item.id}}','{{index}}')"/>
+          </view>
+          <view class="productImg" @tap="goShopProductDetails('{{index}}')">
+              <image src="{{item.productImgs[0].img_url}}" mode="aspectFill"/>
+          </view>
+          <view class="descript">
+              <view wx:if="{{offer.descript !== null && offer.descript !== 'null' && offer.descript !== ''}}">
+                  <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_descript.png"/>
+                  <view style="padding-left:30rpx">描述</view>
+                  <view>{{item.descript === null ? '暂无描述……':item.descript}}</view>
+              </view>
+          </view>
+      </view>
+    </repeat>
+    <view class="add" @tap="goShopProductAdd" wx:if="{{operate === 'edit'}}">
+        <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_add.png"/>
+    </view>
+    <tabBarTemplate :tabBar.sync="tabBarData" wx:if="{{operate === 'view'}}"></tabBarTemplate>
+    <cover-view class="to-send-msg" @tap="consultProduct" wx:if="{{operate === 'view'}}">
+      <cover-image wx:if="{{res_url}}" class="to-send-msg-img" src="{{res_url}}/dc_send_msg.png"/>
+      <cover-view class="text">留言</cover-view>
+    </cover-view>
+    <cover-view class="c-ffffff msg-number" wx:if="{{noReadNum > 0}}">{{noReadNum}}</cover-view>
+</view>
+</template>
+<script>
+import wepy from 'wepy'
+import tabBarTemplate from '../../components/tabBar/tabBarTemplate'
+import {tabBarJs} from '../../components/tabBar/tabBarJs'
+import {cardManagerApi} from '@/api'
+import { common } from '../../assets/js/common.js'
+import {
+  getPhoneNumberMixin,
+  onticeMsgNumberMixin,
+  saveFormidMixin
+} from '@/mixins/index.js'
+import {G_RES_URL} from '@/config'
+import { cardActionMap } from '@/utils'
+export default class shopProduct extends wepy.page {
+  mixins = [onticeMsgNumberMixin, getPhoneNumberMixin, saveFormidMixin]
+  config = {
+    navigationBarTitleText: '产品管理'
+  }
+  components = {
+    tabBarTemplate: tabBarTemplate
+  }
+  data = {
+    res_url: G_RES_URL,
+    entId: null,
+    operate: null,
+    tabBarData: {},
+    productList: [],
+    empty: false
+  }
+  onLoad(option) {
+    this.entId = option.entId
+    if (option.operate === 'edit') {
+      wepy.setNavigationBarTitle({title: '产品管理'})
+    } else {
+      wepy.setNavigationBarTitle({title: '产品'})
+      wepy.setNavigationBarColor({frontColor: '#ffffff', backgroundColor: '#ff7f02'})
+      this.tabBarData = tabBarJs.selected(1, this)
+      this.recordClickAction(cardActionMap.seeProductList)
+    }
+    this.operate = option.operate
+  }
+  onShow() {
+    tabBarJs.tabBarObject.list[1].text = '产品'
+    this.showProduct()
+  }
+  showProduct() {
+    cardManagerApi.getProductList(this.entId).then(res => {
+      this.productList = res
+      this.empty = true
+      this.$apply()
+    })
+  }
+  methods = {
+    goShopProductDetails(index) {
+      index = parseInt(index)
+      this.$navigate(`/pages/product/shopProductDetails?operate=${this.operate}&entId=${this.entId}&product=${JSON.stringify(this.productList[index])}`)
+    },
+    goShopProductAdd() {
+      this.$navigate(`/pages/product/shopProductDetails?operate=add&entId=${this.entId}`)
+    },
+    delProduct(id, index) {
+      cardManagerApi.delProduct(id).then(res => {
+        this.productList.splice(index, 1)
+        this.$apply()
+        common.tip('删除成功', 'success')
+      })
+    }
+  }
+  /**
+   * 点击行为
+   * @param  {[type]} action 动作代码
+   */
+  recordClickAction(action) {
+    let seller = this.$parent.getCurSellerInfo()
+    let params = {
+      action_code: action,
+      employee_id: seller.staffId,
+      enterprise_id: seller.enterprise_id,
+      department_id: seller.department_id
+    }
+    this.$parent.recordClickAction(params)
+  }
+  // 留言
+  consultProduct() {
+    let sellerInfo = this.$parent.getCurSellerInfo()
+    let userInfo = this.$parent.getUserInfo()
+    let chatUserInfo = this.$parent.getChatUserInfo()
+    let friendId = this.$parent.getEmployeeChatUser(sellerInfo.staffId)
+    let loginInfo = {
+      name: chatUserInfo.identifier,
+      nickName: userInfo.nickName,
+      avtor: userInfo.avatarUrl
+    }
+    let friend = {
+      name: friendId,
+      avtor: sellerInfo.head_icon,
+      nickName: sellerInfo.name
+    }
+    this.$parent.goChatRoom(loginInfo, friend)
+  }
+}
+</script>

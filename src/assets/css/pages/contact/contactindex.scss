@@ -1,0 +1,120 @@
+$main_color: #e75152;
+.head {
+    display:-webkit-box;
+    display: -webkit-flex;
+    display: flex;
+    padding: 0 30rpx;
+    height: 166rpx;
+    line-height:166rpx;
+    justify-content:space-between;
+    border-bottom:2rpx solid #e8e8e8;
+    background: #fff;
+    .head-right {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        view {
+            display:-webkit-box;
+            display: -webkit-flex;
+            display: flex;
+            padding-top:53rpx;
+            image {
+                position:relative;
+                margin-right: -10rpx;
+                width: 62rpx;
+                height: 62rpx;
+                border-radius: 100%;
+                border:1rpx solid #e8e8e8;
+            }
+            image:nth-child(1){
+                z-index: 999;
+            }
+            image:nth-child(2){
+                z-index: 998;
+            }
+            image:nth-child(3){
+                z-index: 997;
+            }
+        }
+        text{
+            margin:0 10rpx 0 30rpx;
+        }
+        .head-arrow {
+            position: relative;
+            top: 69rpx;
+            width: 16rpx;
+            height: 29rpx;
+        }
+    }
+}
+.company{
+    margin-top: 64rpx;
+    .company-logo {
+        display: block;
+        margin: 0 auto;
+        width: 120rpx;
+        height: 120rpx; 
+    }
+    .company-logo-rect{
+        width: 242rpx;
+        height: 90rpx; 
+    }
+    button{
+        margin: 0 auto;
+        margin-top:30rpx;
+        padding: 0;
+        width: 671rpx;
+        height: 88rpx;
+        line-height: 88rpx;
+        border-radius: 44rpx;
+        background-color: $main_color;
+    }
+    button::after {        
+        border: none;
+    }
+}
+.cardList-wrap {
+    margin-top: 38rpx;
+    .cardList-tab {
+        border-top:1px solid #e8e8e8;       
+    }
+}
+.cardList-order-mask {
+    height: 194rpx;
+}
+.contact-part {
+    margin-bottom: 40rpx;
+    .contact-list {
+        border-top: 0;
+        .staff {
+            height: 83rpx;
+            line-height: 83rpx;
+        }
+        .weui-cell {
+            padding:14rpx 32rpx;
+            border-bottom:0;
+        }
+        .weui-cell .weui-cell__hd:nth-child(1){
+            margin-right:0;
+        }
+        .weui-cell .weui-cell__hd:nth-child(3){
+            margin-right:20rpx;
+        }
+        .weui-cell .weui-cell__hd image {
+            width: 103rpx;
+            height: 103rpx;
+            border-radius: 10rpx;
+        }
+        .weui-cell .weui-cell__hd .tel {
+            width: 34rpx;
+            height: 47rpx;
+        }
+        .weui-cell__hd .branch {
+            margin-top: 0;
+            padding-top:4rpx;
+        }
+        .weui-cell__hd .count {
+            margin-top:4rpx;
+        }
+    } 
+}

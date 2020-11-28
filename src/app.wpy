@@ -1,0 +1,1091 @@
+<style lang="scss">
+@import './assets/css/weui.scss';
+@import './assets/css/base.scss';
+@import './components/modal/modal.scss';
+</style>
+<script>
+import wepy from 'wepy'
+import 'wepy-async-function'
+import { cardApi, loginApi, commonApi } from '@/api'
+import WebIM from './assets/js/webIM/sdk/webim'
+import webIMConnListen from './assets/js/webIMConnListen'
+import webIMConfig from './assets/js/webIM/webIMConfig'
+import { outCardDetail, putCardDetail } from '@/storage/src/cardDetail'
+import siteInfo from '@/siteinfo'
+import {G_RES_URL} from '@/config'
+export default class extends wepy.app {
+  config = {
+    pages: [
+      'pages/index',
+      'pages/card/cardView',
+      'pages/card/cardIndex',
+      'pages/me/meIndex',
+      'pages/moment/momentIndex',
+      'pages/moment/momentDetail',
+      'pages/moment/releaseMoment',
+      'pages/contact/contactIndex',
+      'pages/contact/cardList',
+      'pages/contact/addContact',
+      'pages/product/productIndex',
+      'pages/product/personalCenter',
+      'pages/product/addressList',
+      'pages/product/editAddress',
+      'pages/product/shoppingCart',
+      'pages/product/order',
+      'pages/product/orderDetail',
+      'pages/product/category',
+      'pages/product/orderNew',
+      'pages/product/orderView',
+      'pages/product/recommendOffer',
+      'pages/website/bindWebsite',
+      'pages/website/chooseWebsite',
+      'pages/website/websiteCreatSuccess',
+      'pages/website/websiteIndex',
+      'pages/website/websiteView',
+      'pages/website/websiteEdit',
+      'pages/website/service',
+      'pages/website/contact',
+      'pages/website/law',
+      'pages/website/components/exports',
+      'pages/authorize/applyForAuthorize',
+      'pages/product/shopMgr',
+      'pages/product/shopProduct',
+      'pages/product/shopOffer',
+      'pages/product/shopProductDetails',
+      'pages/product/shopOfferDetails',
+      'pages/moment/momentView',
+      'pages/chat/room',
+      'pages/chat/msgList',
+      'pages/chat/chat',
+      'pages/home/homeIndex',
+      'pages/home/homeNoTabbar'
+    ],
+    subPackages: [
+      {
+        root: 'pages/me/pages',
+        name: 'me',
+        pages: [
+          'entSetMenu',
+          'entSwitch',
+          'entOrg',
+          'branchName',
+          'entEdit',
+          'entMgr',
+          'entExit',
+          'staffApprove',
+          'addStaff',
+          'editStaff',
+          'transfer',
+          'handover',
+          'staffMove',
+          'addOperators',
+          'removeOperators',
+          'chooseDept',
+          'newStaffEntry',
+          'orderMgr'
+        ]
+      }, {
+        root: 'pages/aiRadar',
+        name: 'aiRadar',
+        pages: [
+          'radarIndex',
+          'clientIndex',
+          'detail/clientMsg',
+          'detail/actionDetail',
+          'detail/editClient',
+          'detail/follow'
+        ]
+      }, {
+        root: 'pages/bossRadar',
+        name: 'bossRadar',
+        pages: [
+          'bossIndex',
+          'switchDept',
+          'abilityDetail'
+        ]
+      }, {
+        root: 'pages/card/subPackage/pages',
+        name: 'card',
+        pages: [
+          'cardBlood',
+          'cardPoster',
+          'cardPrint',
+          'cardWallpaper',
+          'exchangeCard',
+          'create',
+          'createEnt',
+          'dimission',
+          'editCardInfo',
+          'editCardMenu',
+          'editCardShare',
+          'editCardStyle',
+          'editCardVideo',
+          'join',
+          'myImage',
+          'myLabel',
+          'previewCard',
+          'resume',
+          'uploadImg'
+        ]
+      }
+    ],
+    // 分包预下载
+    preloadRule: {
+      'pages/me/meIndex': {
+        'network': 'all',
+        packages: ['me']
+      },
+      // 在homeIndex页面下载雷达的包
+      'pages/home/homeNoTabbar': {
+        'network': 'all',
+        packages: ['aiRadar', 'bossRadar']
+      },
+      'pages/card/cardIndex': {
+        'network': 'all',
+        packages: ['card']
+      }
+    },
+    tabBar: {
+      backgroundColor: '#fff',
+      color: '#999',
+      selectedColor: '#e75152',
+      borderStyle: 'black',
+      list: [
+        {
+          pagePath: 'pages/card/cardIndex',
+          text: '名片',
+          iconPath: '/assets/images/bar_card_1.png',
+          selectedIconPath: '/assets/images/bar_card_2.png'
+        },
+        {
+          pagePath: 'pages/moment/momentIndex',
+          text: '动态',
+          iconPath: '/assets/images/bar_pyq_1.png',
+          selectedIconPath: '/assets/images/bar_pyq_2.png'
+        },
+        {
+          pagePath: 'pages/home/homeIndex',
+          text: '名片夹',
+          iconPath: '/assets/images/bar_card_holder_2.png',
+          selectedIconPath: '/assets/images/bar_card_holder_3.png'
+        },
+        {
+          pagePath: 'pages/contact/contactIndex',
+          text: '通讯录',
+          iconPath: 'assets/images/bar_txl_1.png',
+          selectedIconPath: '/assets/images/bar_txl_2.png'
+        },
+        {
+          pagePath: 'pages/me/meIndex',
+          text: '我',
+          iconPath: 'assets/images/bar_me_1.png',
+          selectedIconPath: '/assets/images/bar_me_2.png'
+        }
+      ]
+    },
+    window: {
+      backgroundTextStyle: 'dark',
+      navigationBarBackgroundColor: '#e75152',
+      navigationBarTextStyle: 'white'
+    },
+    networkTimeout: {
+      request: 20000
+    },
+    'permission': {
+      'scope.userLocation': {
+        'desc': '如果不授权可手工输入'
+      }
+    }
+  }
+  globalData = {
+    // 图片视频等资源路径
+    res_url: G_RES_URL,
+    // API后台的URL, BY 后台路由过来的地址
+    api: {
+      apiUrl: null
+    },
+    // 进入小程序的场景值
+    scene: null,
+    // 登录用的进入小程序场景值, 1->扫码登陆, 2->非扫码登陆(搜索小程序)
+    froms: null,
+
+    // 微信用户信息--From 微信提供的JSON --> {avatarUrl:头像路径, nickName: 昵称, gender: 性别, language: "zh_CN", city: "", province: ""}
+    userInfo: null,
+    // 对应API后台的sessionId, 在loginApi.login从后台获取，httpRequest中每次请求都会提交给后台
+    sessionId: null,
+    // 微信用户对应后台自己的员工(名片)信息 --From API后台提供的JSON数据{userId,staffId,department_id,enterprise_id}
+    staffInfo: {},
+    // 所看名片的信息{userId,staffId,department_id,enterprise_id}
+    curSellerInfo: {},
+    // 当前微信用户对应的staff列表,  key=staff_id, value=staff_id
+    employeeChatUser: [],
+
+    // 各个销售的名片详情
+    sellerInfo: [],
+    employeeId: '',
+    enterpriseId: '',
+    departmentId: '',
+
+    // 小程序用户的openid
+    openid: '',
+    // 登录im的用户信息
+    userChatLoginInfo: '',
+    isLoginWebim: false,
+
+    chatMsg: [],
+    // noReadMsg: [],
+    // isOpenFirst: false,
+    // onChatRoomHide: false,
+    // start: true,
+    address: {
+      checked: null
+    },
+    shopCart: {
+      addList: []
+    },
+    order: {
+      addList: []
+    },
+    modalMethod: {},
+    // 是否需要在onShow的时候更新页面数据
+    refreshPage: false,
+    // 管名片是否登录IM,staffId为key，boolean为value
+    managerIsLoginIM: new Map()
+  }
+
+  constructor() {
+    super()
+    // requestfix: 修复小程序请求并发问题
+    // promisify：使用wepy.xxx的方式请求小程序原生API都将Promise化
+    this.use('requestfix')
+    this.use('promisify')
+  }
+
+  onLaunch(options) {
+    this.saveScene(options.scene)
+  }
+  onShow(options) {
+    this.saveScene(options.scene)
+  }
+
+  /**
+   * 保存进入小程序的场景值
+   * @param  {[type]} scene 小程序场景值
+   * 1047 扫描小程序码
+   * 1048 长按图片识别小程序码
+   * 1049 手机相册选取小程序码
+   * 1011 扫描二维码
+   * 1012 长按图片识别二维码
+   * 1013 手机相册选取二维码
+   */
+  saveScene(scene, reset) {
+    if (scene || reset) {
+      this.globalData.scene = scene
+      let froms
+      if (
+        scene === 1047 ||
+        scene === 1048 ||
+        scene === 1049 ||
+        scene === 1011 ||
+        scene === 1012 ||
+        scene === 1013
+      ) {
+        froms = 1
+      } else {
+        froms = 2
+      }
+      this.saveFroms(froms, reset)
+      // this.sendWelcomeFromEmployee()
+    }
+  }
+  getScene() {
+    return this.globalData.scene
+  }
+  /**
+   * 保存登录用的场景值
+   * @param  {[type]} froms 登录用的场景值
+   */
+  saveFroms(froms, reset) {
+    if (froms || reset) {
+      this.globalData.froms = froms
+    }
+  }
+  /**
+   * 获取登录用的场景值
+   * @param  {[type]} froms [description]
+   * @return {[type]}       [description]
+   */
+  getFroms() {
+    return this.globalData.froms
+  }
+  /**
+   * 保存用户的详情
+   */
+  saveStaffInfo(staffInfo) {
+    let _this = this
+    this.globalData.staffInfo = ''
+    this.globalData.staffInfo = staffInfo
+    // 本地头像，作用于画布生成，真机使用的情况下，画布是无法加载网络图片的
+    wepy
+      .getImageInfo({
+        src: this.globalData.staffInfo.head_icon
+      })
+      .then(rs => {
+        _this.globalData.staffInfo.tmp_head_icon = rs.path
+      })
+    // 本地QrCode，作用于画布生成，真机使用的情况下，画布是无法加载网络图片的
+    wepy
+      .getImageInfo({
+        src: this.globalData.staffInfo.soft_img_url
+      })
+      .then(rs => {
+        _this.globalData.staffInfo.tmp_soft_img_url = rs.path
+      }, err => {
+        console.info(err)
+      })
+  }
+  /**
+   * 获取用户信息
+   */
+  getStaffInfo() {
+    return this.globalData.staffInfo
+  }
+  /**
+   * 保存用户的详情
+   */
+  saveCurSellerInfo(curSellerInfo) {
+    this.globalData.curSellerInfo = ''
+    this.globalData.curSellerInfo = curSellerInfo
+  }
+  /**
+   * 获取用户信息
+   */
+  getCurSellerInfo() {
+    return this.globalData.curSellerInfo
+  }
+  /**
+   * 获取当前名片的企业、员工、部门id
+   */
+  getNowEmployee() {
+    return {
+      employeeId: this.globalData.employeeId,
+      enterpriseId: this.globalData.enterpriseId,
+      departmentId: this.globalData.departmentId
+    }
+  }
+  /**
+   * 保存员工id
+   * @param  {[type]} employeeId   员工id
+   * @param  {[type]} enterpriseId 企业id
+   * @param  {[type]} departmentId 部门id
+   */
+  saveNowEmployee(employeeId, enterpriseId, departmentId) {
+    this.globalData.employeeId = employeeId
+    if (enterpriseId) {
+      this.globalData.enterpriseId = enterpriseId
+    }
+    this.globalData.departmentId = departmentId
+  }
+  /**
+   * 前往授权页
+   * @param  {[object]} data 携带的参数
+   */
+  toAuthorize(data) {
+    data = JSON.stringify(data)
+    wepy.reLaunch({
+      url: `/pages/authorize/applyForAuthorize?data=${data}`
+    })
+  }
+  /**
+   * 获取微信用户信息
+   */
+  setWxUserInfo() {
+    let userInfo = this.getUserInfo()
+    if (userInfo) {
+      let promise = new Promise((resolve, reject) => {
+        return resolve(userInfo)
+      })
+      return promise
+    } else {
+      return wepy
+        .getUserInfo({
+          withCredentials: false
+        })
+        .then(data => {
+          this.saveUserInfo(data.userInfo)
+          return data.userInfo
+        })
+    }
+  }
+  /**
+   * 获取微信用户的微信信息
+   * @param  {Function} cb [description]
+   * @return {[type]}      [description]
+   */
+  getUserInfo() {
+    return this.globalData.userInfo
+  }
+  /**
+   * 保存微信用户的微信信息
+   */
+  saveUserInfo(userInfo) {
+    this.globalData.userInfo = userInfo
+  }
+  /**
+   * 获取小程序默认的员工
+   * @return {[type]} [description]
+   */
+  getDefaultEmployee() {
+    return wepy.login().then(loginDate => {
+      if (loginDate.code) {
+        let params = {
+          code: loginDate.code,
+          wq_id: siteInfo.uniacid
+        }
+        return commonApi.getDefaultInfo(params).then(
+          deefaultEmployee => {
+            // M by plh at 2018-11-01 for 科技原有的代码注释，这里是平台模式下, 默认员工的openID不能设置为当前登录人的openid, 待后面loginUser的时候再设置
+            // this.saveOpenid(data.open_id)
+            this.saveNowEmployee(
+              deefaultEmployee.staff_id,
+              deefaultEmployee.enterprise_id,
+              deefaultEmployee.department_id
+            )
+            return deefaultEmployee
+          },
+          err => {
+            if (err.err_code) {
+              wepy.showModal({
+                title: '提示',
+                content: '获取身份失败',
+                showCancel: false
+              })
+            }
+          }
+        )
+      }
+    })
+  }
+  // 保存sessionid
+  saveSessionId(sessionId, employee, enterpriseId) {
+    return wepy.setStorageSync('sessionId', sessionId)
+  }
+  // 获取sessionid
+  getSessionId(employee, enterpriseId) {
+    return wepy.getStorageSync('sessionId')
+  }
+  saveOpenid(openid) {
+    // 非缓存版本
+    this.globalData.openid = openid
+    // 缓存版本
+    // this.saveLastCloseTimestamp()
+    // return wepy.setStorage({
+    //   key: 'openid',
+    //   data: openid
+    // })
+  }
+  // 获取已记录到本地的openid
+  getNowOpenid() {
+    // 非缓存版本
+    let openid = this.globalData.openid
+    // 缓存版本
+    // let openid = wepy.getStorageSync('openid')
+    return openid
+  }
+  // 保存员工聊天im用户id
+  saveEmployeeChatUser(sellerId, from) {
+    this.globalData.employeeChatUser[sellerId] = from
+    return from
+  }
+  /**
+   * 根据id获取员工聊天Im用户id
+   * @param  {string} sellerId 员工id
+   */
+  getEmployeeChatUser(sellerId) {
+    let friend = this.globalData.employeeChatUser[sellerId]
+    return friend
+  }
+  /**
+   * 获取openid，本地有就获取，本地没有就向服务器请求
+   */
+  getAndSetOpenid(employeeId, enterpriseId) {
+    let openid = this.getNowOpenid()
+    if (openid) {
+      // 从本地获取
+      let promise = new Promise((resolve, reject) => {
+        resolve(openid)
+      })
+      return promise
+    } else {
+      // 无openid，获取后登录
+      return this.getOpenId(employeeId, enterpriseId).then(res => {
+        this.saveOpenid(res)
+        return res
+      })
+    }
+  }
+  // 获取IM聊天的登录账号、并登陆
+  getUserChatLoginInfo(openid, employeeId, enterpriseId, calOk) {
+    let params = {
+      open_id: openid,
+      staff_id: employeeId,
+      enterparise_id: enterpriseId
+    }
+    let id = this.getChatUserInfo()
+    if (!id) {
+      return loginApi.getChatLoginInfo(params).then(
+        res => {
+          let data = {
+            sdkAppID: res.sdk_id,
+            accountType: res.acount_type,
+            appIDAt3rd: res.sdk_id,
+            accountMode: 0,
+            identifier: res.id,
+            userSig: res.sig
+          }
+          this.saveChatUserInfo(data)
+          // 打开连接/登录
+          this.openChatConnection(data, calOk)
+        },
+        () => {
+          calOk && calOk()
+          return false
+        },
+        () => {
+          calOk && calOk()
+        }
+      )
+    } else {
+      calOk && calOk()
+      return id
+    }
+  }
+  /**
+   * 打开im连接、登录
+   * @param  {[type]} loginInfo [description]
+   * @param  {[type]} calOk      [description]
+   */
+  openChatConnection(loginInfo, calOk) {
+    let listeners = webIMConnListen(this)
+    var options = {
+      isAccessFormalEnv: webIMConfig.options.isAccessFormalEnv,
+      isLogOn: false
+    }
+    // 登录
+    this.webimLogin(loginInfo, listeners, options, res => {
+      if (res.ActionStatus === 'FAIL') {
+        wepy.showModal({
+          title: '提示',
+          content: '聊天系统异常，聊天功能暂时无法使用',
+          showCancel: false,
+          success: function(res) {}
+        })
+      }
+      this.setLoginWebim(true)
+      // 获取未读
+      this.getAllNoReadMsgs(calOk, calOk)
+      // 登录完成之后
+      // this.afterWebimLogin()
+    })
+  }
+  // IM聊天的登录账号
+  webimLogin(loginInfo, listeners, options, callSuc) {
+    WebIM.login(
+      loginInfo,
+      listeners,
+      options,
+      resp => {
+        WebIM.Log.warn('webIM登录成功' + JSON.stringify(resp))
+        // 设置当前用户昵称
+        loginInfo.identifierNick = resp.identifierNick
+        loginInfo.headurl = resp.headurl
+        // 获取所有的
+        callSuc && callSuc(resp)
+      },
+      err => {
+        callSuc && callSuc(err)
+      }
+    )
+  }
+  /**
+   * 记录状态为已登录IM
+   */
+  setLoginWebim(status) {
+    this.globalData.isLoginWebim = status
+  }
+  getLoginWebim() {
+    return this.globalData.isLoginWebim
+  }
+  // 保存用户聊天用户信息
+  saveChatUserInfo(data) {
+    this.globalData.userChatLoginInfo = data
+  }
+  // 获取用户聊天用户im登录信息
+  getChatUserInfo() {
+    return this.globalData.userChatLoginInfo
+  }
+  /**
+   * 生成一个会话对象Session
+   * @param type 会话类型
+   * @param id 对方id
+   * @param name 对方名称,选填
+   * @param icon 对方头像,选填
+   * @param time 当前会话中最新消息的时间戳,选填
+   * @param seq 序列号,选填
+   */
+  newSelSession(type, id, name, icon, time, seq) {
+    // 获取全局的sessMap
+    let sessMap = WebIM.MsgStore.sessMap()
+    let key
+    if (type === WebIM.SESSION_TYPE.C2C) {
+      key = 'C2C' + id
+    } else {
+      key = 'GROUP' + id
+    }
+    if (sessMap[key]) {
+      return sessMap[key]
+    } else {
+      let res = new WebIM.Session(type, id, name, icon, time, seq)
+      return res
+    }
+  }
+  /**
+   * 获取一个会话对象Session
+   * @param type 会话类型
+   * @param id 对方id
+   */
+  getSelSeession(id, type) {
+    // 通过Map对象获取
+    let key
+    if (type === WebIM.SESSION_TYPE.C2C) {
+      key = 'C2C' + id
+    } else {
+      key = 'GROUP' + id
+    }
+    let sessMap = WebIM.MsgStore.sessMap()
+    let selSess = sessMap[key]
+    // 直接获取
+    // let selSess = WebIM.MsgStore.sessByTypeId(type, id)
+    return selSess
+  }
+  /**
+   * 获取所有未读消息,并保存各个未读
+   * @param  {[type]} calOk  成功的回调
+   * @param  {[type]} calErr 失败的回调
+   */
+  getAllNoReadMsgs(calOk, calErr) {
+    // 开启已读标志
+    WebIM.syncMsgs(
+      msgs => {
+        calOk && calOk(msgs)
+        // 保存
+      },
+      res => {
+        calErr && calErr(res)
+      }
+    )
+  }
+  getRoomPage() {
+    return this.getPage('/pages/chat/room')
+  }
+  getPage(pageName) {
+    var pages = this.$pages
+    return pages[pageName]
+  }
+  getchatPage() {
+    return this.getPage('/pages/chat/chat')
+  }
+  getMsgListPage() {
+    return this.getPage('/pages/chat/msgList')
+  }
+  /**
+   *   //设置会设置会话自动已读标记话自动已读上报标志
+   * params:
+   *   selSess    - webim.Session类型, 当前会话
+   *   isOn    - boolean, 将selSess的自动已读消息标志改为isOn，同时是否上报当前会话已读消息
+   *   isResetAll    - boolean，是否重置所有会话的自动已读标志
+   */
+  hasRead(selSess, isOn, isResetAll) {
+    WebIM.setAutoRead(selSess, isOn, isResetAll)
+    // 只是上报当前会话已读消息，自动已读消息标志重新关闭
+    // setTimeout(() => {
+    //   if (isOn && !isResetAll) {
+    //     // WebIM.setAutoRead(selSess, false, isResetAll)
+    //   }
+    // }, 500)
+  }
+  /**
+   * 获取对应好友的未读消息数量
+   * @param  {[type]} from 对方id
+   * @param  {[type]} type 类型，群聊/私聊
+   */
+  getNotReadMsgNum(from, type) {
+    if (!type) {
+      type = WebIM.SESSION_TYPE.C2C
+    }
+    // // 获取全局的sessMap
+    // let sessMap = WebIM.MsgStore.sessMap()
+    // let key
+    // if (type === WebIM.SESSION_TYPE.C2C) {
+    //   key = 'C2C' + from
+    // } else {
+    //   key = 'GROUP' + from
+    // }
+    // let noReadNum
+    // if (sessMap[key]) {
+    //   noReadNum = sessMap[key].unread()
+    // }
+    // return noReadNum
+    // 另外一种方法
+    let selSession = WebIM.MsgStore.sessByTypeId(type, from)
+    if (selSession) {
+      let unread = selSession.unread()
+      return unread
+    }
+  }
+  getEmployeeIdByChatUser(from) {
+    return from
+  }
+  // 查看是否有除了当前销售之外的未读消息
+  getNotReadFromAnother(fromAccount, type) {
+    let sessMap = WebIM.MsgStore.sessMap()
+    let result = false
+    let index, sess
+    for (index in sessMap) {
+      sess = sessMap[index]
+      if (
+        sess.type() === type &&
+        sess.id() !== fromAccount &&
+        sess.unread() > 0
+      ) {
+        result = true
+      }
+    }
+    return result
+  }
+  // 获取openid
+  getOpenId(employeeId, enterpriseId) {
+    let promise = new Promise((resolve, reject) => {
+      // 获取code
+      wepy.login().then(loginDate => {
+        if (loginDate.code) {
+          // 获取openid
+          let param = {
+            code: loginDate.code,
+            staff_id: employeeId || '',
+            enterprise_id: enterpriseId || ''
+          }
+          loginApi.getOpenid(param).then(
+            openid => {
+              this.saveOpenid(openid)
+              resolve(openid)
+            },
+            err => {
+              wepy.showModal({
+                title: '提示',
+                content: '获取身份失败',
+                showCancel: false
+              })
+              this.hideLoading()
+              setTimeout(() => {
+                reject(err)
+              }, 1000)
+            }
+          )
+        }
+      })
+    })
+    return promise
+  }
+  /**
+   * 小程序登录
+   * @param employeeInfo 员工
+   * @param userInfo 微信用户信息
+   * @param openid 微信openid
+   * @param scene 进入小程序的方式
+   */
+  login(employeeInfo, userInfo, openid, fromOpenid, cb) {
+    let promise = new Promise((resolve, reject) => {
+      let froms = this.getFroms()
+      let loginObj = {
+        employee_id: employeeInfo.employeeId,
+        enterprise_id: employeeInfo.enterpriseId || '',
+        froms: froms,
+        head_icon: userInfo.avatarUrl,
+        nick_name: userInfo.nickName,
+        open_id: openid,
+        sex: userInfo.gender
+      }
+      if (fromOpenid) {
+        loginObj = Object.assign({}, loginObj, { from_open_id: fromOpenid })
+      }
+      loginApi.login(loginObj).then(
+        res => {
+          // 获取手机号码是否授权
+          // this.phoneNumberAuth(res.token, cb)
+          this.saveSessionId(res.token, employeeInfo.enterpriseId)
+          this.saveEmployeeChatUser(
+            employeeInfo.employeeId,
+            employeeInfo.employeeId
+          )
+          this.saveUserId(
+            res.user_id,
+            employeeInfo.employeeId,
+            employeeInfo.enterpriseId
+          )
+          resolve(res)
+        },
+        err => {
+          wepy.showModal({
+            title: '提示',
+            content: '登录失败',
+            showCancel: false
+          })
+          this.hideLoading()
+          setTimeout(() => {
+            reject(err)
+          }, 1000)
+        }
+      )
+    })
+    return promise
+  }
+  // 获取是否手机号码授权
+  phoneNumberAuth(sessionId, cb) {
+    // 获取成功
+    this.getPhoneNumberAuth().then(data => {
+      if (!data) {
+        // 获取
+        commonApi.phoneNumberAuth(sessionId).then(status => {
+          if (status) {
+            // 获取成功
+            this.savePhoneNumberAuth(status).then(() => {
+              cb && cb()
+            })
+          } else {
+            // 获取失败
+            cb && cb()
+          }
+        })
+      } else {
+        // 本地已有
+        cb && cb()
+      }
+    })
+  }
+  // 保存手机授权状态
+  savePhoneNumberAuth(data) {
+    if (data !== 1) {
+      data = 0
+    }
+    return wepy.setStorage({
+      key: 'phoneNumberAuth',
+      data: data
+    })
+  }
+  // 获取手机保存状态
+  getPhoneNumberAuth() {
+    return wepy
+      .getStorage({
+        key: 'phoneNumberAuth'
+      })
+      .then(
+        data => {
+          return data.data
+        },
+        () => {
+          return false
+        }
+      )
+  }
+  /**
+   * 保存UserId
+   * @param  {string} userId 用户id
+   */
+  saveUserId(userId) {
+    return wepy.setStorageSync('userId', userId)
+  }
+  /**
+   * 获取userid
+   */
+  getUserId() {
+    let userId = wepy.getStorageSync('userId')
+    return userId
+  }
+  /**
+   * 从后台获取小程序用户的名片相关信息
+   */
+  getStaffInfoFromBack(openid) {
+    return loginApi.getStaffInfoFromBack(openid).then(
+      res => {
+        this.saveNowEmployee(res.staffId, res.enterprise_id, res.department_id)
+        if (res.loginType === 2) {
+          this.saveCurSellerInfo(res)
+        } else {
+          this.saveStaffInfo(res)
+        }
+        return res
+      },
+      err => {
+        wepy.showToast({
+          title: err.err_msg,
+          icon: 'none',
+          duration: 2000
+        })
+        setTimeout(() => {
+          wepy.reLaunch({
+            url: 'home/homeIndex'
+          })
+        }, 2000)
+      }
+    )
+  }
+  /**
+   * 发送点击行为
+   * @param action 动作代码
+   * @param callback 回调
+   */
+  recordClickAction(params, callbackSuc, callbackFail) {
+    let sessionId = this.getSessionId()
+    cardApi.clickAction(params, sessionId).then(
+      res => {
+        callbackSuc && callbackSuc(res)
+      },
+      () => {
+        callbackFail && callbackFail()
+      }
+    )
+  }
+  /**
+   * 获取销售员名片信息
+   * @param  {[type]} sessionId [description]
+   */
+  getSellerCardDetail(employeeId) {
+    let openid = this.getNowOpenid()
+    return cardApi.getSalerCardDetail(employeeId, openid).then(detail => {
+      this.saveSellerInfo(employeeId, detail)
+      return detail
+    })
+  }
+  /**
+   * 保存当前销售人员的名片信息
+   * @param  {[type]} employeeId 员工id
+   * @param  {[type]} sellerInfo 名片详情
+   */
+  saveSellerInfo = putCardDetail
+  /**
+   * 加载提示
+   * @param  {String}  title 提示内容
+   * @param  {Boolean} mask  是否显示透明蒙层，防止触摸穿透
+   */
+  showLoading({ title, mask = false }) {
+    return wepy.showLoading({
+      title: title,
+      mask: mask
+    })
+  }
+  /**
+   * 隐藏loading提示
+   */
+  hideLoading() {
+    wepy.hideLoading()
+  }
+  /**
+   * 设置购物车有新物品的撞他
+   */
+  setNewShopCart(employeeId, status) {
+    if (this.globalData.shopCart.addList[employeeId] !== status) {
+      this.globalData.shopCart.addList[employeeId] = status
+    }
+  }
+
+  /**
+   * 获取本地的对应销售人员的名片信息
+   * @param  {[type]} employeeId 员工id
+   */
+  getSellerInfo(employeeId) {
+    let cardDetail = outCardDetail(employeeId)
+    return cardDetail
+  }
+
+  /**
+   * 设置订单是否有新未支付订单
+   */
+  setNewOrderAdd(employeeId, status) {
+    if (this.globalData.order.addList[employeeId] !== status) {
+      this.globalData.order.addList[employeeId] = status
+    }
+  }
+  /**
+   * 保存在支付订单时，从地址列表选择的地址
+   * @param {[type]} address [description]
+   */
+  setCheckedAddress(address) {
+    this.globalData.address.checked = address
+  }
+
+  /**
+   * 获取在支付订单时，从地址列表选择的地址
+   */
+  getCheckedAddress() {
+    return this.globalData.address.checked
+  }
+  /**
+   * 进入IM聊天室
+   * @param user 用户名
+   * @param friend 好友用户
+   */
+  goChatRoom(mine, friend) {
+    let toChatRoom = () => {
+      wepy.navigateTo({
+        url:
+          '/pages/chat/room?data=' +
+          JSON.stringify({
+            self: {
+              name: mine.name,
+              // 头像
+              avtor: mine.avtor,
+              nickName: mine.nickName
+            },
+            friend: {
+              name: friend.name,
+              // 头像
+              avtor: friend.avtor,
+              nickName: friend.nickName
+            }
+          })
+      })
+    }
+    toChatRoom()
+  }
+  // 用户和销售建立关系
+  createRelation(openid, staffId, fromType) {
+    if (!openid) {
+      wepy.showToast({
+        title: '参数不全',
+        icon: 'none',
+        duration: 1000
+      })
+      return
+    }
+    let params = {
+      open_id: openid,
+      employee_id: staffId,
+      froms: fromType
+    }
+    loginApi.createRela(params).then(res => {
+      // 返回taken，缓存本地
+      this.saveSessionId(res, null, null)
+    })
+  }
+  // 设置管名片IM登录状态
+  setManagerIMLogin(staffId, isLogin) {
+    this.globalData.managerIsLoginIM.clear()
+    this.globalData.managerIsLoginIM.set(staffId, isLogin)
+  }
+  // 设置管名片IM登录状态
+  getManagerIMLogin(staffId) {
+    return this.globalData.managerIsLoginIM.get(staffId)
+  }
+}
+</script>

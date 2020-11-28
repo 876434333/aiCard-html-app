@@ -1,0 +1,149 @@
+<style lang="scss">
+  @import '../../assets/css/pages/product/personalCenter.scss';
+</style>
+<template>
+  <view class="personal-center">
+    <noticemsg></noticemsg>
+    <!-- 个人资料 -->
+    <view class="person-content">
+      <view class="person-icon">
+        <image src="{{avatarUrl}}" />
+      </view>
+      <view class="content-left">
+        <view class="person-name font-size-30 c-323232">{{nickName}}</view>
+        <view class="person-phone font-size-24 c-909090">{{userPhone}}</view>
+      </view>
+      <!-- <view class="content-right">
+        <navigator url="/pages/product/shoppingCart" hover-class="none" class="shop-car"><image src="../../assets/images/product/shopCar.png"/></navigator>
+      </view> -->
+    </view>
+    <!-- 我的订单 -->
+    <view class="my-order">
+      <view class="zan-cell--access order-nav">
+        <view class="font-size-30 c-323232">我的订单</view>
+        <view class="order-all zan-cell__ft font-size-30 c-909090" data-type="all" @tap="toOrder">全部订单</view>
+        <image src="../../assets/images/card/card_edit_right.png"/>
+      </view>
+      <view class="order-content">
+        <view class="order-item" data-type="0" @tap="toOrder">
+          <view class="order-icon zan-badge">
+            <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_dzf.png" class="pay"/>
+            <view class="zan-badge__count" wx:if="{{unpay}}">{{unpay}}</view>
+          </view>
+          <view class="order-type font-size-24 c-323232">待支付</view>
+        </view>
+        <view class="order-item" data-type="4" @tap="toOrder">
+          <view class="order-icon zan-badge">
+              <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_dfh.png" class="send"/>
+              <view class="zan-badge__count" wx:if="{{unsend}}">{{unsend}}</view>
+          </view>
+          <view class="order-type font-size-24 c-323232">待发货</view>
+        </view>
+        <view class="order-item" data-type="5" @tap="toOrder">
+          <view class="order-icon zan-badge" >
+              <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_dsh.png" class="receive"/>
+              <view class="zan-badge__count" wx:if="{{unreceive}}">{{unreceive}}</view>
+          </view>
+          <view class="order-type font-size-24 c-323232">待收货</view>
+        </view>
+        <view class="order-item" data-type="6" @tap="toOrder">
+          <view class="order-icon zan-badge">
+            <image wx:if="{{res_url}}" src="{{res_url}}/dc_product_ywc.png" class="finished"/>
+          </view>
+          <view class="order-type font-size-24 c-323232">已完成</view>
+        </view>
+      </view>
+    </view>
+    <!-- 收货地址 -->
+    <view class="address zan-cell zan-cell--access" @tap="toAddresList">
+      <view class="main address-title zan-cell__bd  font-size-30 c-323232">
+        收货地址
+      </view>
+      <image src="../../assets/images/card/card_edit_right.png"/>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import {orderApi} from '@/api'
+  import NoticeMsg from '@/components/noticeMsg'
+  import {G_RES_URL} from '@/config'
+  export default class PersonalCenter extends wepy.page {
+    components = {
+      noticemsg: NoticeMsg
+    }
+    config = {
+      navigationBarBackgroundColor: '#ff7f02',
+      navigationBarTitleText: '个人中心'
+    }
+    data = {
+      res_url: G_RES_URL,
+      nickName: '',
+      userPhone: '',
+      avatarUrl: '',
+      done: '',
+      unpay: '',
+      unreceive: '',
+      unsend: '',
+      userId: ''
+    }
+    onShow() {
+      this.getMyOrder()
+    }
+    onLoad() {
+      this.getWxUserInfo()
+      this.getUserId()
+    }
+    methods = {
+      /**
+       * 前往订单首页
+       */
+      toOrder(e) {
+        let type = e.currentTarget.dataset.type
+        this.$preload('type', type)
+        this.$navigate('/pages/product/order')
+      }
+    }
+    // 获取我的订单
+    getMyOrder() {
+      let sessionId = this.$parent.getSessionId()
+      return orderApi.getMyOrder(sessionId).then((data) => {
+        this.setMyOrder(data)
+        this.$apply()
+      })
+    }
+    // 设置我的订单数据
+    setMyOrder(data) {
+      this.done = data.done
+      this.unpay = data.unpay
+      this.unreceive = data.unreceive
+      this.unsend = data.unsend
+    }
+    // 获取微信用户信息
+    getWxUserInfo() {
+      let WxUserInfo = this.$parent.getUserInfo()
+      this.nickName = WxUserInfo.nickName
+      this.avatarUrl = WxUserInfo.avatarUrl
+    }
+    // 获取用户id
+    getUserId() {
+      let sessionId = this.$parent.globalData.sessionId
+      let openid = this.$parent.globalData.openid
+      let enterpriseId = this.$parent.globalData.enterpriseId
+      let staffid = this.$parent.globalData.employeeId
+      let param = {
+        enterprise_Id: enterpriseId,
+        open_id: openid,
+        staff_id: staffid
+      }
+      return orderApi.getUserId(param, sessionId).then((data) => {
+        this.userId = data.id
+        this.$apply()
+      })
+    }
+    toAddresList() {
+      this.$navigate('/pages/product/addressList')
+    }
+  }
+</script>

@@ -1,0 +1,73 @@
+<style lang="scss"> </style>
+<template name="column">
+  <!-- 柱状图 -->
+  <canvas canvas-id="columnCanvas" class="echart-canvas"></canvas>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import echarts from './js/echarts.js'
+  export default class column extends wepy.component {
+    props = {
+      columnData: {
+        type: Object,
+        default: null,
+        twoWay: true
+      },
+      columnTitle: {
+        type: String,
+        default: null,
+        twoWay: true
+      }
+    }
+    data = {
+      columnChart: null
+    }
+    column(e) {
+      var windowWidth = 320
+      try {
+        var res = wepy.getSystemInfoSync()
+        windowWidth = res.windowWidth
+      } catch (e) {
+        console.error('getSystemInfoSync failed!')
+      }
+      this.columnChart = new echarts({
+        canvasId: 'columnCanvas',
+        type: 'column',
+        animation: true,
+        categories: this.columnData.main.categories,
+        series: [{
+          name: this.columnTitle,
+          data: this.columnData.main.data,
+          format(val, name) {
+            return val.toFixed(2)
+          },
+          color: '#00dba9'
+        }],
+        yAxis: {
+          format(val) {
+            return val
+          },
+          min: 0,
+          gridColor: '#d5d5d5',
+          fontColor: '#323232'
+        },
+        xAxis: {
+          disableGrid: false,
+          type: 'calibration',
+          gridColor: '#d5d5d5',
+          fontColor: '#323232'
+        },
+        extra: {
+          column: {
+            width: 15
+          },
+          legendTextColor: '#323232'
+        },
+        width: windowWidth,
+        height: 200
+      })
+      this.$apply()
+    }
+  }
+</script>

@@ -1,0 +1,115 @@
+<style lang="scss">
+  $main_color: #e75152;
+  .c-3DB8C8{
+    color:$main_color!important;
+  }
+  .wrap-main {
+    overflow: hidden;
+    .head-main {
+      width:100%;
+      height:82rpx;
+      line-height:82rpx;
+      border-bottom:1px solid #e8e8e8;
+      background: #ffffff;
+      view {
+        display: inline-block;
+        width: 33.33%;
+        font-size: 30rpx;
+        color: #323232;
+        text-align: center;
+        view {
+          display: none;
+        }
+      }
+      .head-check {
+        position: relative;
+        color:$main_color;        
+        view {
+          display: block;
+          position: absolute;
+          left:32%;
+          bottom:4rpx;
+          width: 89rpx;
+          border-bottom:4rpx solid $main_color;
+        }
+      }
+    }
+  }
+</style>
+<template>
+  <!-- 雷达 -->
+  <view class="wrap-main">
+    <view class="head-main">
+      <view hover-class="none" class="{{ number === '0' ? 'head-check' : ''}}" @tap="checkBar" data-index="0">时间
+        <view></view>
+      </view>
+      <view hover-class="none" class="{{ number === '1' ? 'head-check' : ''}}" @tap="checkBar" data-index="1">行为
+        <view></view>
+      </view>
+      <view hover-class="none" class="{{ number === '2' ? 'head-check' : ''}}" @tap="checkBar" data-index="2">人
+        <view></view>
+      </view>
+    </view>
+    <scroll-view style="height:{{scrollHeight}}rpx" scroll-y="true" bindscrolltolower="onReachBottom">
+      <!-- 时间 -->
+      <time style="margin-top:32rpx;" wx:if="{{number === '0'}}"></time>
+      <!-- 行为 -->
+      <action wx:elif="{{number === '1'}}"></action>
+      <!-- 人 -->
+      <people wx:elif="{{number === '2'}}"></people>
+    </scroll-view>
+    <radarTabar :tabBar.sync="tabBarData"></radarTabar>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import time from './components/time'
+  import action from './components/action'
+  import people from './components/people'
+  import radarTabar from '../../components/radartabBar/tabBarTemplate'
+  import { tabBarJs } from '../../components/radartabBar/tabBarJs'
+  import { managerChatMixin } from '@/mixins'
+  export default class radarIndex extends wepy.page {
+    mixins = [managerChatMixin];
+    config = {
+      navigationBarTitleText: '雷达'
+    }
+    data = {
+      number: '0',
+      tabBarData: {},
+      scrollHeight: 960
+    }
+    components = {
+      time: time,
+      action: action,
+      people: people,
+      radarTabar: radarTabar
+    }
+    onLoad() {
+      this.tabBarData = tabBarJs.selected(0, this)
+      this.setScrollHeight()
+    }
+    // 设置滚动高度
+    setScrollHeight() {
+      wepy.getSystemInfo().then(res => {
+        this.scrollHeight = (res.screenHeight - res.screenWidth / 750 * 394) * 2
+        this.$apply()
+      })
+    }
+    methods = {
+      // 选择排序方式
+      checkBar(e) {
+        this.number = e.currentTarget.dataset.index
+      }
+    }
+    // 加载更多
+    onReachBottom() {
+      if (this.number === '0') {
+        this.$invoke('time', 'loadMoreData')
+      } else if (this.number === '2') {
+        this.$invoke('people', 'loadMoreData')
+      }
+    }
+  }
+</script>

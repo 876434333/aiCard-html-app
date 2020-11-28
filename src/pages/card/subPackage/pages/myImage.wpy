@@ -1,0 +1,60 @@
+<style>
+</style>
+<template>
+<view class="mainbody">
+    <view class="weui-flex mt-40">
+        <view class="weui-flex__item ta-left font-size-30 c-323232">我的照片</view>
+        <view class="weui-flex__item ta-right font-size-24 c-909090">{{imgObj.files.length}}/9</view>
+    </view>
+    <uploadImg class="mt-20" :imgObj.sync="imgObj"></uploadImg>
+    <view style="clear:both"></view>
+    <view class="font-size-24 c-909090">建议尺寸:680*380(宽*高)</view>
+    <button class="bg-3DB8C8 c-ffffff bord-radius font-size-36 mt-40" @tap="save">保存</button>
+</view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import uploadImgTem from '@/components/uploadImgTem'
+import { common } from '@/assets/js/common'
+import { resumeApi } from '@/api'
+export default class myImage extends wepy.page {
+  config = {
+    navigationBarTitleText: '上传我的照片'
+  }
+  components = {
+    uploadImg: uploadImgTem
+  }
+  data = {
+    staffId: null,
+    userId: null,
+    imgObj: {
+      imgLengthShow: true,
+      files: [],
+      tempFiles: []
+    }
+  }
+  methods = {
+    // 保存
+    save(e) {
+      let requestObj = {
+        staffId: this.staffId,
+        images: this.imgObj.tempFiles
+      }
+      resumeApi.save(requestObj).then(res => {
+        common.tip('保存成功', 'none')
+        wepy.navigateBack({ delta: 1 })
+      })
+    }
+  }
+  onLoad() {
+    let that = this
+    let staffInfo = common.getStaffInfo(this)
+    this.staffId = staffInfo.staffId
+    resumeApi.getImages(this.staffId).then(res => {
+      that.imgObj.files = res
+      this.$apply()
+    })
+  }
+}
+</script>

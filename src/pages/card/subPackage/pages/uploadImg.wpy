@@ -1,0 +1,39 @@
+<template>
+  <view>
+  <!-- 上传我的照片 -->
+  <uploadImg :imgObj.sync="imgObj" class="weui-uploader-wrap"></uploadImg>
+  <button class="save font-size-36 c-ffffff" @tap="save">保存</button>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import uploadImgTem from '@/components/uploadImgTem'
+  import {G_RES_URL} from '@/config'
+  export default class uploadImg extends wepy.page {
+    // 相当于page.json
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '上传我的照片'
+    }
+    components = {
+      uploadImg: uploadImgTem
+    }
+    data = {
+      res_url: G_RES_URL,
+      imgObj: {
+        imgLengthShow: false,
+        files: [
+          {id: 'p_01', url: this.res_url + '/FoUG9fgU-X0Jpk0xd-eqfTV0xJKg'},
+          {id: 'p02', url: this.res_url + '/FiIvFcGQ_q2qH2FAg3NP5mQi362E'}
+        ],
+        addTempFiles: [],
+        delTempFiles: []
+      }
+    }
+    methods = {
+      // 保存照片
+      save() {}
+    }
+  }
+</script>

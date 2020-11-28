@@ -1,0 +1,119 @@
+<style lang="scss">
+  .release-input-null{
+    color: #C9C9C9;
+  }
+  .release{
+    display: flex;
+    align-items: flex-end; /*底部对齐*/
+    justify-content: space-between; /*两端对齐*/
+    box-sizing: border-box;
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 18rpx 0 18rpx 30rpx;
+    background-color: #F7F8F7;
+    font-size: 28rpx;
+    z-index: 999;
+  }
+  .release .release-text{
+    width: 604rpx;
+    min-height: 46rpx;
+    max-height: 120rpx;
+    border-width: 15rpx 20rpx;
+    border-style: solid;
+    border-color: #ffffff;
+    line-height: 34rpx;
+    font-size: 28rpx;
+    background-color: #ffffff;
+    border-radius: 4rpx;
+  }
+  .release .release-submit{
+    width: 116rpx;
+    height: 80rpx;
+    line-height: 80rpx;
+    text-align: center;
+    color: #66CC00;
+  }
+</style>
+<template>
+  <view class="release"  style="{{entity.bottom}}">
+    <textarea class="release-text"
+              placeholder-class="release-input-null"
+              fixed="true"
+              maxlength="100"
+              cursor-spacing="15"
+              auto-height="true"
+              auto-focus="true"
+              placeholder="回复 {{entity.name}}"
+              show-confirm-bar=""
+              bindinput="inputText"></textarea>
+    <view class="release-submit"
+          @tap="submitMsg">发送</view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import {momentApi} from '@/api'
+import {cardActionMap} from '@/utils'
+export default class Release extends wepy.component {
+  props = {
+    entity: {
+      type: Object,
+      default: {}
+    }
+  }
+
+  methods = {
+    // 输入
+    inputText(e) {
+      this.entity.content = e.detail.value
+    },
+    // 提交
+    submitMsg() {
+      if (!this.entity.content || !this.entity.content.trim()) {
+        return false
+      }
+      let sessionId = this.getWxApp().getSessionId()
+      let param = {
+        content: this.entity.content,
+        circle_id: this.entity.id
+      }
+      this.getApi().commentMoment(param, sessionId).then((res) => {
+        wepy.showToast({
+          title: '评论成功',
+          icon: 'none',
+          duration: 1000
+        }).then(() => {
+          this.$emit('submit-input', this.entity.content)
+        })
+        this.recordClickAction(cardActionMap.comtMoment)
+      }, () => {
+        wepy.showToast({
+          title: '评论失败',
+          icon: 'none',
+          duration: 1000
+        })
+      })
+    }
+  }
+  getApi() {
+    return momentApi
+  }
+  // 获取wepy的app实例
+  getWxApp() {
+    return wepy.$instance
+  }
+  // 点击行为
+  recordClickAction(action) {
+    let params = {
+      action_code: action,
+      employee_id: this.getWxApp().globalData.employeeId,
+      enterprise_id: this.getWxApp().globalData.enterprise_id,
+      department_id: this.getWxApp().globalData.departmentId
+    }
+    this.getWxApp().recordClickAction(params)
+  }
+}
+</script>

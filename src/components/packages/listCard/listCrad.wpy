@@ -1,0 +1,43 @@
+<template>
+  <view class="list-card mt-20">
+    <view class="card-check">
+      <view wx:if="{{del.show}}"
+            class="zan-icon zan-icon-{{entity.checked  ? 'checked c-15aefa' : 'check'}}"
+            data-id="{{entity.id}}"
+            data-index="{{index}}"
+            @tap="addDel"></view>
+      <view wx:else
+            class="zan-icon zan-icon-{{entity.checked ? 'checked c-15aefa' : 'check'}}"
+            data-id="{{entity.id}}"
+            data-index="{{index}}"
+            @tap="addBuy"></view>
+    </view>
+    <view class="card-box">
+      <image class="card-thumb"
+        src="{{entity.norms_pic}}"
+        mode="aspectFit" />
+      <view class="card-detail">
+        <view class="card-title zan-ellipsis--l2">{{entity.offer_name}}</view>
+        <view class="card-subtitle zan-ellipsis--l2">{{entity.norms_name}}</view>
+        <view class="card-content">
+          <text class="discount-price">¥{{entity.discount_price || entity.offer_price}}</text>
+          <text wx:if="{{discount < 1}}" class="zan-text-deleted price">¥{{entity.offer_price}}</text>
+        </view>{{entity.offer_num}}
+        <view class="card-stepper">
+          <stepper :max.sync="entity.offer_leave"
+                    :min.sync="min"
+                    :stepper.sync="entity.num"
+                    :size="size"
+                    :componentId="index"></stepper>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class NoticeMsgNumber extends wepy.component {
+}
+</script>

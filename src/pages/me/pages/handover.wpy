@@ -1,0 +1,184 @@
+<style lang="scss">
+  @import '../../../assets/css/pages/me/entOrg.scss';
+  @import '../../../assets/css/pages/me/transfer.scss';
+  .wrap{
+    .mask {
+      .staff-selected {
+        padding-top:40rpx;
+        padding-right:30rpx;
+        line-height:48rpx;
+      }
+    } 
+  }
+</style>
+<template>
+  <!-- 管理组织架构-离职-工作转接 -->
+  <view class="wrap">
+    <view class="search">
+      <image src="../../../assets/images/contact/search.png"/>
+      <input type="text" placeholder="搜索" class="font-size-30 c-909090"/>
+    </view>
+    <!-- 空列表 -->
+    <view class="empty" wx:if="{{staffGroupList.length === 0 && empty}}">
+      <image wx:if="{{res_url}}" src="{{res_url}}/dc_common_empty.png"/>
+      <view class="font-size-32 ta-center c-909090">暂无成员，先去添加公司成员吧...</view>
+    </view>
+    <!-- 联系人列表 -->
+    <view class="contact-part {{staffGroupList.length === 0 ? 'contact-part-empty' : ''}}">
+      <repeat for="{{staffGroupList}}" index="firstIndex" key="index" item="item">
+        <view class="contact-list">
+          <view class="staff font-size-24 c-909090">{{item.groupName}}</view>
+          <repeat for="{{item.dataList}}" index="secondIndex" key="index" item="staff">
+            <view class="weui-cell" @tap="choose" data-firstIndex="{{firstIndex}}" data-secondIndex="{{secondIndex}}">
+              <view class="weui-cell__hd">
+                <image src="{{staff.head_icon}}"/>
+              </view>
+              <view class="weui-cell__hd">
+                <view class="branch font-size-30 c-323232">{{staff.name}}</view>
+                <view class="count font-size-26 c-909090">{{staff.station}}</view>
+              </view>
+              <view class="weui-cell__hd" wx:if="{{staff.selected}}">
+                <image src="../../../assets/images/contact/hook.png" class="hook"/>
+              </view>
+            </view>
+          </repeat>
+        </view>
+      </repeat>
+    </view>
+    <view class="foot"><button class="save font-size-36 c-ffffff" @tap="mask" data-method="maskShow">确定</button></view>
+    <!-- 工作转接弹窗 -->
+    <view class="mask-black" hidden="{{maskHidden}}" @tap="mask" data-method="maskHide"></view>
+    <view class="mask" hidden="{{maskHidden}}">
+      <view class="font-size-30 c-909090 staff-selected">确定退出企业并将工作转接给[{{staffSelectedName}}]</view>
+      <view class="mask-botoom">
+        <view class="font-size-30 c-909090 ta-center cancel" @tap="mask" data-method="maskHide">取消</view>
+        <view class="font-size-30 c-3DB8C8 ta-center sure" @tap="mask" data-method="maskSure">确定</view>
+      </view>
+    </view>
+  </view>
+</template>
+  
+<script>
+import wepy from 'wepy'
+import { common } from '../../../assets/js/common.js'
+import { companyApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class transfer extends wepy.page {
+  // 相当于page.json
+  config = {
+    navigationBarTitleText: '工作转接给'
+  }
+  data = {
+    res_url: G_RES_URL,
+    maskHidden: true,
+    staffSelectedName: '',
+    staffSelectedId: '',
+    enterpriseId: '',
+    staffGroupList: [],
+    staffId: '',
+    isExit: '',
+    empty: false
+  }
+  onLoad(option) {
+    this.enterpriseId = option.enterprise_id
+    this.staffId = option.staff_id
+    this.isExit = option.is_exit
+    if (this.isExit === '1') {
+      // 退出企业，后台获取该员工的staffId
+      let openid = this.$parent.getNowOpenid()
+      companyApi
+        .getStaffByEnterpriseIdAndOpenId(this.enterpriseId, openid)
+        .then(staffId => {
+          this.staffId = staffId
+          this.init(staffId)
+        })
+    } else {
+      // 管理员设置为离职
+      this.init(this.staffId)
+    }
+  }
+  init(staffId) {
+    companyApi.getEnterpriseStaffList(this.enterpriseId).then(res => {
+      // 去掉离职员工自己
+      for (let i = 0; i < res.length; i++) {
+        if (res[i].id === staffId) {
+          res.splice(i, 1)
+          break
+        }
+      }
+      this.staffGroupList = common.getGroupListByKey(res, 'first_letter')
+      this.empty = true
+      this.$apply()
+    })
+  }
+  methods = {
+    // 选择转让的员工
+    choose(e) {
+      let firstIndex = e.currentTarget.dataset.firstindex
+      let secondIndex = e.currentTarget.dataset.secondindex
+      let staffGroupList = this.staffGroupList
+      for (let i = 0; i < staffGroupList.length; i++) {
+        let staffList = staffGroupList[i].dataList
+        for (let j = 0; j < staffList.length; j++) {
+          staffList[j]['selected'] = false
+        }
+      }
+      staffGroupList[firstIndex].dataList[secondIndex].selected = true
+
+      this.staffSelectedName =
+        staffGroupList[firstIndex].dataList[secondIndex].name
+      this.staffSelectedId = staffGroupList[firstIndex].dataList[secondIndex].id
+      this.$apply()
+    },
+    // 弹窗操作
+    mask(e) {
+      let that = this
+      let method = {
+        // 显示弹窗
+        maskShow() {
+          that.maskHidden = false
+        },
+        // 关闭弹窗
+        maskHide() {
+          that.maskHidden = true
+        },
+        // 点击确定
+        maskSure() {
+          let leaveStaffId = that.staffId
+          let handoverStaffId = that.staffSelectedId
+          if (!handoverStaffId) {
+            wepy.showToast({
+              title: '请选择交接人',
+              icon: 'none',
+              duration: 2000
+            })
+            return
+          }
+          let params = {
+            leaveStaffId: leaveStaffId,
+            handoverStaffId: handoverStaffId
+          }
+          companyApi.handover(params).then(res => {
+            that.maskHidden = true
+            common.tip('交接成功', 'success')
+            setTimeout(() => {
+              let openid = that.$parent.getNowOpenid()
+              that.$parent.getStaffInfoFromBack(openid)
+              if (that.isExit === '1') {
+                wepy.redirectTo({
+                  url: `./entExit`
+                })
+              } else {
+                wepy.redirectTo({
+                  url: `./entOrg?enterprise_id=${that.enterpriseId}`
+                })
+              }
+            }, 1000)
+          })
+        }
+      }
+      method[e.currentTarget.dataset.method]()
+    }
+  }
+}
+</script>

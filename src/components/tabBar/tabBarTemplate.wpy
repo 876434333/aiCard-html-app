@@ -1,0 +1,41 @@
+<style lang="scss">
+  @import './tabBarStyle.scss';
+</style>
+<template name="tabbar">
+  <cover-view class="tabbar_box" style="background-color:{{tabBar.backgroundColor}}; border-top-color:{{tabBar.borderStyle}}; {{tabBar.position == 'top' ? 'top:0' : 'bottom:0'}}">
+    <repeat wx:for="{{tabBar.list}}" wx:for-item="item" wx:key="index">
+      <cover-view class="tabbar_nav" data-url="{{item.pagePath}}" style="width:{{1/tabBar.list.length*100}}%; color:{{item.selected ? tabbar.selectedColor : tabbar.color}}" @tap="toPage" open-type="redirect">
+        <cover-image class="tabbar_icon" src="{{item.selected ? item.selectedIconPath : item.iconPath}}"/>
+        <cover-view class="font-size-22" style="color:{{item.selected ? tabBar.selectedColor : tabBar.color}}">{{item.text}}</cover-view>
+      </cover-view>
+    </repeat>
+  </cover-view>
+</template>
+<script>
+  import wepy from 'wepy'
+  export default class tabBarComp extends wepy.component {
+    props = {
+      tabBar: {
+        type: Object,
+        default: {}
+      }
+    }
+    methods = {
+      add (params) {
+        console.log(params)
+      },
+      toPage(e) {
+        if (e.currentTarget.dataset.url.indexOf('homeIndex') > 0) {
+          wepy.switchTab({
+            url: e.currentTarget.dataset.url
+          })
+        } else {
+          wepy.redirectTo({
+            url: e.currentTarget.dataset.url
+          })
+        }
+      }
+    }
+    config = {}
+  }
+</script>

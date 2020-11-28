@@ -1,0 +1,105 @@
+.slide-image {
+  width: 100%;
+  height: 100%;
+}
+
+.trade-detail {
+  background: #f8f8f8;
+  .trade-tit {
+    color: #999;
+    background: #ffffff;
+    height: 70rpx;
+    line-height: 70rpx;
+    margin: 20rpx 0 0;
+    text-align: center;
+  }
+  .trade-content {
+    font-size: 26rpx;
+    line-height: 46rpx;
+    color: #333;
+    background: #fff;
+    image {
+      display: inherit;
+    }
+  }
+  .trade-slide-swiper {
+    height: 450rpx;
+  }
+}
+
+.trade-product {
+  padding: 10rpx 0;
+  background: #fff;
+}
+
+.trade-opts {
+  display: flex;
+  align-items: center;
+  border-top: 1px solid #e5e5e5;
+  background: #fff;
+  text-align: center;
+  .trade-opt {
+    flex: 2;
+    font-size: 26rpx;
+    line-height: 30rpx;
+    color: #7a7777;
+    border-right:1px solid #e5e5e5;
+    &.trade-opt-spt {
+      position: relative;
+      // &:after {
+      //   position: absolute;
+      //   content: '';
+      //   right: 0;
+      //   top: 0;
+      //   width: 1px;
+      //   height: 100%;
+      //   background: #e5e5e5;
+      // }
+    }
+    image {
+      display: inline-block;
+      width: 37rpx;
+      height: 43rpx;
+    }
+  }
+  .trade-opt-placer {
+    height: 100%;
+    flex: 4;
+    text-align: left;
+    .product-price {
+      margin: 0 30rpx;
+      font-size: 30rpx;
+      line-height: 98rpx;
+      font-weight: bold;
+    }
+  }
+  .trade-opt-buy {
+    flex: 3;
+    font-size: 32rpx;
+    line-height: 98rpx;
+    color: #fff;
+    display: block;
+    height: 100%;
+    &:active {
+      background: darken(#32a4f9, 5%);
+    }
+    &.trade-opt-spt {
+      position: relative;
+      // &:after {
+      //   position: absolute;
+      //   content: '';
+      //   right: 0;
+      //   top: 0;
+      //   width: 1px;
+      //   height: 100%;
+      //   background: #e5e5e5;
+      // }
+    }
+  }
+  .trade-opt-unava {
+    font-size: 32rpx;
+    line-height: 98rpx;
+    background: #999;
+    color: #fff;
+  }
+}

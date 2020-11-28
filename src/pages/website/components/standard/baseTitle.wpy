@@ -1,0 +1,95 @@
+<template>
+  <!-- 标题 -->
+  <view class="website-components">
+    <view class="edit" wx:if="{{area == 'edit'}}">
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_input weui-cell-style">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable weui-label-style font-size-30 c-323232">标题</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input font-size-30 c-909090" placeholder="标题" value="{{obj.data.title.value}}"  bindinput="getName"/>
+          </view>
+          <view class="weui-cell__ft" style="flex:0.1">
+            <image class="component-input-del" @tap="clean" data-target="data.title.value" hidden="{{!obj.data.title.value}}" src="../../../../assets/images/website/delete_video.png"/>
+          </view>
+        </view>
+      </view>
+      <view class="weui-cell weui-cells_after-title">
+        <view class="weui-cell__hd">
+          <view class="weui-label font-lable weui-label-style font-size-30 c-323232">对齐方式</view>
+        </view>
+        <view class="weui-cell__bd icon-tools">
+          <view class="icon-item" @tap="alignLeft">
+            <image src="{{obj.data.textAlign.value == 'left' ? '/assets/images/website/align_left_check.png' : '/assets/images/website/align_left.png'}}"/>
+          </view>
+          <view class="icon-item" @tap="alignCenter">
+            <image src="{{obj.data.textAlign.value == 'center' ? '/assets/images/website/align_center_check.png' : '/assets/images/website/align_center.png'}}"/>
+          </view>
+        </view>
+      </view>
+      <button class="weui-btn submit-btn submit-component-btn" style="margin-top:30rpx;" @tap="save">保存</button>
+    </view>
+    <view class="preview" wx:if="{{area == 'preview'}}">
+      <view class="font-size-30 c-323232 about-title component-title" style="text-align:{{obj.data.textAlign.value}};">{{obj.data.title.value}}</view>
+    </view>
+    <view class="show" wx:if="{{area == 'show'}}">
+      <view class="font-size-30 c-323232 about-title component-title" style="text-align:{{obj.data.textAlign.value}};">{{obj.data.title.value}}</view>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+export default class baseTitle extends wepy.component {
+  props = {
+    obj: {
+      type: Object,
+      default: {},
+      twoWay: true
+    },
+    area: {
+      type: String,
+      default: null,
+      twoWay: true
+    },
+    idx: {
+      type: String,
+      default: null,
+      twoWay: true
+    }
+  }
+  methods = {
+    clean(e) {
+      let k = e.currentTarget.dataset.target.split('.')
+      this.obj[k[0]][k[1]][k[2]] = ''
+    },
+    alignLeft() {
+      this.obj.data.textAlign.value = 'left'
+    },
+    alignCenter() {
+      this.obj.data.textAlign.value = 'center'
+    },
+    getName(e) {
+      this.obj.data.title.value = e.detail.value
+    },
+    save() {
+      let _this = this
+      if (!_this.obj.data.title.value) {
+        _this.obj.data.title.value = '标题'
+      }
+      console.log(this.obj)
+      wepy.setStorage({
+        key: 'website_plugin',
+        data: {
+          idx: _this.idx,
+          content: _this.obj,
+          save: true
+        }
+      })
+      wepy.navigateBack({
+        delta: 1
+      })
+    }
+  }
+}
+</script>

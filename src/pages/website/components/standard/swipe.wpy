@@ -1,0 +1,344 @@
+<style lang="scss">
+  @import '../../../../assets/css/pages/website/cropper.scss';
+  .count{
+    position: absolute;
+    font-size: 20rpx;
+    background-color: #323232;
+    opacity:0.5;
+    color: #fff;
+    text-align: center;
+    border-radius:15rpx;
+    top: 20rpx;
+    left: 44%;
+    width: 90rpx;
+  }
+</style>
+<template>
+  <!-- 轮播图 -->
+  <view class="website-components" >
+    <view style="height: {{cropperHeight+1}}px" wx:if="{{area=='cropper'}}">
+        <view class="cropper-wrapper">
+          <canvas
+            class="cropper"
+            disable-scroll="true"
+            bindtouchstart="touchStart"
+            bindtouchmove="touchMove"
+            bindtouchend="touchEnd"
+            style="width:100%;height:100%;background-color: rgba(0, 0, 0, 0.8)"
+            canvas-id="swipeCropper">
+          </canvas>
+        </view>
+        <view class="cropper-buttons">
+          <button class="bord-radius selectImgBtn" bindtap="uploadTap">选择图片</button>
+          <button class="bg-3DB8C8 bord-radius c-e8e8e8 okBtn" bindtap="getCropperImage">确定</button>
+        </view>
+    </view>
+    <view class="edit" style="padding-bottom: 120rpx;height: 100%" wx:if="{{area == 'edit'}}">
+      <view class="mb-30">
+        <view style="position: relative;text-align: center;">
+          <view  class="count">共 {{cutImgFiles.files.length}} 张</view>
+          <image @tap="edit(isSelect)" style="width:375px;height:348px" src="{{cutImgFiles.files[isSelect] ? cutImgFiles.files[isSelect].url : res_url + '/dc_website_uploadPic.png' }}"/>
+        </view>
+        <view class="ml-40 font-size-24 c-909090">{{cutImgFiles.files.length}}/9 (最多添加9张轮播图，建议尺寸:750*696(宽*高))</view>
+      </view>
+      <view class="mt-30">
+        <view class="delView">
+          <view class="delImgView">
+            <image @tap="cutImg(0)" class="{{isSelect == 0 ? 'onImgSelect' : ''}}"  style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 0 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[0].url}}"/>
+            <image wx:if="{{cutImgFiles.files[0]}}" @tap="delImg(0)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+          <view class="delImgView">
+            <image wx:if="{{cutImgFiles.files.length >= 1}}" @tap="cutImg(1)" class="{{isSelect == 1 ? 'onImgSelect' : ''}}" style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 1 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[1].url}}"/>
+            <image wx:if="{{cutImgFiles.files[1]}}" @tap="delImg(1)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+          <view class="delImgView">
+            <image wx:if="{{cutImgFiles.files.length >= 2}}" @tap="cutImg(2)" class="{{isSelect == 2 ? 'onImgSelect' : ''}}" style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 2 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[2].url}}"/>
+            <image wx:if="{{cutImgFiles.files[2]}}" @tap="delImg(2)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+        </view>
+      </view>
+      <view class="mt-30">
+        <view class="delView">
+          <view class="delImgView">
+            <image wx:if="{{cutImgFiles.files.length >= 3}}" @tap="cutImg(3)" class="{{isSelect == 3 ? 'onImgSelect' : ''}}" style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 3 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[3].url}}"/>
+            <image wx:if="{{cutImgFiles.files[3]}}" @tap="delImg(3)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+          <view class="delImgView">
+            <image wx:if="{{cutImgFiles.files.length >= 4}}" @tap="cutImg(4)" class="{{isSelect == 4 ? 'onImgSelect' : ''}}" style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 4 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[4].url}}"/>
+            <image wx:if="{{cutImgFiles.files[4]}}" @tap="delImg(4)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+          <view class="delImgView">
+            <image wx:if="{{cutImgFiles.files.length >= 5}}" @tap="cutImg(5)" class="{{isSelect == 5 ? 'onImgSelect' : ''}}" style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 5 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[5].url}}"/>
+            <image wx:if="{{cutImgFiles.files[5]}}" @tap="delImg(5)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+        </view>
+      </view>
+      <view class="mt-30">
+        <view class="delView">
+          <view class="delImgView">
+            <image wx:if="{{cutImgFiles.files.length >= 6}}" @tap="cutImg(6)" class="{{isSelect == 6 ? 'onImgSelect' : ''}}" style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 6 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[6].url}}"/>
+            <image wx:if="{{cutImgFiles.files[6]}}" @tap="delImg(6)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+          <view class="delImgView">
+            <image wx:if="{{cutImgFiles.files.length >= 7}}" @tap="cutImg(7)" class="{{isSelect == 7 ? 'onImgSelect' : ''}}" style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 7 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[7].url}}"/>
+            <image wx:if="{{cutImgFiles.files[7]}}" @tap="delImg(7)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+          <view class="delImgView">
+            <image wx:if="{{cutImgFiles.files.length >= 8}}" @tap="cutImg(8)" class="{{isSelect == 8 ? 'onImgSelect' : ''}}" style="width:120rpx;height:120rpx;" src="{{cutImgFiles.files.length == 8 ? res_url + '/dc_website_addPic.png' : cutImgFiles.files[8].url}}"/>
+            <image wx:if="{{cutImgFiles.files[8]}}" @tap="delImg(8)" class="delImg" src="{{res_url}}/dc_website_delImg.png"/>
+          </view>
+        </view>
+      </view>
+      <view style="clear:both"></view>
+      <button class="weui-btn submit-btn saveBtn" @tap="save">保存</button>
+    </view>
+    <view class="preview" wx:if="{{area == 'preview'}}">
+      <view class="font-size-20 c-ffffff ta-center carousel-len">共{{obj.data.image.value.length}}张</view>
+      <view class="carousel-edit">
+        <image src="../../../../assets/images/website/photo.png"/>
+        <text class="font-size-24 c-ffffff">编辑图片</text>
+      </view>
+      <swiper autoplay="true" indicator-dots="true" indicator-color="#f8f7f6" indicator-active-color="#e75152" class="carousel">
+        <repeat for="{{obj.data.image.value}}" index="index" item="banners">
+          <swiper-item class="carousel-img">
+            <image src="{{banners.url}}"/>
+          </swiper-item>
+        </repeat>
+      </swiper>
+    </view>
+    <view class="show" wx:if="{{area == 'show'}}">
+      <swiper autoplay="true" indicator-dots="true" indicator-color="#f8f7f6" indicator-active-color="{{websiteView ? '#e75152' : '#e75152'}}" class="carousel">
+        <repeat for="{{obj.data.image.value}}" index="index" item="banners">
+          <swiper-item class="carousel-img">
+            <image src="{{banners.url}}"/>
+          </swiper-item>
+        </repeat>
+      </swiper>
+    </view>
+  </view>
+</template>
+<script>
+import wepy from 'wepy'
+import WeCropper from '../../../../components/we-cropper/we-cropper.min.js'
+import {G_RES_URL} from '@/config'
+import { cardManagerApi } from '@/api'
+export default class swipe extends wepy.component {
+  props = {
+    obj: {
+      type: Object,
+      default: null,
+      twoWay: true
+    },
+    area: {
+      type: String,
+      default: null,
+      twoWay: true
+    },
+    idx: {
+      type: String,
+      default: null,
+      twoWay: true
+    },
+    websiteView: {
+      type: Boolean,
+      default: null,
+      twoWay: true
+    },
+    cutImg: {
+      type: Object,
+      default: null,
+      twoWay: true
+    },
+    cutImgFiles: {
+      type: Object,
+      default: null,
+      twoWay: true
+    }
+  }
+  data = {
+    res_url: G_RES_URL,
+    staffId: null,
+    userId: null,
+    imgObj: {
+      imgLengthShow: false,
+      files: [],
+      tempFiles: []
+    },
+    wecropper: null,
+    width: 0,
+    height: 0,
+    isSave: false,
+    isSelect: 0,
+    isHave: false,
+    cropperHeight: 450,
+    swipeCropper: {
+      id: 'swipeCropper',
+      width: 0,
+      height: 0,
+      scale: 2.5,
+      zoom: 8,
+      cut: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      }
+    }
+  }
+  onLoad() {
+    let _this = this
+    let device = wepy.getSystemInfoSync()
+    this.cropperHeight = device.windowHeight
+    _this.initCropper(device.windowWidth, device.windowWidth * 0.928)
+    wepy.getStorage({key: 'website_plugin'}).then(res => {
+      if (res.data.content.data.image) {
+        _this.imgObj.files = res.data.content.data.image.value
+      }
+      _this.cutImgFiles = _this.imgObj
+      _this.$apply()
+    })
+  }
+  initCropper(cutWidth, cutHeight) {
+    let _this = this
+    _this.isSave = true
+    let device = wepy.getSystemInfoSync()
+    _this.swipeCropper.width = device.windowWidth
+    _this.swipeCropper.height = device.windowHeight * 0.75
+    _this.swipeCropper.id = 'swipeCropper'
+    _this.swipeCropper.cut.width = cutWidth
+    _this.swipeCropper.cut.height = cutHeight
+    _this.swipeCropper.cut.x = (_this.swipeCropper.width - _this.swipeCropper.cut.width) / 2
+    _this.swipeCropper.cut.y = (_this.swipeCropper.height - _this.swipeCropper.cut.height) / 2
+    // 初始化裁剪
+    let wecropper = new WeCropper(_this.swipeCropper)
+    .on('ready', (ctx) => {
+    })
+    .on('beforeImageLoad', (ctx) => {
+      wepy.showToast({
+        title: '加载中...',
+        icon: 'loading',
+        duration: 20000
+      })
+    })
+    .on('imageLoad', (ctx) => {
+      wepy.hideToast()
+    })
+    .on('beforeDraw', (ctx, instance) => {
+    }).updateCanvas()
+    this.wecropper = wecropper
+  }
+  methods = {
+
+    alignLeft() {
+      this.obj.data.textAlign.value = 'left'
+    },
+    alignCenter() {
+      this.obj.data.textAlign.value = 'center'
+    },
+    introTextInput(e) {
+      this.obj.data.content.value = e.detail.value
+    },
+    save() {
+      let _this = this
+      _this.imgObj = _this.cutImgFiles
+      _this.obj.data.image.value = _this.imgObj.files
+      if (_this.cutImgFiles.files.length > 0) {
+        wepy.setStorage({
+          key: 'website_plugin',
+          data: {
+            idx: _this.idx,
+            content: _this.obj,
+            save: true
+          }
+        })
+      }
+      wepy.navigateBack({
+        delta: 1
+      })
+    },
+    cutImg(select) {
+      this.isSelect = select
+      let isOK = true
+      this.isSave = true
+      if (this.cutImgFiles.files.length >= 9) {
+        isOK = false
+      }
+      if (isOK && !this.cutImgFiles.files[select]) {
+        this.area = 'cropper'
+      }
+    },
+    delImg(select) {
+      if (this.cutImgFiles.files.length > 0) {
+        cardManagerApi.deleteResouces(this.cutImgFiles.files[select].url)
+        this.cutImgFiles.files.splice(select, 1)
+      }
+    },
+    touchStart (e) {
+      this.wecropper.touchStart(e)
+    },
+    touchMove (e) {
+      this.wecropper.touchMove(e)
+    },
+    touchEnd (e) {
+      this.wecropper.touchEnd(e)
+    },
+    getCropperImage () {
+      let _this = this
+      if (_this.isSave) {
+        _this.isSave = false
+        this.wecropper.getCropperImage((src) => {
+          if (_this.isHave) {
+            _this.isHave = false
+            if (src) {
+              let apiURL = wepy.$instance.globalData.api.apiUrl + '/push/v1.0/upload_files'
+              wepy.showLoading({
+                title: '正在上传图片……',
+                mask: true
+              })
+              wx.uploadFile({
+                url: apiURL,
+                filePath: src,
+                name: 'editormd-image-file',
+                success: function(rs) {
+                  if (rs) {
+                    _this.cutImg = JSON.parse(rs.data)
+                    _this.cutImgFiles.files[_this.isSelect] = _this.cutImg
+                    _this.cutImgFiles.tempFiles[_this.isSelect] = _this.cutImg
+                    _this.$apply()
+                    wepy.hideLoading()
+                  }
+                }
+              })
+            } else {
+              console.log('获取图片地址失败，请稍后重试')
+            }
+          }
+        })
+        _this.area = 'edit'
+      }
+    },
+    uploadTap() {
+      let _this = this
+      wepy.chooseImage({
+        count: 1, // 默认9
+        sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图，默认二者都有
+        sourceType: ['album', 'camera'] // 可以指定来源是相册还是相机，默认二者都有
+      }).then((res) => {
+        _this.isHave = true
+        const src = res.tempFilePaths[0]
+        _this.wecropper.pushOrign(src)
+      })
+      _this.isSave = true
+    },
+    edit(select) {
+      let _this = this
+      _this.isSave = true
+      if (_this.cutImgFiles.files[_this.isSelect]) {
+        _this.isHave = true
+        _this.wecropper.pushOrign(_this.cutImgFiles.files[_this.isSelect].url)
+      }
+      _this.area = 'cropper'
+    }
+  }
+}
+</script>

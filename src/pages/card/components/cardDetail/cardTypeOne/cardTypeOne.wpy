@@ -1,0 +1,63 @@
+<style lang="scss">
+  @import './CardTypeOne.scss';
+</style>
+<template>
+  <view>
+    <form report-submit="true" bindsubmit="formSubmit">
+      <view class="card-temple-four">
+        <view class="card-bg">
+          <view class="card-bg-image" style="background-image: url({{res_url}}/dc_card_template_1.png)" wx:if="{{res_url}}">
+            <view class="card-bg-text">
+              <view class="card-bg-left">
+                <view class="card-company ellipsis-2">{{syncData.enterprise_name}}</view>
+                <view class="card-phone"  wx:if="{{syncData.phone}}">
+                  <view class="card-phone-border"><image wx:if="{{res_url}}" class="card-phone-image" src="{{res_url}}/dc_card_phone_yellow.png"/></view>
+                  <text class="margin15">{{syncData.phone}}</text>
+                </view>
+                <view class="card-email"  wx:if="{{syncData.mail}}">
+                  <view class="card-email-border"><image wx:if="{{res_url}}" class="card-email-image" src="{{res_url}}/dc_card_email_yellow.png"/></view>
+                  <text class="margin15">{{syncData.mail}}</text>
+                </view>
+                <view class="card-address"  wx:if="{{syncData.address}}">
+                  <view class="card-address-border"><image wx:if="{{res_url}}" class="card-address-image" src="{{res_url}}/dc_card_address_yellow.png"/></view>
+                  <view class="margin15 font-size-22 c-646464 ellipsis-2" style="width:62%;line-height:36rpx;-webkit-line-clamp:3;">{{syncData.address}}</view>
+                </view>
+              </view>
+              <view class="card-bg-right">
+                <view class="card-head"><image src="{{syncData.head_icon}}"/></view>
+                <view class="card-name">{{syncData.name}}</view>
+                <view class="card-station" wx:if="{{syncData.station}}">{{syncData.station}}</view>
+                <!-- <image wx:if="{{isMyself === 1}}" src="/assets/images/card/edit.png"  class="card_edit" @tap="gotoManagerCard"/> -->
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </form>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import cardDetailMixin from '../../../mixins/cardDetailMixins.js'
+import {G_RES_URL} from '@/config'
+export default class CardTypeOne extends wepy.component {
+  mixins = [cardDetailMixin]
+  data = {
+    res_url: G_RES_URL
+  }
+  methods = {
+    // gotoManagerCard() {
+    //   wepy.reLaunch({
+    //     url: `/pages/card/cardIndex`
+    //   })
+    // },
+    // 跳到编辑名片菜单主页
+    gotoEditCardMenu() {
+      wepy.redirectTo({
+        url: '/pages/card/subPackage/pages/editCardMenu'
+      })
+    }
+  }
+}
+</script>

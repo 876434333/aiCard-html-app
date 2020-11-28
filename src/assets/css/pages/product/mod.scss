@@ -1,0 +1,128 @@
+.empty {
+  padding: 400rpx 0 0;
+  text-align: center;
+  .empty-img {
+    width: 252rpx;
+    height: 220rpx;
+    margin-left:300rpx;
+  }
+  .empty-text {
+    // margin-top: 20rpx;
+    font-size: 30rpx;
+    color: #909090;
+  }
+}
+
+.momt-user {
+  box-shadow:0px 0px 8px 0px rgba(0,3,15,0.3);
+  width:100%;
+  background:#fff;
+  position:fixed;
+  z-index:1;
+  .momt-user-container {
+    margin: 30rpx;
+    .momt-avtor {
+      float: left;
+      width: 80rpx;
+      height: 80rpx;
+      border-radius: 50%;
+    }
+    .momt-user-main {
+      margin: 0 100rpx;
+      padding: 4rpx 0 0;
+      font-size: 26rpx;
+      .momt-user-name {
+        font-size: 32rpx;
+        color: #576b95;
+      }
+      .momt-user-station {
+        font-size: 26rpx;
+        color: #999;
+      }
+    }
+    .to-card {
+      color: #576b95;
+      font-size: 26rpx;
+      background: #f0f4fb;
+      float: right;
+      padding: 16rpx 30rpx;
+      background:#eee;
+      border-radius:30rpx;
+      margin-top:10rpx;
+    }
+  }
+}
+
+.view-trade {
+  background: #f2f2f2;
+  .trade-detail {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 98rpx;
+    left: 0;
+  }
+  .trade-opts {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 98rpx;
+    z-index: 2;
+  }
+  .trade-opts-note {
+    position: fixed;
+    right: 0;
+    bottom: 98rpx;
+    left: 0;
+    z-index: 2;
+  }
+}
+
+.order-product {
+  padding: 38rpx;
+}
+.order-info {
+  padding: 20rpx 0;
+}
+
+.app-opts {
+  position: fixed;
+  right: 50rpx;
+  width: 90rpx;
+  z-index: 10;
+  .app-opt {
+    margin: 30rpx 0 0;
+  }
+  .app-opt-msg {
+    position:relative;
+    image {}
+    .app-opt-msg-number {
+      color: #ffffff;
+      background: #ea5f5f;
+      border-radius: 20rpx;
+      position: absolute;
+      font-size: 22rpx;
+      right: -20rpx;
+      top: 0;
+      padding: 0 20rpx;
+    }
+    .app-opt-msg-content {
+      text-align: center;
+      font-size: 20rpx;
+      color: rgb(102,102,102);
+      width: 100%;
+      position: absolute;
+      bottom: 8rpx;
+    }
+  }
+  image {
+    display: block;
+    width: 90rpx;
+    height: 90rpx;
+  }
+}
+
+.app-opts-bottom {
+  bottom: 200rpx;
+}

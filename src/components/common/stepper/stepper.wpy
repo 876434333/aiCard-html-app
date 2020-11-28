@@ -1,0 +1,109 @@
+<style lang="scss">
+</style>
+<template>
+  <view class="num-inp">
+    <view class="num-inp-btn"
+          data-component-id="{{ componentId }}"
+          data-stepper="{{ stepper }}"
+          data-disabled="{{ stepper <= min }}"
+          @tap="handleStepperMinus">
+          -
+      <!-- <image src="../../../assets/images/trade-des.png"/> -->
+    </view>
+    <view class="num-inp-text">{{stepper}}</view>
+    <view class="num-inp-btn"
+          data-component-id="{{ componentId }}"
+          data-stepper="{{ stepper }}"
+          data-disabled="{{ stepper >= max }}"
+          @tap="handleStepperPlus">
+          +
+      <!-- <image src="../../../assets/images/trade-ins.png" /> -->
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import {common} from '../../../assets/js/common'
+export default class Stepper extends wepy.component {
+  props = {
+    stepper: {
+      type: Number,
+      default: 0
+    },
+    min: {
+      type: Number,
+      default: 0
+    },
+    max: {
+      type: Number,
+      default: 0
+    },
+    size: {
+      type: String,
+      default: ''
+    },
+    componentId: String
+  }
+  data = {
+    steps: ''
+  }
+  methods = {
+    handleStepperMinus(e) {
+      this.handle(e, -1)
+    },
+
+    handleStepperPlus(e) {
+      this.handle(e, +1)
+    },
+
+    handleStepperBlur(e) {
+      let dataset = e.currentTarget.dataset
+      let componentId = dataset.componentId
+      let max = +dataset.max
+      let min = +dataset.min
+      let value = e.detail.value
+
+      if (!value) {
+        setTimeout(() => {
+          this.callback(componentId, min)
+        }, 16)
+        this.callback(componentId, value)
+        return '' + value
+      }
+
+      value = +value
+      if (value > max) {
+        value = max
+      } else if (value < min) {
+        value = min
+      }
+
+      this.callback(componentId, value)
+
+      return '' + value
+    }
+  }
+
+  handle(e, num) {
+    let dataset = e.currentTarget.dataset
+    let componentId = dataset.componentId
+    let disabled = dataset.disabled
+    let stepper = +dataset.stepper
+    if (disabled && num === -1) {
+      common.tip('商品不能再减少了', 'none')
+      return null
+    } else if (disabled && num === +1) {
+      common.tip('商品不能再增加了', 'none')
+      return null
+    }
+    this.callback(componentId, stepper + num)
+  }
+
+  callback(componentId, stepper) {
+    stepper = +stepper
+    let e = { componentId, stepper }
+    this.$emit('stepperChange', e)
+  }
+}
+</script>

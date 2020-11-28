@@ -1,0 +1,205 @@
+<style type="scss">
+  @import 'modal.scss';
+  .border-none:before {
+    border: 0;
+  }
+  .card-share .weui-cells {
+    margin-top:0;
+  }
+  .d-n{
+    display: none !important;
+  }
+</style>
+<template>
+    <view class="dialog animated {{mode}}" style="z-index:9999;" wx:if="{{show}}">
+        <view wx:if="{{type == 'msg'}}">
+            <view class="weui-mask"></view>
+            <view class="weui-dialog weui-skin_android" style="margin-top: -100px;">
+                <view class="weui-dialog__hd">
+                    <view class="weui-dialog__title">请填写手机短信验证码</view>
+                </view>
+                <view class="weui-dialog__bd" style="line-height: 2.3;">已发送到手机: {{phone}}</view>
+                <view class="weui-flex verify-code" @tap="focusInput">
+                  <view>
+                    {{verify[0]}}
+                    <view class="btm-line {{verify[0] ? 'd-n' : ''}}"></view>
+                  </view>
+                  <view>
+                    {{verify[1]}}
+                    <view class="btm-line {{verify[1] ? 'd-n' : ''}}"></view>
+                  </view>
+                  <view>
+                    {{verify[2]}}
+                    <view class="btm-line {{verify[2] ? 'd-n' : ''}}"></view>
+                  </view>
+                  <view>
+                    {{verify[3]}}
+                    <view class="btm-line {{verify[3] ? 'd-n' : ''}}"></view>
+                  </view>
+                  <view>
+                    {{verify[4]}}
+                    <view class="btm-line {{verify[4] ? 'd-n' : ''}}"></view>
+                  </view>
+                  <view>
+                    {{verify[5]}}
+                    <view class="btm-line {{verify[5] ? 'd-n' : ''}}"></view>
+                  </view>
+                </view>
+                <input value="" id="verifyInp" focus="{{fo}}" style="position:absolute;top:-999px;" maxlength="6" bindblur="blurInput" bindinput="verifyInput"/>
+                <view class="weui-flex resend">
+                    <view class="weui-flex__item">{{remainSecond}}s可重发</view>
+                </view>
+                <view class="weui-dialog__ft">
+                    <button class="weui-dialog__btn weui-dialog__btn_default" bindtap="closeDialog">取消</button>
+                    <button class="weui-dialog__btn weui-dialog__btn_primary" bindtap="confirm">确定</button>
+                </view>
+            </view>
+        </view>
+        <view wx:if="{{type == 'card-share'}}" class="card-share">
+            <view class="weui-mask"></view>
+            <view class="weui-dialog weui-skin_android">
+                <view class="weui-dialog__hd" style="border-bottom: 1px solid #ddd;">
+                    <view class="weui-dialog__title font-size-36" style="position:relative">
+                        参考分享文案
+                        <image wx:if="{{res_url}}" class="v-middle" src="{{res_url}}/dc_public_close.png"  @tap="closeDialog" style="width:30rpx;height:30rpx;position: absolute;right:0;top:12rpx"/>
+                    </view>
+                </view>
+                <view class="weui-dialog__bd">
+                    <view class="weui-cells font-size-28 ta-left border-none">
+                        <repeat for="{{shareSetupList}}" key="index" index="index" item="item">
+                            <view class="weui-cell weui-cell__ft_in-access" @tap="copyShareSetup" data-content="{{item.content}}">
+                                <view class="weui-cell__bd">
+                                    <view>{{item.title}}</view>
+                                    <view class="mt-10">{{item.content}}</view>
+                                </view>
+                            </view>
+                        </repeat>
+                    </view>
+                </view>
+            </view>
+        </view>
+    </view>  
+</template>
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+import {G_RES_URL} from '@/config'
+export default class Modal extends wepy.component {
+  props = {
+    // phone: string
+  }
+  data = {
+    res_url: G_RES_URL,
+    type: '',
+    fo: false,
+    show: false,
+    mode: '',
+    phone: '',
+    verify: '',
+    focus: true,
+    shareSetupList: [],
+    remainSecond: 120,
+    setTimeInter: ''
+  }
+  methods = {
+    verifyInput(e) {
+      this.verify = e.detail.value
+    },
+    blurInput() {
+      this.fo = false
+    },
+    focusInput() {
+      //   console.log('yes')
+      this.fo = true
+      this.$apply()
+    },
+    openDialog(e, param) {
+      this.verify = ''
+      this.show = true
+      this.mode = 'fadeIn'
+      this.type = e.msg
+      this.phone = e.phone
+      if (this.type === 'card-share') {
+        this.shareSetupList = [
+          {
+            id: 1,
+            title: '商务通用性',
+            content: `你好，我是${e.enterprise_name}的${
+              e.name
+            }，这是我的电子名片，请惠存~`
+          },
+          {
+            id: 2,
+            title: '豪迈大气型',
+            content: `宝剑锋从磨砺出，梅花香自苦寒来，我是${e.name}认识一下~`
+          },
+          {
+            id: 3,
+            title: '诗意委婉型',
+            content: `茫茫人海中遇见你是缘分，我是${e.name}认识一下~`
+          },
+          {
+            id: 4,
+            title: '可爱害羞型',
+            content: `emmm... 大家好，我是${e.enterprise_name}的${
+              e.name
+            }请大家多多关注哦~`
+          },
+          {
+            id: 5,
+            title: '激励型',
+            content: `大多数人想要改造这个世界，但却罕有人想改造自己!我是${
+              e.name
+            }共勉~`
+          }
+        ]
+      } else if (this.type === 'msg') {
+        this.setInter()
+        this.fo = true
+        this.$apply()
+      }
+    },
+    closeDialog() {
+      this.show = false
+      clearInterval(this.setTimeInter)
+      let parentShow = this.$parent.show
+      if (typeof parentShow !== 'undefined') {
+        this.$parent.show = false
+        this.$parent.$apply()
+      }
+    },
+    confirm() {
+      let that = this
+      companyApi.checkMsg(this.phone, this.verify).then(
+        res => {
+          that.show = false
+          clearInterval(that.setTimeInter)
+          that.$apply()
+          that.$emit('getCherckResult')
+        },
+        err => {
+          console.info(err.err_msg) // 去掉会编译报错
+          wepy.showToast({
+            icon: 'none',
+            title: '手机验证失败,请重新输入验证码'
+          })
+        }
+      )
+    },
+    copyShareSetup(e) {
+      this.show = false
+      this.$emit('copyShareSetup', e.currentTarget.dataset.content)
+    }
+  }
+  setInter() {
+    this.setTimeInter = setInterval(() => {
+      this.remainSecond--
+      this.$apply()
+      if (this.remainSecond === 0) {
+        clearInterval(this.setTimeInter)
+        this.show = false
+      }
+    }, 1000)
+  }
+}
+</script>

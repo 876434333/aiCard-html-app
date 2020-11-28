@@ -1,0 +1,224 @@
+<style lang="scss">
+  @import '../../assets/css/pages/me/entOrg.scss';
+  @import '../../assets/css/pages/me/transfer.scss';
+  page {
+    background-color: #fff;
+  }
+  .wrap {
+    .head {
+      display:-webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      margin:0 auto;
+      width: 664rpx;
+      height:116rpx;
+      line-height:116rpx;
+      .moment {
+        display:-webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        margin-right: 90rpx;
+        overflow: hidden;
+        .circle {
+          margin:41rpx 26rpx 0 0;
+          width: 33rpx;
+          height: 33rpx;
+          border:1px solid #a5a5a5;
+          border-radius: 100%;
+        }
+        .circle-border {
+          border:0;
+          image {
+            width: 36rpx;
+            height: 36rpx;
+            vertical-align: top;
+          }
+        }
+      }
+    }
+    .content {
+      margin:0 auto;
+      padding-top: 26rpx;
+      width: 664rpx;
+      height: 122rpx;
+      line-height: 48rpx;
+      border-top:2rpx solid #e8e8e8;
+    }
+    .content-len{
+      padding-right:46rpx;
+      color:#b2b2b2;
+    }
+    .weui-uploader-wrap{
+      margin-top:42rpx;
+    }
+    .save {
+      left: 0;
+      bottom: 88rpx;
+      padding: 0;
+      width: 100%;
+      height: 88rpx;
+      line-height: 88rpx;
+      border-radius: 0;
+    }
+    .cancel-btn {
+      bottom: 0;
+      background: #f2f2f2;
+    }
+  }
+</style>
+<template>
+  <!-- 发布新动态 -->
+  <view class="wrap">
+    <view class="head" wx:if="{{momentHidden}}">
+      <view class="moment" @tap="chooseCircle" data-flag="1">
+        <view class="circle {{circleHidden ? 'circle-border' : ''}}">
+          <image src="../../assets/images/moment/circle.png" hidden="{{!circleHidden}}"/>
+        </view>
+        <text class="font-size-30 c-323232">公司动态</text>
+      </view>
+      <view class="moment" @tap="chooseCircle" data-flag="0">
+        <view class="circle {{!circleHidden ? 'circle-border' : ''}}">
+          <image src="../../assets/images/moment/circle.png" hidden="{{circleHidden}}"/>
+        </view>
+        <text class="font-size-30 c-323232">个人动态</text>
+      </view>
+    </view>
+    <!-- 动态内容 -->
+    <textarea placeholder="说点什么吧..." placeholder-style="color:#b2b2b2;" maxlength="500" class="font-size-32 c-323232 content" @input="input"/>
+    <view class="font-size-32 ta-right content-len">{{contentLength}}/500</view>
+    <!-- 上传图片 -->
+    <uploadImg :imgObj.sync="imgObj" :isChange.sync="isChange" class="weui-uploader-wrap"></uploadImg>
+    <button class="save font-size-36 c-ffffff" @tap="save">发布</button>
+    <button class="save font-size-36 c-646464 cancel-btn" @tap="cancel">取消</button>
+    <!-- 取消发布弹窗 -->
+    <view class="mask-black" hidden="{{maskHidden}}" @tap="mask" data-method="maskHide"></view>
+    <view class="mask" hidden="{{maskHidden}}">
+      <view class="font-size-30 c-909090 staff-selected">取消此次发布？</view>
+      <view class="mask-botoom">
+        <view class="font-size-30 c-909090 ta-center cancel" @tap="mask" data-method="maskHide">取消</view>
+        <view class="font-size-30 c-3DB8C8 ta-center sure" @tap="mask" data-method="maskSure">确定</view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import uploadImgTem from '../../components/uploadImgTem'
+  import { common } from '../../assets/js/common.js'
+  import {momentApi} from '@/api'
+  export default class releaseMoment extends wepy.page {
+    config = {
+      enablePullDownRefresh: true,
+      navigationBarTitleText: '发布新动态'
+    }
+    props = {
+      isChange: {
+        type: Boolean,
+        default: false,
+        twoWay: true
+      }
+    }
+    data = {
+      maskHidden: true,
+      circleHidden: true,
+      momentHidden: false,
+      flag: 1,
+      content: '',
+      contentLength: 0,
+      imgObj: {
+        imgLengthShow: true,
+        files: [],
+        tempFiles: []
+      }
+    }
+    components = {
+      uploadImg: uploadImgTem
+    }
+    onLoad() {
+      this.isChange = true
+      let role = common.getStaffInfo(this).role
+      if (role === 2) {
+        this.momentHidden = false
+        this.flag = 0
+      } else {
+        this.momentHidden = true
+      }
+      this.$apply()
+    }
+    methods = {
+      // 获取输入的动态内容
+      input(e) {
+        let content = e.detail.value
+        this.contentLength = content.length
+        this.content = content
+        this.isChange = true
+      },
+      // 选择动态
+      chooseCircle(e) {
+        let flag = e.currentTarget.dataset.flag
+        this.circleHidden = !this.circleHidden
+        this.flag = flag
+      },
+      // 弹窗操作
+      mask(e) {
+        let that = this
+        let method = {
+          // 显示弹窗
+          maskShow() {
+            that.maskHidden = false
+          },
+          // 关闭弹窗
+          maskHide() {
+            that.maskHidden = true
+          },
+          // 点击确定
+          maskSure() {
+            that.maskHidden = true
+            setTimeout(() => {
+              that.$switch('/pages/moment/momentIndex')
+            }, 1000)
+          }
+        }
+        method[e.currentTarget.dataset.method]()
+      },
+      // 点击发布
+      save() {
+        let that = this
+        if (!common.isNull(that.content, '动态内容必须填写！')) return
+        if (!this.isChange) return
+        this.isChange = false
+        let imgObj = that.imgObj.tempFiles
+        let imgUrls = []
+        for (let i = 0; i < imgObj.length; i++) {
+          imgUrls.push(imgObj[i].url)
+        }
+        that.$apply()
+        let params = {
+          flag: that.flag,
+          content: that.content,
+          img_urls: imgUrls,
+          employee_id: common.getStaffId(this),
+          enterprise_id: common.getEnterpriseId(this)
+        }
+        console.log('发布params', params)
+        momentApi.releaseMoment(params).then((res) => {
+          common.tip('发布成功', 'success')
+          setTimeout(() => {
+            // that.$switch('/pages/moment/momentIndex')
+            // wepy.navigateBack({
+            //   delta: 1
+            // })
+            wepy.reLaunch({
+              url: `/pages/moment/momentIndex`
+            })
+          }, 1000)
+        })
+      },
+      // 点击取消
+      cancel() {
+        this.maskHidden = false
+      }
+    }
+  }
+</script>

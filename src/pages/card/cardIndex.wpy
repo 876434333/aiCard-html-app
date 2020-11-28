@@ -1,0 +1,901 @@
+<style lang="scss">
+  @import '../../assets/css/pages/card/card.scss';
+  .company_logo {
+    position: relative;
+    top: 10rpx;
+  }
+  .weui-cell-company:last-child {
+    padding-bottom: 0;
+  }
+  .to-send-msg{
+    bottom:80rpx;
+  }
+</style>
+<template>
+<view class="warp">
+    <!-- <view class="to-card-list" @tap="gotoCardList" style="top:{{showFloat ? '150rpx;' : ''}}">
+      <image class="to-card-list-img" src="../../assets/images/card/card_list_icon.png"/>
+    </view> -->
+    <view class="float-msg" wx:if="{{showFloat}}">
+        <view class="float-icon-part" @tap="closeMsg">
+          <image class="float-icon" src="../../assets/images/card/close_index.png"/>
+        </view>
+        <!-- <view class="view-img ml-40">
+            <image class="float-img" src="{{cardInfo.head_icon}}"/>
+        </view> -->
+        <view class="float-left">
+            <view class="text-top">企业通讯录创建成功 </view>
+            <view class="text-bottom">赶快邀请你的同事加入吧 </view>
+        </view>
+        <view class="float-right">
+            <button class="float-botton" open-type="share" id="1">去添加</button>
+        </view>
+    </view>
+    <!-- 名片模板 -->
+    <view style="margin-top:30rpx">
+        <templatezero :syncData.sync="cardInfo"></templatezero>
+    </view>
+    <!-- 浏览点赞 -->
+    <view class="card-history-vist">
+        <view>
+            <view class="vist-icon">
+                <repeat for="{{cardInfo.user_icons}}" item="item" key="index">
+                    <image wx:if="{{res_url}}" src="{{item}}"/>
+                </repeat>
+                <text wx:if="{{cardInfo.view_num > 6}}">...</text>
+            </view>
+            <view class="" style="margin-top:-4rpx;">
+                <text class="card-history-label">浏览</text>
+                <text class="card-history-number">{{cardInfo.view_num}}</text>
+            </view>
+        </view>
+        <view @tap="dianZan">
+            <view class="like-icon">
+                <image wx:if="{{cardInfo.is_zan === 0}}" src="{{res_url === ''  ? '' : res_url + '/dc_card_collection_icon.png'}}" />
+                <image wx:else src="{{img_url}}" />
+            </view>
+            <view style="position:relative;top:-4rpx;">
+                <text class="card-history-label">点赞</text>
+                <text class="card-history-number">{{cardInfo.zan_num}}</text>
+            </view>
+        </view>
+    </view>
+    <!-- 名片信息详情(左右滑) -->
+    <view>
+        <showCardDetail :syncData.sync="cardDetails"></showCardDetail>
+    </view>
+    <!-- 更多玩法-->
+    <view class="more-give">
+        <view class="more-play" @tap="showMorePlay">
+          <image src="../../assets/images/card/more_play.png"/>
+          <view class="font-size-24 c-909090 more-play-text">更多玩法</view>
+        </view>
+        <view class="give-card">
+            <button open-type="share" id="2">微信递名片</button>
+        </view>
+    </view>
+    <!-- 官网-->
+    <view hidden="{{!haveWebsite}}">
+        <view style="padding-top:36rpx;">
+            <view class="vertical-bar"></view>
+            <view class="title-text">企业官网</view>
+            <navigator  hidden="{{createHidden}}" url="../website/bindWebsite" class="no-content-dispay" hover-class="none">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_card_web_site.png" style="height: 166rpx;width:203rpx"/>
+                <view class="prompt-text">创建和绑定您的专属官网</view>
+                <view class="prompt-botton">去创建</view>
+            </navigator>
+            <view hidden="{{!createHidden}}">
+              <repeat for="{{website}}" index="index" item="item">
+                <view class="weui-cell weui-cell-company" style="margin-left:8rpx">
+                  <view class="weui-cell__hd" style="position: relative;margin-right: 10px;">
+                    <image wx:if="{{enterparise.head_icon}}" class="company_logo" src="{{enterparise.head_icon}}"/>
+                    <view wx:if="{{!enterparise.head_icon}}" class="c-ffffff ta-center avatar">{{item.avatarText}}</view>
+                  </view>
+                  <view class="weui-cell__bd">
+                    <view class="font-size-30 c-323232 manager-name">{{item.name}}</view>
+                    <view class="font-size-26 c-909090 manager-phone">{{staffName}}</view>
+                  </view>
+                  <view class="bord-radius c-3DB8C8 font-size-30 enter-website" @tap="goEdit">
+                    进入官网
+                  </view>
+                  <!-- <button hover-class="none" class="font-size-26 c-3DB8C8 ta-center transfer" @tap="unbind">解绑</button> -->
+                </view>
+              </repeat>
+            </view>
+        </view>
+    </view>
+    <!-- 标签-->
+    <view>
+        <view class="{{labels.length === 0 ? 'pt-40' : 'pt-22'}}">
+            <view class="vertical-bar"></view>
+            <view class="title-text">印象标签</view>
+            <navigator url="/pages/card/subPackage/pages/myLabel" class="no-content-dispay" wx:if="{{labels.length === 0}}" hover-class="none">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_card_impress_label.png" style="height: 168rpx;width:133rpx" />
+                <view class="prompt-text">您还没有印象标签,给自己贴一个吧</view>
+                <view class="prompt-botton">去添加</view>
+            </navigator>
+            <view>
+            <view class="labelList">
+              <block wx:for="{{labels}}" wx:key="referLabels">
+                <view class="label" wx:if="{{item.is_refer === '1'}}">
+                    <view class="labelText" style="margin-right:20rpx;">{{item.label_name}}<text style="display:inline-block;position:absolute;top:8rpx;margin-left:14rpx;width:4rpx;height:26rpx;opacity:0.7;background:#e75152;"></text></view>
+                    <view><image wx:if="{{res_url}}" src="{{res_url}}/dc_card_zan.png"/></view>
+                </view>
+              </block>
+            </view>
+            </view>
+        </view>
+    </view>
+    <!-- 推荐商品-->
+    <view wx:if="{{shopType == 2}}">
+        <view class="{{recommendOfferList.length === 0 ? 'pt-40' : 'pt-22'}}">
+            <view class="vertical-bar"></view>
+            <view class="title-text">推荐商品</view>
+            <view class="no-content-dispay d-n {{recommendOfferList.length === 0 ? 'd-b':''}}">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_card_recommend_product.png" style="height: 175rpx;width:177rpx" />
+                <view class="prompt-text">您还没有推荐商品,给自己选一些吧</view>
+                <view class="prompt-botton" @tap="chooseOffer">去选择</view>
+            </view>
+            <scroll-view scroll-x style="margin-top:14rpx;">
+              <view class="productList">
+                <repeat for="{{recommendOfferList}}" key="id" index="index" item="item">
+                  <view class="panelBody" @tap="goShopOfferDetails('{{index}}')">
+                      <view class="productImg">
+                          <image class="product" src="{{item.offerImgs[0].img_url}}" mode="aspectFill"/>
+                      </view>
+                      <view class="descript">
+                          <view class="c-323232 font-size-26 words-break">{{item.offer_name}}</view>
+                          <view class="font-size-26" style="color:#ff3a00"><text class="font-size-18">￥</text>{{item.offer_price}}</view>
+                      </view>
+                  </view>
+                </repeat>
+              </view>
+            </scroll-view>
+        </view>
+    </view>
+    <!-- 我的个人介绍-->
+    <view>
+      <view class="pt-22" wx:if="{{cardInfo.signature}}">
+        <view class="vertical-bar"></view>
+        <view class="title-text">我的个人介绍</view>
+        <view class="weui-flex" style="margin:0 20rpx;flex-wrap:wrap;font-size:24rpx;color:#646464;padding:8rpx 20rpx 0 30rpx;line-height:32rpx;">
+          {{cardInfo.signature}}
+        </view>
+      </view>
+    </view>
+    <!-- 我的音屏-->
+    <view>
+        <view class="{{!record.url ? 'pt-40' : 'pt-22'}}">
+          <view class="vertical-bar"></view>
+          <view class="title-text">我的音频</view>
+          <navigator url="/pages/card/subPackage/pages/resume" class="no-content-dispay" wx:if="{{!record.url}}" hover-class="none">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_card_audio.png" style="height: 145rpx;width:212rpx" />
+                <view class="prompt-text">您还没有音频介绍,给自己上传一个吧</view>
+                <view class="prompt-botton">去上传</view>
+          </navigator>
+          <view class="weui-flex bord bord-radius box-shadow pd-all" style="height:64rpx;margin:18rpx 36rpx 0;padding-left:36rpx;" wx:if="{{record.url}}">
+              <view class="ta-center" @tap="play">
+                    <image wx:if="{{res_url}}" src="{{res_url}}/dc_me_voice.png" class="v-middle" style="width:40rpx;height:40rpx"/>
+              </view>
+              <view class="weui-flex__item ta-left font-size-24 c-909090"  @tap="play">
+                <view class="weui-flex">
+                    <view class="weui-flex__item">
+                        <view style="position:relative;padding-left:48rpx;padding-right:40rpx;">
+                            <view style="position:absolute;top:-64rpx;left:38rpx;"  class="font-size-24 c-909090">我的语音介绍</view>
+                            <view class="record-slider" style="position:relative;top:-8rpx;">
+                                <view class="record-slider-line">
+                                    <view style="width: {{record.progress}}%;"  class="record-slider-line-track"></view>
+                                    <view style="left: {{record.progress}}%;" class="record-slider-handler"></view>
+                                    <view style="left: {{record.progress}}%;" class="record-slider-handler2"></view>
+                                </view>
+                            </view>
+                            <view class="weui-flex font-size-18" style="width:100%;margin-top:0rpx;margin-left:-8rpx;">
+                                <view>{{record.currentProgress_m_s}}</view>
+                                <view class="weui-flex__item ta-right">{{record.progress_m_s}}</view>
+                            </view>
+                        </view>
+                    </view>
+                </view>
+              </view>
+          </view>
+        </view>
+    </view>
+    <!-- 我的视屏-->
+    <view>
+        <view class="{{!video.source ? 'pt-40' : 'pt-22'}}">
+          <view class="vertical-bar"></view>
+          <view class="title-text">我的视频</view>
+            <navigator url="/pages/card/subPackage/pages/editCardVideo" class="no-content-dispay"  wx:if="{{!video.source}}" hover-class="none">
+                  <image wx:if="{{res_url}}" src="{{res_url}}/dc_card_video.png" style="height: 158rpx;width:158rpx" />
+                  <view class="prompt-text">您还没有视频介绍,给自己上传一个吧</view>
+                  <view class="prompt-botton">去上传</view>
+            </navigator>
+            <view class="upload-cover" style="height:240px" wx:if="{{video.source && !show}}" @tap="playVideo">
+                <image wx:if="{{res_url}}" style="height:100rpx;width:100rpx;position:absolute;margin-top:200rpx;left:45%" src="{{res_url}}/dc_card_play_b.png"/>
+                <image style="width:680rpx;border-radius:10rpx" wx:if="{{video.cover}}" src="{{video.cover}}"/>
+            </view>
+            <video wx:if="{{show}}" id="perview" src="{{video.source}}" style="margin: 20rpx 40rpx 10rpx;width:680rpx;" bindended="playVideoEnd"></video>
+        </view>
+    </view>
+    <!-- 我的照片-->
+    <view>
+        <view class="{{images.length === 0 ? 'pt-40' : 'pt-22'}}">
+            <view class="vertical-bar"></view>
+            <view class="title-text">我的照片</view>
+            <navigator url="/pages/card/subPackage/pages/myImage" class="no-content-dispay" wx:if="{{images.length === 0}}" hover-class="none">
+                <image wx:if="{{res_url}}" src="{{res_url}}/dc_card_my_photo.png" style="height: 158rpx;width:231rpx" />
+                <view class="prompt-text">您还没有自己的照片,赶快上传一些吧</view>
+                <view class="prompt-botton">去上传</view>
+            </navigator>
+            <view style="margin:22rpx 0 0 0;padding:0 36rpx;">
+                <block wx:for="{{images}}" wx:key="referLabels">
+                      <image src="{{item.url}}" class="bord-radius" style="width:100%;border-radius:20rpx;" mode="widthFix"/>
+                </block>
+            </view>
+        </view>
+    </view>
+    <!-- 我的文件夹 -->
+    <view class="{{fileList.length === 0 ? 'pt-40' : 'pt-22'}} file-part" wx:if="{{fileList.length > 0}}">
+        <view class="vertical-bar"></view>
+        <view class="title-text">我的文件夹</view>
+        <repeat for="{{fileList}}" index="index" key="index" item="file" wx:if="{{fileList.length > 0}}">
+          <view class="file-main">
+            <view class="file-head" @tap="file('{{index}}')">
+              <view class="font-size-30 c-909090 ellipse">{{file.dirName}}</view>
+              <image src="/assets/images/card/lock.png" class="lock" wx:if="{{file.dirPassword && !file.fileListShow}}"/>
+              <image src="/assets/images/card/arrow_down.png" wx:if="{{!file.fileListShow}}"/>
+              <image src="/assets/images/card/arrow_up_red.png" wx:if="{{file.fileListShow}}"/>
+            </view>
+            <view class="file-list" wx:if="{{file.fileListShow && docList.length > 0}}">
+              <repeat for="{{docList}}" index="index" key="index" item="item">
+                <view class="file" @tap="viewFile('{{item.fileUrl}}')">
+                  <view class="font-size-30 c-909090 ellipse">{{item.fileName}}</view>
+                  <image src="/assets/images/card/eye_red.png" class="eye"/>
+                  <image src="/assets/images/card/download_red.png" class="download" catchtap="downLoad"/>
+                </view>
+              </repeat>
+              <view class="font-size-24 c-909090 ta-center file-more" wx:if="{{haveNextPage}}" @tap="fileMore('{{file.id}}')">加载更多</view>
+              <view class="font-size-24 c-909090 ta-center file-more" wx:if="{{!haveNextPage}}">已经没有更多了</view>
+            </view>
+            <view class="font-size-30 c-909090 ta-center file-empty" wx:if="{{file.fileListShow && docList.length === 0}}">暂无内容</view>
+          </view>
+        </repeat>
+    </view>
+    <!-- 文件夹口令弹窗 -->
+    <view class="mask-black" wx:if="{{passwordMaskShow}}" @tap="passwordMaskCancel"></view>
+    <view class="mask-password" wx:if="{{passwordMaskShow}}">
+      <view class="font-size-30 c-909090 ta-center mask-title ellipse">{{selectFile.dirName}}</view>
+      <view class="font-size-36 c-323232 ta-center password-text">输入口令</view>
+      <view class="font-size-24 c-909090 ta-center">没有密码？请联系我的主人吧！</view>
+      <form bindsubmit="passwordMaskSure">
+        <view class="password flex" @tap="setFocus">
+          <view>{{password[0]}}</view>
+          <view>{{password[1]}}</view>
+          <view>{{password[2]}}</view>
+          <view>{{password[3]}}</view>
+          <view>{{password[4]}}</view>
+          <view>{{password[5]}}</view>
+        </view>
+        <input type="number" maxlength="6" focus="{{isFocus}}" @input="passwordInput"  @blur="passwordBlur" style="height:0;min-height:0;opacity:0;"/>
+        <view class="mask-foot flex">
+          <button class="font-size-36 c-323232 ta-center cancel" @tap="passwordMaskCancel">取消</button>
+          <button class="font-size-36 c-3DB8C8 ta-center" formType="submit">确定</button>
+        </view>
+      </form>
+    </view>
+    <cover-view class="to-send-msg" @tap="toMsgList">
+        <cover-image wx:if="{{res_url}}" class="to-send-msg-img" src="{{res_url}}/dc_send_msg_blue.png"/>
+        <cover-view class="text">留言</cover-view>
+    </cover-view>
+    <cover-view class="c-ffffff msg-number" style="bottom:148rpx" wx:if="{{totalUnreadMsg > 0}}">{{totalUnreadMsg}}</cover-view>
+    <!--隐藏区域  更多玩法 -->
+    <view class='commodity_screen' wx:if="{{actionSheetHidden}}" @tap='closeMorePlay'></view>
+    <view class='commodity_attr_box' wx:if="{{actionSheetHidden}}" animation='{{animationData}}'>
+        <view class="more-scren">更多应用场景</view>
+        <view class="share-items">
+          <view class="share-item" @tap="galleryCard">
+            <view class="share-item-img">
+              <image src="../../assets/images/card/card_wallpaper.png"/>
+            </view>
+            <view class="share-item-txt">名片码壁纸</view>
+          </view>
+          <view class="share-item" @tap="printCard">
+            <view class="share-item-img">
+              <image src="../../assets/images/card/card_print.png"/>
+            </view>
+            <view class="share-item-txt">名片码印刷</view>
+          </view>
+          <view class="share-item" @tap="faceToFaceCard">
+            <view class="share-item-img">
+              <image style="width: 63rpx;height: 47rpx;" src="../../assets/images/card/card_face_to_face.png"/>
+            </view>
+            <view class="share-item-txt">面对面换名片</view>
+          </view>
+        </view>
+        <view class="close-more-play" @tap='closeMorePlay'>取消</view>
+    </view>
+</view>
+</template>
+<script>
+import wepy from 'wepy'
+import CardTypeZero from './components/cardDetail/cardTypeZero/cardTypeZero'
+import showCardDetail from './components/cardDetail/showCardDetail/showCardDetail'
+import {cardApi, cardManagerApi, websiteApi, resumeApi, companyApi} from '@/api'
+import { common } from '@/assets/js/common'
+import {G_RES_URL} from '@/config'
+import { managerChatMixin } from '@/mixins'
+import {getTotalUnreadMsgBlue} from '@/storage/src/cardDetail'
+export default class CardIndex extends wepy.page {
+  components = {
+    templatezero: CardTypeZero,
+    showCardDetail: showCardDetail
+  }
+  mixins = [managerChatMixin];
+  config = {
+    navigationBarTitleText: '名片主页',
+    enablePullDownRefresh: true
+  }
+  data = {
+    res_url: G_RES_URL,
+    img_url: G_RES_URL + '/dc_card_collection_icon_pre_blue.png',
+    maskShow: false,
+    showFloat: false,
+    phoneNumberAuth: true,
+    cardDetails: [],
+    actionSheetHidden: false,
+    animationData: {},
+    cardInfo: {},
+    images: [],
+    labels: [],
+    isManager: true,
+    record: {},
+    video: {},
+    show: false,
+    createHidden: false,
+    avatarText: '',
+    staffName: '',
+    websiteId: '',
+    website: [],
+    enterparise: {},
+    recommendOfferList: [],
+    haveWebsite: false,
+    shopType: null,
+    playAudio: true,
+    totalUnreadMsg: '',
+    fileList: [],
+    docList: [],
+    filePage: {
+      page_size: 10,
+      page_num: 1
+    },
+    haveNextPage: null,
+    passwordMaskShow: false,
+    selectFile: null,
+    isFocus: false,
+    password: null
+  }
+  onShow() {
+    if (this.$parent.globalData.refreshPage) {
+      this.init(this.$parent.getStaffInfo())
+      this.$parent.globalData.refreshPage = false
+    }
+    this.totalUnreadMsg = getTotalUnreadMsgBlue()
+  }
+  onLoad(options) {
+    let openid = this.$parent.getNowOpenid()
+    this.$parent.getStaffInfoFromBack(openid).then(res => {
+      this.init(res)
+      this.$apply()
+    })
+    // staffInfo信息更新不及时
+    // let staffInfo = this.$parent.getStaffInfo()
+    // if (!staffInfo.staffId) {
+    //   let openid = this.$parent.getNowOpenid()
+    //   this.$parent.getStaffInfoFromBack(openid).then(res => {
+    //     this.init(res)
+    //     this.$apply()
+    //   })
+    // } else {
+    //   this.init(staffInfo)
+    // }
+  }
+  onPullDownRefresh() {
+    wx.stopPullDownRefresh()
+    setTimeout(() => {
+      this.onLoad()
+    }, 500)
+  }
+  init(staffInfo) {
+    let that = this
+    this.cardInfo = staffInfo
+    this.cardDetails = []
+    this.getFileDir()
+
+    // 判断身份
+    if (that.cardInfo.role === 0 || that.cardInfo === 1) {
+      cardManagerApi.getStaffNum(that.cardInfo.enterprise_id).then(res => {
+        if (res > 1) {
+          that.showFloat = false
+        } else {
+          that.showFloat = true
+          wx.getStorage({
+            key: 'tipClose' + that.cardInfo.staffId,
+            success: function(res) {
+              that.showFloat = false
+            },
+            fail: function(res) {
+              that.showFloat = true
+            }
+          })
+        }
+        that.$apply()
+      })
+    }
+    // 电话
+    if (staffInfo.phone) {
+      let phone = {
+        icon:
+          this.res_url + '/dc_card_phone_b.png',
+        title: '拨打电话',
+        connect: staffInfo.phone,
+        type: 1
+      }
+      this.cardDetails.push(phone)
+    }
+    // 加微信
+    if (staffInfo.weixin) {
+      let weixin = {
+        icon:
+          this.res_url + '/dc_card_wechat_b.png',
+        title: '加微信',
+        connect: staffInfo.weixin,
+        type: 2
+      }
+      this.cardDetails.push(weixin)
+    }
+    // 邮箱
+    if (staffInfo.mail) {
+      let mail = {
+        icon:
+          this.res_url + '/dc_card_email_b.png',
+        title: '复制邮箱',
+        connect: staffInfo.mail,
+        type: 3
+      }
+      this.cardDetails.push(mail)
+    }
+    // 地址
+    if (staffInfo.address) {
+      let address = {
+        icon:
+          this.res_url + '/dc_card_address_b.png',
+        title: '复制联系地址',
+        connect: staffInfo.address,
+        type: 4
+      }
+      this.cardDetails.push(address)
+    }
+
+    // 我的照片
+    resumeApi.getImages(staffInfo.staffId).then(res => {
+      this.images = res
+      this.$apply()
+    })
+
+    // 获取音频
+    resumeApi.resume(staffInfo.staffId, 'null').then(res => {
+      this.labels = []
+      for (let i = 0; i < res.labels.length; i++) {
+        if (res.labels[i].is_refer === '1') {
+          this.labels.push(res.labels[i])
+        }
+      }
+      this.audio = res.audio
+      this.audioLoad(res.audio)
+      this.$apply()
+    })
+    // 获取视屏
+    cardManagerApi.getVideo({ staffId: staffInfo.staffId }).then(res => {
+      if (res) {
+        this.video.source = res.url
+        this.video.cover = res.cover_imageurl
+        this.video.duration = res.duration
+        this.video.size = res.size
+        this.$apply()
+      }
+    })
+    // 获取官网
+    let enter = staffInfo.enterprise_id
+    this.staffName = staffInfo.name
+    websiteApi.getWebsite(enter).then(rs => {
+      if (rs && rs.length > 0) {
+        for (var k in rs) {
+          rs[k].avatarText = rs[k].name.substr(0, 1)
+        }
+        this.website = rs
+        this.websiteId = rs[0].id
+        this.createHidden = true
+        this.haveWebsite = true
+      } else {
+        if (this.cardInfo.role === 2) {
+          this.createHidden = true
+          this.haveWebsite = false
+        } else {
+          this.haveWebsite = true
+        }
+      }
+      this.$apply()
+    })
+
+    // 获取商城类型，1=产品，2=商城
+    cardApi.getShopType(this.cardInfo.enterprise_id).then(res => {
+      this.shopType = res
+      if (res === 2) {
+        // 获取推荐商品
+        cardManagerApi.getOfferListByStatus(enter, 1, '*').then(res => {
+          let offerList = res
+          let _recommendOfferList = []
+          cardManagerApi.getRecommendOfferList(this.cardInfo.staffId, this.cardInfo.enterprise_id).then(res => {
+            let recList = res.data_list
+            for (let i = 0; i < offerList.length; i++) {
+              for (let j = 0; j < recList.length; j++) {
+                if (offerList[i].id === recList[j].id) {
+                  _recommendOfferList.push(offerList[i])
+                }
+              }
+            }
+            this.recommendOfferList = _recommendOfferList
+            this.$apply()
+          })
+        })
+      } else {
+        this.recommendOfferList = []
+      }
+    })
+    companyApi.getCurrentEnterpriseInfo(enter).then(res => {
+      this.enterparise = res
+      this.$apply()
+    })
+
+    // 判断管名片是否登录IM，如果登录了，则不需要再次登录
+    let isLoginIm = this.$parent.getManagerIMLogin(staffInfo.staffId)
+    if (!isLoginIm) {
+      this.initChat(this)
+      this.$parent.setManagerIMLogin(staffInfo.staffId, true)
+    }
+  }
+  methods = {
+    play(e) {
+      let that = this
+      if (this.playAudio) {
+        this.playAudio = false
+        let type = e.currentTarget.dataset.type
+        let audio = wepy.createInnerAudioContext()
+        audio.src = type === 'temp' ? that.record.temppath : that.record.url
+        audio.play()
+        if (type !== 'temp') {
+          let intervalNumber = setInterval(() => {
+            let currentmm = Math.ceil(audio.currentTime)
+            that.record.progress = (currentmm / that.record.duration) * 100
+            that.record.currentProgress_m_s = common.getMMSS(currentmm * 1000)
+            that.$apply()
+            if (currentmm >= that.record.duration) {
+              clearInterval(intervalNumber)
+              that.record.progress = 0
+              that.record.currentProgress_m_s = '00:00'
+              this.playAudio = true
+              that.$apply()
+            }
+          }, 1000)
+        }
+      }
+    },
+    goEdit() {
+      this.$navigate('../website/websiteIndex?id=' + this.websiteId)
+    },
+    // 进入详细页
+    goShopOfferDetails(index) {
+      index = parseInt(index)
+      this.$navigate(`/pages/product/recommendOffer`)
+    },
+    // 显示文件列表
+    file(index) {
+      this.selectFile = this.fileList[index]
+      this.selectFile.index = index
+      for (let key in this.fileList) {
+        if (index !== Number(key)) {
+          this.fileList[key].fileListShow = false
+        }
+      }
+      if (this.selectFile.dirPassword && !this.fileList[index].fileListShow) {
+        this.password = null
+        this.passwordMaskShow = true
+      } else {
+        this.fileList[index].fileListShow = !this.fileList[index].fileListShow
+        this.docList = []
+        this.filePage.page_num = 1
+        this.getFileList(this.selectFile.id)
+      }
+    },
+    // 加载更多文件列表
+    fileMore(dirId) {
+      this.filePage.page_num += 1
+      this.getFileList(dirId)
+    },
+    // 设置焦点
+    setFocus() {
+      this.isFocus = true
+    },
+    // 监听密码输入
+    passwordInput(e) {
+      this.password = e.detail.value
+      if (this.password.length === 6) {
+        if (this.password !== this.selectFile.dirPassword) {
+          common.tip('输入的文件口令不对', 'none')
+        }
+      }
+    },
+    // 监听密码输入框失去焦点
+    passwordBlur() {
+      this.isFocus = false
+    },
+    // 点击弹窗取消按钮
+    passwordMaskCancel() {
+      this.passwordMaskShow = false
+    },
+    // 点击弹窗确定按钮
+    passwordMaskSure() {
+      let selectIndex = this.selectFile.index
+      if (!this.password) {
+        common.tip('请输入的文件口令', 'none')
+      } else if (this.password !== this.selectFile.dirPassword) {
+        common.tip('输入的文件口令不对', 'none')
+      } else {
+        this.passwordMaskShow = false
+        this.fileList[selectIndex].fileListShow = !this.fileList[selectIndex].fileListShow
+        this.getFileList(this.selectFile.id)
+      }
+    },
+    // 预览文件
+    viewFile(url) {
+      wepy.downloadFile({
+        url: url
+      }).then(res => {
+        let filePath = res.tempFilePath
+        wepy.openDocument({
+          filePath,
+          success(res) {
+            console.log('打开文档成功')
+          },
+          fail(res) {
+            console.log('fail', res)
+          }
+        })
+      })
+    },
+    // 下载文件
+    downLoad() {
+      wepy.showModal({
+        content: '请跟我的主人联系吧！'
+      })
+    }
+  }
+  audioLoad(audio) {
+    this.record = {
+      id: null, // 录音ID
+      url: null, // 路径
+      temppath: '', // 录制时未确认前的临时存放路径
+      success: false, // 是否录制完成
+      duration: 0, // 总时长
+      progress: 0, // 进度条数值
+      currentProgress_m_s: '00:00', // 当前播放进度显示数值
+      progress_m_s: '00:00' // 总进度显示数值
+    }
+    if (audio !== null) {
+      this.record.id = audio.id
+      this.record.url = audio.url
+      this.record.duration = audio.duration
+      this.record.progress_m_s =
+        audio.duration > 0 ? common.getMMSS(audio.duration * 1000) : '00:00'
+    } else {
+      this.record.id = null
+    }
+  }
+  // 播放视屏
+  playVideo() {
+    this.show = true
+    let t = wepy.createVideoContext('perview')
+    t.play()
+    this.$apply()
+  }
+  playVideoEnd() {
+    this.show = false
+    this.$apply()
+  }
+  // 关闭提示框
+  closeMsg() {
+    this.showFloat = false
+    wx.setStorage({
+      key: 'tipClose' + this.cardInfo.staffId,
+      data: '已关闭'
+    })
+  }
+  // 点赞
+  dianZan() {
+    let requestBody = {
+      action_code: '1002',
+      employee_id: this.cardInfo.staffId,
+      enterprise_id: this.cardInfo.enterprise_id,
+      department_id: this.cardInfo.enterprise_id
+    }
+    let excute = function(code, msg) {
+      requestBody.action_code = code
+      cardApi.clickAction(requestBody)
+      common.tip(msg, 'none')
+    }
+    if (this.cardInfo.is_zan === 1) {
+      this.cardInfo.is_zan = 0
+      this.cardInfo.zan_num--
+      excute('1003', '取消点赞')
+    } else {
+      requestBody.action_code = '1002'
+      this.cardInfo.is_zan = 1
+      this.cardInfo.zan_num++
+      excute('1002', '点赞成功')
+    }
+  }
+  /**
+   * 获取当前所在page
+   */
+  getPage() {
+    return this.$root
+  }
+  /**
+   * 更多玩法
+   */
+  showMorePlay() {
+    var that = this
+    // 创建一个动画实例
+    var animation = wepy.createAnimation({
+      // 动画持续时间
+      duration: 200,
+      // 定义动画效果，当前是匀速
+      timingFunction: 'linear'
+    })
+    // 将该变量赋值给当前动画
+    that.animation = animation
+    // 先在y轴偏移，然后用step()完成一个动画
+    animation.translateY(0).step()
+    // 通过export()方法导出数据
+    that.animationData = animation.export()
+    that.actionSheetHidden = true
+    wepy.hideTabBar()
+  }
+  // 关闭更多玩法模态框
+  closeMorePlay() {
+    var that = this
+    var animation = wepy.createAnimation({
+      duration: 200,
+      timingFunction: 'linear'
+    })
+    that.animation = animation
+    animation.translateY(200).step()
+    that.animationData = animation.export()
+    that.actionSheetHidden = false
+    wepy.showTabBar()
+  }
+  faceToFaceCard() {
+    this.closeMorePlay()
+    this.$navigate('./subPackage/pages/exchangeCard')
+  }
+  galleryCard() {
+    this.closeMorePlay()
+    this.$navigate('./subPackage/pages/cardWallpaper')
+  }
+  printCard() {
+    this.closeMorePlay()
+    this.$navigate('./subPackage/pages/cardPrint')
+  }
+  // 主页名片夹替代名片夹功能
+  // gotoCardList() {
+  //   wepy.navigateTo({
+  //     url: '../contact/cardList'
+  //   })
+  // }
+  onShareAppMessage(ops) {
+    let openid = this.$parent.getNowOpenid()
+    let sharename = this.$parent.getUserInfo().nickName
+    let staffInfo = this.$parent.getStaffInfo()
+    let title = ''
+    let path = ''
+    let imageUrl
+    if (ops.from === 'button') {
+      if (ops.target.id === '1') {
+        // 去添加
+        title = `${sharename}邀请您加入"${staffInfo.enterprise_name}",快去查看吧~~~`
+        path = `/pages/contact/addContact?enterprise_id=${
+          staffInfo.enterprise_id
+        }&department_id=${staffInfo.department_id}&employee_id=${
+          staffInfo.staffId
+        }`
+        imageUrl = this.res_url + '/dc_share_entry.png'
+      }
+      if (ops.target.id === '2') {
+        // 微信分享名片
+        if (staffInfo.share_setup) {
+          title = `${staffInfo.share_setup}`
+        } else {
+          title = `你好，我是${this.$parent.globalData.staffInfo.enterprise_name}的${this.$parent.globalData.staffInfo.name}，这是我的电子名片，请惠存~`
+        }
+        path = `/pages/card/cardView?employee_id=${staffInfo.staffId}&from_openid=${openid}&enterprise_id=${staffInfo.enterprise_id}&department_id=${staffInfo.department_id}`
+        if (staffInfo.card_img_url) {
+          imageUrl = staffInfo.card_img_url
+        }
+      }
+    }
+    if (ops.from === 'menu') {
+      // 微信分享名片
+      if (staffInfo.share_setup) {
+        title = `${staffInfo.share_setup}`
+      } else {
+        title = `你好，我是${this.$parent.globalData.staffInfo.enterprise_name}的${this.$parent.globalData.staffInfo.name}，这是我的电子名片，请惠存~`
+      }
+      path = `/pages/card/cardView?employee_id=${staffInfo.staffId}&from_openid=${openid}&enterprise_id=${staffInfo.enterprise_id}`
+      if (staffInfo.card_img_url) {
+        imageUrl = staffInfo.card_img_url
+      }
+    }
+    return {
+      title: title,
+      path: path,
+      imageUrl: imageUrl,
+      success: function(res) {
+      }
+    }
+  }
+  // 选择推荐商品
+  chooseOffer () {
+    // 获取商城类型，1=产品，2=商城
+    cardApi.getShopType(this.cardInfo.enterprise_id).then(res => {
+      let type = res
+      let role = this.cardInfo.role
+      if ((type === '1' || type === '') && role === 2) {
+        common.tip('该企业还未开通商城', 'none')
+      } else if (type === 2) {
+        this.$navigate('/pages/product/recommendOffer')
+      } else {
+        wepy.showModal({
+          content: '该企业还未开通商城，要去开通吗？'
+        }).then((res) => {
+          if (!res.cancel) {
+            this.$navigate(`/pages/product/shopMgr?enterprise_id=${common.getEnterpriseId(this)}`)
+          }
+        })
+      }
+    })
+  }
+  // 跳到留言列表
+  toMsgList () {
+    this.$navigate('/pages/chat/msgList')
+  }
+
+  // 获取文件目录
+  getFileDir() {
+    cardManagerApi.getFileDir(this.cardInfo.enterprise_id).then(res => {
+      this.fileList = res
+      for (let key in this.fileList) {
+        this.fileList[key].fileListShow = false
+      }
+      this.$apply()
+    })
+  }
+  // 获取文件列表
+  getFileList(dirId) {
+    cardManagerApi.getFileList(dirId, this.filePage).then(res => {
+      this.docList = this.docList.concat(res.data_list)
+      this.haveNextPage = res.haveNextPage
+      this.$apply()
+    })
+  }
+}
+</script>

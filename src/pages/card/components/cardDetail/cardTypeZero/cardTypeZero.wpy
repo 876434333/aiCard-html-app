@@ -1,0 +1,60 @@
+<style lang="scss">
+  @import './cardTypeZero.scss';
+</style>
+<template>
+  <view class="type-zero">
+    <view class="type-one-top">
+      <image class="top-header-image" src="{{syncData.head_icon}}"/>
+      <view class="top-info">
+        <view class="info-nike">{{syncData.name}}</view>
+        <view class="info-position">{{syncData.station}}</view>
+        <view class="info-conpany ellipsis-2">{{syncData.enterprise_name}}</view>
+      </view>
+      <image class="info-edit" src="/assets/images/card/card_edit_right.png" @tap="toCardPreview"/>
+    </view>
+    <view class="type-one-bottom">
+      <view class="card-and-posters">
+        <view class="card-posters" @tap="toCardPoster">
+          <image class="card-icon" src="/assets/images/card/card_paper.png"/>
+          <view class="card-text">名片海报</view>
+          <image class="sun-code" src="/assets/images/card/sun_code.png"/>
+        </view>
+        <view class="context-split">|</view>
+        <view class="jixue-posters" @tap="toCardBlood">
+          <image class="jixue-icon" src="/assets/images/card/jixue_paper.png"/>
+          <view class="jixue-text">鸡血海报</view>
+          <image class="sun-code" src="/assets/images/card/sun_code.png"/>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import CardDetailMixin from '../../../mixins/cardDetailMixins.js'
+import {G_RES_URL} from '@/config'
+export default class CardTypeZero extends wepy.component {
+  data = {
+    res_url: G_RES_URL
+  }
+  mixins = [CardDetailMixin]
+  methods = {
+    toCardPoster() {
+      wepy.navigateTo({
+        url: '../../../subPackage/pages/cardPoster'
+      })
+    },
+    toCardBlood() {
+      wepy.navigateTo({
+        url: '../../../subPackage/pages/cardBlood'
+      })
+    },
+    toCardPreview() {
+      wepy.navigateTo({
+        url: '../../../subPackage/pages/previewCard'
+      })
+    }
+  }
+}
+</script>

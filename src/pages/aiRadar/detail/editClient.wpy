@@ -1,0 +1,246 @@
+<style>
+.font-lable {
+  font-size: 30rpx;
+  color: #323232;
+}
+.font-placeholder {
+  font-size: 30rpx;
+  color: #909090;
+}
+.arrow {
+  padding: 24rpx 28rpx;
+  width: 16rpx;
+  height: 29rpx;
+  vertical-align: middle;
+}
+.weui-label {
+  width: 200rpx;
+}
+textarea {
+  padding-top:20rpx;
+  width:100%;
+  height: 150rpx;
+  line-height: 50rpx;
+  font-size:30rpx;
+  color:#909090;
+}
+.weui-input {
+  text-align:right
+}
+</style>
+<template>
+  <form bindsubmit="save">
+    <view>
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable">来源</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input font-placeholder" value="创建企业" wx:if="{{client.froms === 0}}" disabled/>
+            <input class="weui-input font-placeholder" value="扫码" wx:elif="{{client.froms === 1}}" disabled/>
+            <input class="weui-input font-placeholder" value="分享" wx:elif="{{client.froms === 2}}" disabled/>
+            <input class="weui-input font-placeholder" value="工作交接" wx:elif="{{client.froms === 3}}" disabled/>
+            <input class="weui-input font-placeholder" value="平台推送" wx:elif="{{client.froms === 4}}" disabled/>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable">姓名</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input
+              class="weui-input font-placeholder"
+              placeholder="请填写姓名"
+              value="{{client.name}}"
+              name="name"
+              maxlength="12"
+            />
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable">微信绑定号码</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input
+              class="weui-input font-placeholder"
+              value="{{client.wx_phone}}"
+              name="wx_phone"
+              maxlength="20"
+              disabled/>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable">手机号</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input
+              class="weui-input font-placeholder"
+              placeholder="请填写手机号"
+              value="{{client.phone}}"
+              name="phone"
+              maxlength="12"
+              type="number"
+            />
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable">邮箱</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input
+              class="weui-input font-placeholder"
+              placeholder="请填写邮箱"
+              value="{{client.mail}}"
+              name="mail"
+              maxlength="20"
+            />
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable">公司</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input
+              class="weui-input font-placeholder"
+              placeholder="请填写公司名字"
+              value="{{client.company}}"
+              name="company"
+              maxlength="20"
+            />
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable">职位</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input
+              class="weui-input font-placeholder"
+              placeholder="请填写职位"
+              value="{{client.position}}"
+              name="position"
+              maxlength="20"
+            />
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd">
+            <view class="weui-label font-lable">生日</view>
+          </view>
+          <view class="weui-cell__bd">
+            <picker
+              class="weui-input font-placeholder"
+              mode="date"
+              value="{{date}}"
+              start="1950-01-01"
+              end="2020-01-01"
+              bindchange="bindDateChange"
+            >
+            <view class="picker">  
+              {{client.birthday===''?'请选择生日':client.birthday}}  
+            </view>  
+            </picker>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input">
+          <view class="weui-cell__hd" style="position:relative;top:-44rpx;">
+            <view class="weui-label font-lable">备注</view>
+          </view>
+          <view class="weui-cell__bd">
+            <textarea placeholder="请输入" value="{{client.remark}}" name="remark"></textarea>
+          </view>
+        </view>
+      </view>
+
+      <button class="weui-btn submit-btn" formType="submit">保存</button>
+    </view>
+  </form>
+</template>
+
+<script>
+import wepy from 'wepy'
+import {aiRadarApi} from '@/api'
+import {common} from '../../../assets/js/common.js'
+export default class radarIndex extends wepy.page {
+  config = {
+    navigationBarTitleText: '编辑客户信息'
+  }
+  data = {
+    client: {
+      'nick_name': '',
+      'name': '',
+      'froms': null,
+      'phone': null,
+      'wx_phone': null,
+      'mail': null,
+      'company': null,
+      'position': null,
+      'birthday': '',
+      'remark': '',
+      'label': null,
+      'create_time': null,
+      'head_icon': '',
+      'modify_time': null,
+      'id': ''
+    },
+    userId: ''
+  }
+  onLoad(option) {
+    this.userId = option.userId
+    aiRadarApi.getClientDetailsPromise(this.userId).then(res => {
+      this.client = res
+      if (res.birthday) {
+        this.client.birthday = common.formatDateTimeToDateString(res.birthday)
+      }
+      if (!res.birthday) {
+        this.client.birthday = ''
+      }
+      this.$apply()
+    })
+  }
+  methods = {
+    // 点击日期组件确定事件
+    bindDateChange (e) {
+      this.client.birthday = e.detail.value
+      this.$apply()
+    },
+    save(e) {
+      let formData = e.detail.value
+      let params = {
+        'nick_name': this.client.nick_name,
+        'name': formData.name,
+        'froms': this.client.froms,
+        'phone': formData.phone,
+        'wx_phone': formData.wx_phone,
+        'mail': formData.mail,
+        'company': formData.company,
+        'position': formData.position,
+        'birthday': this.client.birthday,
+        'remark': formData.remark,
+        'label': this.client.label,
+        'create_time': this.client.create_time,
+        'head_icon': this.client.head_icon,
+        'modify_time': this.client.modify_time,
+        'id': this.client.id
+      }
+      aiRadarApi.editClientDetailsPromise(params).then(res => {
+        this.client = params
+        this.$apply()
+        wepy.showToast({
+          title: '修改成功',
+          icon: 'none'
+        }).then(res => {
+          wepy.navigateBack({
+            delta: 1
+          })
+        })
+      })
+    }
+  }
+}
+</script>

@@ -1,0 +1,55 @@
+<style lang="scss">
+  @import '../cardTypeFive/cardTypeFive.scss';
+  .card-temple-six {
+    .card-company {
+      margin-top:64rpx!important;
+      width:98%;
+    }
+  }
+</style>
+<template>
+  <view>
+    <form report-submit="true" bindsubmit="formSubmit">
+      <view class="card-temple-five card-temple-six">
+        <view class="card-bg">
+          <view class="card-bg-image" style="background-image: url({{res_url}}/dc_card_template_6.png)" wx:if="{{res_url}}">
+            <view class="card-bg-text">
+              <view class="card-bg-left">
+                <view class="c-323232 card-company ellipsis-2">{{syncData.enterprise_name}}</view>
+                <view class="card-phone" style="padding-top:16rpx;" wx:if="{{syncData.phone}}">
+                  <view class="card-phone-border"><image wx:if="{{res_url}}" class="card-phone-image" src="/assets/images/card/tel_6.png"/></view>
+                  <text class="c-323232 margin15">{{syncData.phone}}</text>
+                </view>
+                <view class="card-email"  wx:if="{{syncData.mail}}">
+                  <view class="card-phone-border"><image wx:if="{{res_url}}" class="card-email-image" src="/assets/images/card/email_6.png"/></view>
+                  <text class="c-323232 margin15">{{syncData.mail}}</text>
+                </view>
+                <view class="card-address flex"  wx:if="{{syncData.address}}">
+                  <view class="card-phone-border"><image wx:if="{{res_url}}" class="card-address-image" src="/assets/images/card/address_6.png"/></view>
+                  <view class="margin15 font-size-22 c-323232 ellipsis-2" style="margin:0 0 0 20rpx;padding-top:4rpx;width:78%;line-height:28rpx;">{{syncData.address}}</view>
+                </view>
+              </view>
+              <view class="card-bg-right">
+                <view class="card-head"><image src="{{syncData.head_icon}}"/></view>
+                <view class="c-323232 card-name">{{syncData.name}}</view>
+                <view class="c-646464 card-station" wx:if="{{syncData.station}}">{{syncData.station}}</view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </form>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import cardDetailMixin from '../../../mixins/cardDetailMixins.js'
+import {G_RES_URL} from '@/config'
+export default class CardTypeSix extends wepy.component {
+  mixins = [cardDetailMixin]
+  data = {
+    res_url: G_RES_URL
+  }
+}
+</script>

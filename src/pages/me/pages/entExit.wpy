@@ -1,0 +1,122 @@
+<style lang="scss">
+  $main_color: #e75152;
+  .exit-btn {
+    background-color: $main_color;
+    width: 180rpx;
+    height: 60rpx;
+    line-height: 60rpx;
+    border-radius: 10rpx;
+    font-size: 26rpx;
+    text-align: middle;
+    color: #f7f7f7;
+  }
+</style>
+<template>
+  <view>
+    <view class="weui-cells weui-cells_after-title">
+      <view class="weui-cell" wx:for="{{enterpriseList}}"  wx:for-index="index" wx:for-item="item" wx:key="index">
+        <view class="weui-cell__hd" style="position: relative;margin-right: 20rpx;">
+            <image src="{{item.head_icon}}" style="width: 103rpx; height: 103rpx; display: block"/>
+        </view>
+        <view class="weui-cell__bd">
+            <view class="font-size-30 c-323232">{{item.name}}</view>
+            <view class="font-size-26;c-909090;">免费版 | {{item.sale_card_num}} / {{item.money_init}} 人</view>
+        </view>
+        <button wx:if="{{item.role === 2 || item.role === 3}}" class="exit-btn" @tap="exitCompany('{{item}}','{{index}}')">退出组织</button>
+        <button wx:if="{{item.role === 0}}" class="exit-btn" @tap="dissolveCompany('{{item}}','{{index}}')">解散组织</button>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import { companyApi } from '@/api'
+import { common } from '../../../assets/js/common'
+export default class companyExit extends wepy.page {
+  config = {
+    navigationBarTitleText: '退出组织'
+  }
+  data = {
+    openid: '',
+    enterpriseList: []
+  }
+  onLoad() {
+    this.init()
+  }
+  init() {
+    wepy.showLoading({
+      title: '加载中'
+    })
+    this.openid = this.$parent.getNowOpenid()
+    companyApi.getEnterpriseList(this.openid).then(res => {
+      wepy.hideLoading()
+      this.enterpriseList = res
+      if (this.enterpriseList.length === 0) {
+        // 跳到工作交接页面
+        wepy.reLaunch({
+          url: `/pages/card/subPackage/pages/createEnt`
+        })
+      }
+      this.$apply()
+    })
+  }
+  methods = {
+    // 解散企业
+    dissolveCompany(item, index) {
+      wepy
+        .showModal({
+          title: '提示',
+          content: `"${item.name}"的所有资料都将被删除,请谨慎操作`
+        })
+        .then(res => {
+          if (res.confirm) {
+            companyApi.dissolveCompany(item.id).then(res => {
+              this.enterpriseList.splice(index, 1)
+              this.$apply()
+              // 解散最后一个企业
+              if (this.enterpriseList.length === 0) {
+                this.$parent.saveStaffInfo('')
+                wepy.reLaunch({
+                  // M by plh at 2019-01-10 for 跳转到名片夹改成到主页
+                  // url: `/pages/contact/cardList`
+                  url: `/pages/home/homeIndex`
+                })
+                return
+              }
+              // 解散当前企业
+              // if (item.id === common.getEnterpriseId(this)) {
+              companyApi.switchCompany(this.enterpriseList[0].id, common.getOpenId(this)).then(
+                res => {
+                  this.$parent.saveStaffInfo(res)
+                  wepy.hideLoading()
+                  wepy.reLaunch({
+                    url: `/pages/me/meIndex?enterprise_id=${this.enterpriseList[0].id}`
+                  })
+                  this.$apply()
+                }
+              )
+              // }
+            })
+          }
+        })
+    },
+    // 退出企业
+    exitCompany(item, index) {
+      wepy
+        .showModal({
+          title: '提示',
+          content: `您将退出"${item.name}",请谨慎操作`
+        })
+        .then(res => {
+          if (res.confirm) {
+            // 跳到工作交接页面
+            wepy.redirectTo({
+              url: `./handover?enterprise_id=${item.id}&is_exit=1`
+            })
+          }
+        })
+    }
+  }
+}
+</script>

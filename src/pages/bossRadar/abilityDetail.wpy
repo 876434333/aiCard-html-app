@@ -1,0 +1,701 @@
+<style lang="scss">
+  @import '../../assets/css/pages/radar/time.scss';
+  $main_color: #e75152;
+  .wrap {
+    // overflow: hidden;
+  }
+  .summary-part {
+    padding:30rpx 10rpx;
+    justify-content: space-between;    
+    background: #ffffff;  
+    .summary {
+      padding:0 16rpx;
+      height: 52rpx;
+      line-height: 52rpx;
+      border:1px solid #e8e8e8; 
+    }
+    .summary-select {
+      color: #ffffff!important;
+      border:1px solid $main_color;
+      background: $main_color;
+    }
+  }
+  .card-part {
+    position: relative;
+    padding:30rpx 0 32rpx 0;
+    overflow: hidden;
+    background: #ffffff;
+    .card-bg {
+      position: absolute;
+      top: 24rpx;
+      left: 24rpx;
+      width: 702rpx;
+      height: 380rpx;
+    }
+    .card {
+      position: relative;
+      margin:0 auto;      
+      width: 682rpx;
+      height: 360rpx;
+      border-radius: 10rpx;
+    }
+    .weui-cell{
+      padding:36rpx 0 0 36rpx;
+    }
+    .weui-cell__hd:nth-child(1) {
+      margin-right: 34rpx;
+      width: 160rpx;
+      height: 160rpx;
+      border-radius: 100%;
+      background:rgba(255,255,255,0.3);
+    }
+    .avatar {
+      position: relative;
+      top: 4rpx;
+      left: 4rpx;      
+      width: 152rpx;
+      height: 152rpx;
+      border-radius: 100%;
+    }
+    .name {
+      position:relative;
+      top:-4rpx;
+    }
+    .enterprise-name {
+      position:relative;
+      top:6rpx;
+      padding-right:28rpx;
+    }
+    .tel {
+      margin:30rpx 0 0 37rpx;
+      line-height:42rpx;
+      image {
+        margin:0 32rpx 0 2rpx;
+        width: 21rpx;
+        height: 29rpx;
+        vertical-align:middle;
+      }
+    }
+    .address {
+      margin-top: 0;
+      image {
+        margin:0 27rpx 0 0;
+        width: 26rpx;
+        height: 20rpx;
+      }
+    }
+    .code {
+      position: absolute;
+      right: 32rpx;
+      bottom: 32rpx;
+      width: 38rpx;
+      height: 38rpx;
+    }
+  }
+  .overview-head{ 
+    position: relative;
+    margin-top: 12rpx;;  
+    border-bottom:1px solid #e8e8e8;
+    background: #ffffff;  
+    .overview{
+      position: relative;
+      width: 33.33%;
+      height: 88rpx;
+      line-height: 88rpx;
+      .arrow {
+        position: absolute;
+        top:38rpx;
+        right:36rpx;
+        width: 24rpx;
+        height: 16rpx;
+      }
+    }
+    .overview-select {
+      position: relative;
+      color: $main_color!important;
+      view {
+        position: absolute;
+        left:19%;
+        bottom: 0;
+        width: 154rpx;
+        height: 4rpx;
+        background: $main_color;
+      }
+    }
+    .follow-mask {
+      position: absolute;
+      top:90rpx;
+      z-index:999;
+      width: 100%;
+      height:194rpx;
+      box-shadow: 0 12rpx 12rpx -8rpx rgba(0,0,0,0.18);
+      background: #fff;
+      .follow-mask-title {
+        position:relative;
+        padding:14rpx 0 0 60rpx;
+        height:74rpx;
+        image {
+          display: none;
+        }
+      }
+      .follow-mask-title-select {
+        text {
+          color: $main_color!important;
+        }
+        image {
+          display: inline-block;
+          position:absolute;
+          top: 28rpx;
+          right:30rpx;
+          width: 48rpx;
+          height: 37rpx;
+        }
+      }
+    }
+  }
+  .radar-part {
+    padding:52rpx 0 104rpx 0;
+    background: #ffffff;
+    .radar-bottom {
+      padding-top:50rpx;
+      .client {
+        width: 33.33%;
+        view:nth-child(1) {
+          font-size:52rpx;
+          color: #2c6aa5;
+        }
+        view:nth-child(2) {
+          padding-top:6rpx;
+        }
+      }
+    }
+  }
+    .overview-main {    
+    overflow: hidden; 
+    .summary {
+      padding:0 42rpx;
+    }
+    .client-part {
+      padding:28rpx 0 40rpx 0;
+      flex-wrap: wrap;
+      border-top:1px solid #e8e8e8;
+      overflow: hidden;
+      background: #ffffff;
+      .client-wrap {
+        margin:16rpx 8rpx 0 10rpx;
+        width: 229rpx;
+        height: 220rpx;
+        border:1px solid #f8ddde;
+        overflow: hidden;
+        .client-middle {
+          margin:4rpx auto 0;
+          width: 217rpx;
+          height: 208rpx;
+          border:1px solid #f1bcbd;
+          .client-inner {
+            margin:4rpx auto 0;
+            width: 205rpx;
+            height: 196rpx;
+            border:1px solid $main_color;
+            overflow: hidden;
+            .client-total {
+              margin-top:24rpx;
+            }
+            .client-number {
+              margin-top:6rpx;
+            }
+            .growth-rate {
+              color: #19d4ae!important;
+            }
+          }
+        }      
+      }
+    }   
+    .pie-wrap {
+      margin-top: 32rpx;
+      padding-bottom:40rpx;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    .line-wrap {
+      position: relative;
+      margin-top: 18rpx;
+      padding-bottom:40rpx;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    .echart-title {
+      line-height: 80rpx;
+    }
+    .echart-head {
+      padding:46rpx 0 0 142rpx;
+      view {
+        margin-right: 63rpx;
+        width: 112rpx;
+        height: 54rpx;
+        line-height: 54rpx;
+        border:1px solid #e8e8e8;
+      }
+      .echart-time-select {
+        color: $main_color!important;
+        border:1px solid $main_color;
+      }
+    }
+    .echart-canvas {
+      position:relative;
+      z-index:9999;
+      margin-top: 40rpx;
+    }
+  }
+  .pie-box{
+    position: absolute;
+    top:220rpx;
+    left:198rpx;
+    width:354rpx;
+    height:354rpx;
+    border-radius: 100%;
+    z-index:1000;
+    background: #00daa9;
+  }
+</style>
+<template>
+  <!-- 雷达能力图 -->
+  <view class="wrap">
+    <view class="card-part" @tap="goCardPoster">
+      <image src="{{res_url + '/dc_radar_card_bg.png'}}" class="card-bg"/>
+      <view class="card">
+        <view class="weui-cell">
+          <view class="weui-cell__hd">
+            <image src="{{cardInfo.head_icon}}" class="avatar"/>
+          </view>
+          <view class="weui-cell__hd">
+            <view class="font-size-40 c-ffffff name">{{cardInfo.name}}</view>
+            <view class="font-size-26 c-ffffff">{{cardInfo.position ? cardInfo.position : '暂无职位'}}</view>
+            <view class="font-size-26 c-ffffff enterprise-name">{{cardInfo.enterprise}}</view>
+          </view>
+        </view>
+        <view class="tel">
+          <image src="./images/tel_yellow.png"/>
+          <text class="font-size-24 c-ffffff">电话：{{cardInfo.phone ? cardInfo.phone : '暂无'}}</text>
+        </view>
+        <view class="tel address">
+          <image src="./images/address.png"/>
+          <text class="font-size-24 c-ffffff">邮箱：{{cardInfo.mail ? cardInfo.mail : '暂无'}}</text>
+        </view>
+        <image src="./images/code.png" class="code"/>   
+      </view>   
+    </view>
+    <view class="overview-head flex">
+      <view class="font-size-26 c-323232 ta-center overview {{tabSelect === '0' ? 'overview-select' : ''}}" @tap="clickTab('0')">
+        雷达能力图<view></view>
+      </view>
+      <view class="font-size-26 c-323232 ta-center overview {{tabSelect === '1' ? 'overview-select' : ''}}" @tap="clickTab('1')">
+        数据分析<view></view>
+      </view>
+      <view class="font-size-26 c-323232 ta-center overview {{tabSelect === '2' ? 'overview-select' : ''}}" @tap="maskShow">
+        {{followSelect === 1 ? '互动跟进' : '跟进'}}<view></view>
+        <image src="/assets/images/contact/arrow_down.png" class="arrow" wx:if="{{tabSelect !== '2'}}"/>
+        <image src="/assets/images/contact/arrow_down_check.png" class="arrow" wx:if="{{!maskShow && tabSelect === '2'}}"/>
+        <image src="/assets/images/contact/arrow_up.png" class="arrow" wx:if="{{maskShow && tabSelect === '2'}}"/>
+      </view>
+      <!-- 互动跟进弹窗 -->
+      <view class="follow-mask" wx:if="{{maskShow}}">        
+        <view class="follow-mask-title {{followSelect === 1 ? 'follow-mask-title-select' : ''}}" @tap="follow(1)">
+          <text class="font-size-26 c-909090">互动跟进</text>
+          <image src="/assets/images/contact/hook.png"/>
+        </view>
+        <view class="follow-mask-title {{followSelect === 0 ? 'follow-mask-title-select' : ''}}" @tap="follow(0)">
+          <text class="font-size-26 c-909090">跟进</text>
+          <image src="/assets/images/contact/hook.png"/>
+        </view>
+      </view>
+    </view>
+
+    <!-- 雷达能力图 -->
+    <view class="radar-part" hidden="{{tabSelect === '0' ? false : true}}">
+      <radar :radarData.sync="radarData"></radar>
+      <view class="flex radar-bottom">
+        <repeat for="{{clientList}}" index="index" item="item">
+          <view class="client">
+            <view class="ta-center" wx:if="{{index === 0}}">{{item.customer}}</view>
+            <view class="ta-center" wx:if="{{index === 1}}">{{item.attach}}</view>
+            <view class="ta-center" wx:elif>{{item.consult}}</view>
+            <view class="font-size-24 c-323232 ta-center">{{item.title}}</view>
+          </view>
+        </repeat>
+      </view>
+    </view>
+
+    <!-- 数据分析 -->
+    <view class="overview-main" hidden="{{tabSelect === '1' ? false : true}}">
+      <view class="summary-part flex">
+        <repeat for="{{overviewTimeList}}" index="index" item="item">
+          <view class="font-size-28 c-909090 ta-center summary {{overviewTimeSelect === index + 1 ? 'summary-select' : ''}}" data-type='{{item.type}}' @tap="clickOverviewTime()">{{item.name}}</view>
+        </repeat>
+      </view>
+      <view class="client-part flex" wx:if="{{totalDataList.length > 0}}">
+        <repeat for="{{totalDataList}}" index="index" item="item">
+          <view class="client-wrap">
+            <view class="client-middle">
+              <view class="client-inner">
+                <view class="font-size-26 c-909090 ta-center client-total">{{item.desc}}</view>
+                <view class="font-size-40 c-909090 ta-center client-number {{item.growthRate === '无对比' || item.growthRate === '' ? '' : 'growth-rate'}}">{{item.now_num}}</view>
+                <view class="font-size-26 c-909090 ta-center {{item.growthRate === '无对比' || item.growthRate === '' ? '' : 'growth-rate'}}">{{item.growthRate}}</view>
+								<view class="font-size-26 c-909090 ta-center" hidden="{{item.growthRate}}">{{item.upOrDown}}</view>
+              </view>
+            </view>
+          </view>
+        </repeat>
+      </view>
+      <!-- 成交率 -->
+      <view class="pie-wrap">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title">成交率</view>
+        <view class="echart-head flex">
+          <repeat for="{{selectDaySubList}}" item="item" index="index" wx:if="{{index > 0}}">
+            <view class="font-size-24 c-909090 ta-center {{funnelDay === item.day ? 'echart-time-select' : ''}}" @tap="funnelDay('{{item.day}}')">{{item.name}}</view>
+          </repeat>
+        </view>
+        <canvas canvas-id="dealRateCanvas" class="echart-canvas"></canvas>
+      </view> 
+      <!-- 客户兴趣占比 -->
+      <view class="line-wrap">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title">客户兴趣占比</view>
+        <pie :pieData.sync="interestData"></pie>
+        <cover-view class="pie-box" wx:if="{{pieBoxShow}}"></cover-view>
+      </view>  
+      <!-- 近15日客户活跃度 -->
+      <view class="line-wrap">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title">近15日客户活跃度</view>
+        <line :lineData.sync="activeData"></line>
+      </view>
+      <!-- 客户与我的互动 -->
+      <view class="line-wrap">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title">客户与我的互动</view>
+        <column :columnData.sync="interactData" :columnTitle.sync="interactTitle"></column>
+      </view>
+    </view>
+
+    <!-- 互动跟进 -->
+    <view class="follow-part" hidden="{{tabSelect === '2' ? false : true}}">
+      <repeat for="{{followList}}" index="groupIndex" key="index" item="item">
+        <view class="time">{{item.groupName}}</view>
+        <repeat for="{{item.dataList}}" index="itemIndex" key="index" item="client">
+          <view class="comment" wx:if="{{followSelect === 0}}">
+            <view class="middle">
+              {{client.description}}
+            </view>
+            <view class="left">
+              <image src="{{client.head_icon}}" class="headIcon" style="float:right"/>
+            </view>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+          </view>
+          <view class="comment" wx:elif>
+            <view class="left">
+              <image src="{{client.head_icon}}" class="headIcon"/>
+            </view>
+            <view class="middle">
+              {{client.description}}<text>{{client.num}}</text><text>次</text>
+            </view>
+          </view>
+        </repeat>
+      </repeat>
+    </view>
+    <view class="font-size-28 c-909090 ta-center" style="line-height:80rpx;">没有更多了</view>
+  </view>
+</template>
+  
+<script>
+  import wepy from 'wepy'
+  import {G_RES_URL} from '@/config'
+  import pie from '@/components/echarts/pie'
+  import line from '@/components/echarts/line'
+  import column from '@/components/echarts/column'
+  import radar from '@/components/echarts/radar'
+  import columnMixin from '@/components/echarts/js/column.js'
+  import {common} from '@/assets/js/common.js'
+  import { pagingMixin } from '@/mixins'
+  import { bossRadarApi } from '@/api'
+  export default class abilityDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '雷达能力图'
+    }
+    mixins = [pagingMixin, columnMixin]
+    components = {
+      pie: pie,
+      line: line,
+      column: column,
+      radar: radar
+    }
+    data = {
+      res_url: G_RES_URL,
+      maskShow: false,
+      pieBoxShow: false,
+      tabSelect: '0',
+      followSelect: 1,
+      cardInfo: {},
+      radarData: {
+        categories: ['获客能力值', '产品推广值', '官网推广值', '客户互动值', '销售主动值', '个人魅力值'],
+        series: [{
+          name: '雷达能力图',
+          data: [],
+          color: '#5077aa'
+        }]
+      },
+      clientList: [
+        {title: '客户总数', customer: 0},
+        {title: '跟进总数', attach: 0},
+        {title: '咨询总数', consult: 0}
+      ],
+      followList: [],
+      staffId: null,
+      departmentId: null,
+      overviewTimeSelect: '1',
+      overviewTimeList: [
+        {name: '汇总', type: 1, day: 30},
+        {name: '昨天', type: 2, day: 1},
+        {name: '近7天', type: 3, day: 7},
+        {name: '近30天', type: 4, day: 30}
+      ],
+      totalDataList: [],
+      selectDaySubList: [
+        {name: '昨天', day: 1},
+        {name: '近7天', day: 7},
+        {name: '近15天', day: 15},
+        {name: '近30天', day: 30}
+      ],
+      funnelDay: 7,
+      dealRateData: {
+        main: {
+          title: '',
+          categories: [],
+          series: [{
+            name: '成交率',
+            data: [],
+            format(val, name) {
+              return val.toFixed(2)
+            },
+            color: '#00dba9'
+          }]
+        }
+      },
+      interestData: [
+        {
+          name: '',
+          data: 0
+        }
+      ],
+      activeData: {
+        categories: [],
+        series: [{
+          name: '近15日客户活跃度',
+          data: [],
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        }]
+      },
+      interactTitle: '客户与我的互动',
+      interactData: {
+        main: {
+          title: '',
+          data: [],
+          categories: []
+        }
+      }
+    }
+    onLoad(option) {
+      let opt = JSON.parse(option.staff)
+      this.staffId = opt.staffId
+      this.radarData.series[0].data = opt.radarData
+      this.departmentId = opt.departmentId
+      bossRadarApi.userInfoPromise(this.staffId, this.departmentId).then(res => {
+        this.cardInfo = res
+        this.$apply()
+      })
+      bossRadarApi.userCusInfoPromise(this.staffId, this.departmentId).then(res => {
+        this.clientList[0].customer = res.customer
+        this.clientList[1].attach = res.attach
+        this.clientList[2].consult = res.consult
+        this.$apply()
+      })
+      this.$invoke('radar', 'radar', '')
+      this.init()
+      this.clickOverviewTime()
+      this.getFunneltList()
+      this.getAnalysisList()
+    }
+    // 获取跟进和互相跟进数据
+    getDataList() {
+      let params = {
+        type: this.followSelect,
+        staff_id: this.staffId
+      }
+      this.addRequestParams(params)
+      return bossRadarApi.followAndLogListPromise(this.params).then((res) => {
+        let tempdataList = common.getGroupListByKey(res.data_list, 'create_time')
+        // 将时间戳转化为字符串
+        for (let i = 0; i < tempdataList.length; i++) {
+          let timeString = common.formatDateTime(tempdataList[i].groupName)
+          tempdataList[i].groupName = timeString
+        }
+        this.followList = this.followList.concat(tempdataList)
+        this.$apply()
+        return res
+      })
+    }
+    // 点击总览时间
+    clickOverviewTime(e) {
+      if (e) {
+        this.overviewTimeSelect = e.currentTarget.dataset.type
+      } else {
+        this.overviewTimeSelect = 1
+      }
+      let params = {
+        staffId: this.staffId,
+        departmentId: this.departmentId,
+        type: this.overviewTimeSelect
+      }
+      bossRadarApi.detailDataViewPromise(params).then(res => {
+        this.totalDataList = res
+        this.methods.growthRate(this, this.overviewTimeSelect)
+        this.methods.upOrDown(this, this.overviewTimeSelect)
+        this.$apply()
+      })
+    }
+    // 获取成交率漏斗数据
+    getFunneltList() {
+      let params = {
+        day: this.funnelDay,
+        department_id: this.departmentId
+      }
+      bossRadarApi.funnelPromise(params).then(res => {
+        this.dealRateData.main.categories = []
+        this.dealRateData.main.series[0].data = []
+        for (let key in res) {
+          this.dealRateData.main.categories.push(res[key].name)
+          this.dealRateData.main.series[0].data.push(Number(res[key].value))
+        }
+        this.column('dealRateCanvas', this.dealRateData)
+        this.$apply()
+      })
+    }
+    // 获取图表数据
+    getAnalysisList() {
+      bossRadarApi.detailAnalysisPromise(this.staffId, this.departmentId).then((res) => {
+        this.activeData.categories = []
+        this.activeData.series[0].data = []
+        this.interactData.main.categories = []
+        this.interactData.main.data = []
+        let pieTotal = 0
+        if (res) {
+          // 饼状图数据
+          this.interestData = res.pie
+          for (let key in res.pie) {
+            this.interestData[key].data = Number(res.pie[key].value)
+            delete this.interestData[key].value
+            pieTotal += this.interestData[key].data
+          }
+          // 折线图数据
+          for (let key in res.line) {
+            this.activeData.categories.push(res.line[key].name)
+            this.activeData.series[0].data.push(Number(res.line[key].value))
+          }
+          // 柱状图数据
+          for (let key in res.bar) {
+            this.interactData.main.categories.push(res.bar[key].name)
+            this.interactData.main.data.push(Number(res.bar[key].value))
+          }
+        }
+        this.$apply()
+        if (pieTotal === 0) {
+          this.pieBoxShow = true
+        } else {
+          this.pieBoxShow = false
+          this.$invoke('pie', 'pie', '')
+        }
+        this.$invoke('line', 'line', '')
+        this.$invoke('column', 'column', '')
+      })
+    }
+    methods = {
+      // 跳转到名片海报
+      goCardPoster() {
+        // this.$navigate('/pages/card/subPackage/pages/cardPoster')
+      },
+      // 显示跟进弹窗
+      maskShow() {
+        this.tabSelect = '2'
+        this.maskShow = true
+      },
+      // 点击跟进
+      follow(index) {
+        this.followSelect = Number(index)
+        this.followList = []
+        this.params.page_num = 1
+        this.maskShow = false
+        this.init()
+      },
+      // 点击导航栏
+      clickTab(index) {
+        this.tabSelect = index
+        if (index !== '2') {
+          this.maskShow = false
+        }
+      },
+      // 点击成交率时间
+      funnelDay(day) {
+        this.funnelDay = day
+        this.getFunneltList()
+      },
+      // 总览汇总数据增长率
+      growthRate(that, type) {
+        if (type !== 1) {
+          for (let i = 0; i < that.totalDataList.length; i++) {
+            if (that.totalDataList[i].last_num === 0) {
+              that.totalDataList[i].growthRate = '无对比'
+            } else {
+              let now = that.totalDataList[i].now_num
+              let last = that.totalDataList[i].last_num
+              let rate = Math.round((now - last) / last * 100)
+              if (rate > 0) {
+                that.totalDataList[i].growthRate = `+${rate}%`
+              } else if (rate < 0) {
+                that.totalDataList[i].growthRate = `${rate}%`
+              } else {
+                that.totalDataList[i].growthRate = '持平'
+              }
+            }
+          }
+        } else {
+          for (let i = 0; i < that.totalDataList.length; i++) {
+            that.totalDataList[i].growthRate = ''
+          }
+        }
+      },
+      // 总览汇总数据下降率
+      upOrDown(that, type) {
+        if (type !== 1) {
+          for (let i = 0; i < that.totalDataList.length; i++) {
+            if (that.totalDataList[i].last_num === 0) {
+              that.totalDataList[i].upOrDown = ''
+            } else {
+              let now = that.totalDataList[i].now_num
+              let last = that.totalDataList[i].last_num
+              let rate = Math.round((now - last) / last * 100)
+              if (rate > 0) {
+                that.totalDataList[i].upOrDown = 'up'
+              } else if (rate < 0) {
+                that.totalDataList[i].upOrDown = 'down'
+              } else {
+                that.totalDataList[i].upOrDown = ''
+              }
+            }
+          }
+        } else {
+          for (let i = 0; i < that.totalDataList.length; i++) {
+            that.totalDataList[i].upOrDown = ''
+          }
+        }
+      }
+    }
+  }
+</script>

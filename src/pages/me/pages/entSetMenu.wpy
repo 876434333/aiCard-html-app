@@ -1,0 +1,134 @@
+<style lang="scss">
+.inmage-view{
+  display: inline-block;
+  vertical-align: middle;
+}
+.image{
+  height: 60rpx;
+  width: 60rpx;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 22rpx;
+}
+.btn{
+  color:#323232;
+  height: 96rpx;
+  width: 688rpx;
+  border-style:#dfdfdf;
+  border-radius: 10rpx;
+  background-color:#fff;
+}
+.lable-style{
+  display: inline-block;
+  vertical-align: middle;
+  font-size:30rpx;
+  color: #323232;
+}
+</style>
+<template>
+  <view>
+    <view class="ta-center mt-20">
+      <image  wx:if="{{res_url}}" src="{{icon == '' || icon == 'null' || icon == null ? res_url + '/dc_me_ent_logo.png' : icon}}" style="width: 120rpx;height:120rpx;margin:0 auto;" />
+      <view class="font-size-30 c-323232 mt-20 mb-26" style="padding:0 30rpx;">{{enterprise_name}}</view>
+    </view>
+    <view style="margin-top:30rpx">
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_access" @tap="goCompanyOrg">
+            <view class="weui-cell__bd">
+              <image wx:if="{{res_url}}" class="image" src="{{res_url}}/dc_me_editorg.png" />
+                <view class="lable-style">管理组织架构</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access mr-30"></view>
+        </view>
+        <view class="weui-cell weui-cell_access" @tap="goCompanyInfoAndLogoEdit">
+            <view class="weui-cell__bd">
+              <image wx:if="{{res_url}}" class="image" src="{{res_url}}/dc_me_edit_logo.png" />
+                <view class="lable-style">编辑公司信息与Logo</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <view class="weui-cell weui-cell_access" @tap="goEnteMgr">
+            <view class="weui-cell__bd">
+              <image wx:if="{{res_url}}" class="image" src="{{res_url}}/dc_me_administrator.png" />
+                <view class="lable-style">管理员设置</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <view class="weui-cell weui-cell_access" @tap="goBindWebsite">
+            <view class="weui-cell__bd">
+              <image wx:if="{{res_url}}" class="image" src="{{res_url}}/dc_me_admin.png" />
+                <view class="lable-style">绑定官网</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <view class="weui-cell weui-cell_access" @tap="goShopMgr">
+            <view class="weui-cell__bd">
+              <image wx:if="{{res_url}}" class="image" src="{{res_url}}/dc_me_shop.png" />
+                <view class="lable-style">商城管理</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view>
+        <!-- <view class="weui-cell weui-cell_access">
+            <view class="weui-cell__bd">
+              <image wx:if="{{res_url}}" class="image" src="{{res_url}}/dc_me_radar.png" />
+                <view class="lable-style">商务雷达</view>
+            </view>
+            <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+        </view> -->
+      </view>
+    </view>
+    <view class="pd-30">
+      <button class="btn font-size-36 mt-30" @tap="goEntExit">解散组织</button>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import {G_RES_URL} from '@/config'
+export default class entSetMenu extends wepy.page {
+  config = {
+    navigationBarTitleText: '企业设置'
+  }
+  components = {}
+  data = {
+    res_url: G_RES_URL,
+    icon: '',
+    enterprise_name: '',
+    enterprise_id: ''
+  }
+  onLoad(option) {
+    this.icon = option.icon
+    this.enterprise_name = option.enterprise_name
+    this.enterprise_id = option.enterprise_id
+    // 改变标题名称
+    wx.setNavigationBarTitle({
+      title: this.enterprise_name
+    })
+    this.$apply()
+  }
+  methods = {
+    // 公司组织架构
+    goCompanyOrg() {
+      this.$navigate(`./entOrg?enterprise_id=${this.enterprise_id}&enterprise_name=${this.enterprise_name}`)
+    },
+    // 公司信息与LOGO编辑
+    goCompanyInfoAndLogoEdit() {
+      this.$navigate(`./entEdit?icon=${this.icon}&enterprise_name=${this.enterprise_name}&enterprise_id=${this.enterprise_id}`)
+    },
+    // 管理员设置
+    goEnteMgr() {
+      this.$navigate(`./entMgr?enterprise_id=${this.enterprise_id}`)
+    },
+    goBindWebsite() {
+      this.$navigate(`/pages/website/bindWebsite?enterprise_id=${this.enterprise_id}`)
+    },
+    goEntExit() {
+      this.$navigate(`./entExit?enterprise_id=${this.enterprise_id}`)
+    },
+    goShopMgr() {
+      this.$navigate(`/pages/product/shopMgr?enterprise_id=${this.enterprise_id}`)
+    }
+  }
+}
+</script>

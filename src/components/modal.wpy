@@ -1,0 +1,38 @@
+<template>
+  <view class="modal-mask">
+    <view class="modal-dialog">
+      <view class="modal-title">提示</view>
+      <view class="modal-content">
+        <view>小程序正在向您请求授权，是否同意？</view>
+        <view>
+          <view class="modal-btn">
+            <button type="primary" open-type="getUserInfo" @getuserinfo="applyUserInfo">同意授权</button>
+          </view>
+          <view class="modal-btn">
+            <button class="choose-btn" type="warn" @tap="cancelApplyUserInfo">拒绝</button>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+
+export default class AuthorizeModal extends wepy.component {
+  props = {
+    swipeData: {
+      type: Object,
+      default: []
+    }
+  }
+
+  data = {}
+
+  onLoad () {
+  }
+
+  method = {}
+}
+</script>

@@ -1,0 +1,456 @@
+<style lang="scss">
+  @import '../../../assets/css/pages/contact/cardList.scss';
+  @import '../../../assets/css/pages/radar/time.scss';
+  $main_color: #e75152;
+  .wrap {
+    padding-bottom:110rpx;
+    .head {
+      position: relative;
+      padding-bottom: 20rpx;
+      overflow: hidden;
+      .head-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 750rpx;
+        height: 274rpx;
+      }
+      .head-main {
+        position:relative;
+        z-index:10000;
+        margin:38rpx auto 0;
+        padding:26rpx 0;
+        width: 670rpx;
+        height: 250rpx;
+        box-shadow:0 3rpx 12rpx 3rpx rgba(0,0,0,0.18);
+        border-radius: 20rpx;
+        background: #ffffff;
+        .head-top {
+          display:-webkit-box;
+          display: -webkit-flex;
+          display: flex;
+          position: relative;
+          padding:0 26rpx 26rpx;
+          .avatar {
+            margin-right: 42rpx;
+            width: 136rpx;
+            height: 136rpx;
+            border-radius: 10rpx;
+          }
+          .edit {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding:0 26rpx 26rpx;
+            image {
+              width: 40rpx;
+              height: 33rpx;
+            }
+          }
+        }
+        .head-bottom {
+          display:-webkit-box;
+          display: -webkit-flex;
+          display: flex;
+          width: 100%;
+        }
+        .head-bottom-left {
+          padding-top: 16rpx;
+          width: 50%;
+          border-top:1px solid #e8e8e8;
+          .expect {
+            position:relative;
+            top:-8rpx;
+          }
+        }
+      }      
+    }
+    .cardList-tab {
+      padding:14rpx 0;
+    }
+    .cardList-order-mask {
+      height:194rpx;
+      .cardList-order {
+        padding-left: 146rpx;
+      }
+    }
+    .c-3DB8C8{
+      color:$main_color!important;
+    }
+    .foot{
+      display:-webkit-box;
+      display: -webkit-flex;
+      display: flex;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      width: 100%;
+      height: 86rpx;
+      line-height: 86rpx;
+      border-top:1px solid #e8e8e8;
+      background: #ffffff;
+      view {
+        width: 50%;
+      }
+      .send {
+        border-right:1px solid #e8e8e8;
+      }
+    }
+    .echart-part {
+      overflow: hidden;
+      .pie{
+        margin-top: 32rpx;
+        background: #ffffff;
+        .echart-title{
+          padding-top:34rpx;
+        }
+      }
+      .pie:nth-child(1) {
+        margin-top: 0;
+      }
+      .pie:nth-child(2), {
+        padding-bottom:50rpx;
+      }
+      .pie:nth-child(3) {
+        padding-bottom:30rpx;
+      }    
+    }    
+  }
+</style>
+<template>
+  <!-- 客户 -->
+  <view class="wrap">
+    <view class="head">
+      <image src="/pages/aiRadar/assets/images/head_bg.png" class="head-bg"/>
+      <view class="head-main">
+        <view class="head-top">
+          <image src="{{clientMsg.head_icon}}" class="avatar"/>
+          <view class="font-size-30 c-323232">
+            <view style="padding:18rpx 0 10rpx;">{{clientMsg.nick_name}}</view>
+            <view class="font-size-24">手机号：{{clientMsg.phone === 'null' || clientMsg.phone === null || clientMsg.phone === '' ? '暂无' : clientMsg.phone}}</view>
+          </view>
+          <view class="edit" @tap="goEdit">
+            <image src="/assets/images/me/card_edit.png"/>
+          </view>
+        </view>
+        <view class="head-bottom">
+          <picker class="head-bottom-left" mode="date" @change="setDealDate">
+            <view class="font-size-30 c-323232 ta-center" wx:if="{{showClientTime === false}}">未设置</view>
+            <view class="font-size-30 c-323232 ta-center" wx:elif>{{clientMsg.clinch_time}}</view>
+            <view class="font-size-24 c-909090 ta-center expect">预计成交日期</view>
+          </picker>
+          <picker class="head-bottom-left" mode="selector" range="{{raleList}}" value="{{index}}" @change="dealRate">
+            <view class="font-size-30 c-323232 ta-center">{{clientMsg.rate}}%</view>
+            <view class="font-size-24 c-909090 ta-center expect">预计成交概率</view>
+          </picker>
+        </view>
+      </view>
+    </view>
+    <!-- 排序弹窗 -->
+    <view class="cardList-wrap">
+      <view class="cardList-tab">
+        <!-- 按照排序部分 -->
+        <view class="cardList-order-part " @tap="mask">
+          <repeat for="{{orderList}}" index="index" key="index" item="item">
+            <view class="cardList-order" wx:if="{{number == index ? orderShow : '' }}" data-index="{{index}}">
+              <text class="{{clientChoose ? 'c-3DB8C8' : ''}}" style="margin-left:39%;">{{item.text}}</text>
+              <image src="/pages/aiRadar/assets/images/arrow_down.png" class="cardList-order-arrow" wx:if="{{maskShow && clientChoose}}"/>
+              <image src="/assets/images/contact/arrow_down.png" class="cardList-order-arrow" wx:if="{{!clientChoose}}"/>
+              <image src="/assets/images/contact/arrow_up.png" class="cardList-order-arrow cardList-order-arrow-check" wx:if="{{arrowShow}}"/>
+            </view>  
+          </repeat>
+        </view>
+        <view class="cardList-order-part" @tap="clientChoose">
+          <view class="font-size-30 c-909090 ta-center cardList-order {{!clientChoose ? 'c-3DB8C8' : ''}}">客户分析</view>  
+        </view>
+      </view>
+      <view class="cardList-order-mask" wx:if="{{!maskShow}}">
+        <!-- 排序弹窗 -->
+        <repeat for="{{orderList}}" index="index" key="index" item="item">
+          <view class="cardList-order {{ number == index ? 'cardList-order-check' : ''}}" @tap="follow" data-index="{{index}}">
+            <text>{{item.text}}</text>
+            <image src="/assets/images/contact/hook.png" class="cardList-order-hook"/>
+          </view>
+        </repeat>
+      </view> 
+    </view>
+
+    <!-- 跟进 -->
+    <scroll-view scroll-y="true" style="height:{{scrollHeight}}rpx;" bindscrolltolower="getMore" upper-threshold="0" lower-threshold="0" wx:if="{{clientChoose}}">
+      <repeat for="{{dataList}}" index="groupIndex" key="index" item="item">
+      <view class="time">{{item.groupName}}</view>
+      <repeat for="{{item.dataList}}" index="itemIndex" key="index" item="client">
+        <view class="comment" wx:if="{{client.action_code === '1000'}}">
+          <view class="middle">
+            {{client.description}}
+          </view>
+          <view class="left">
+            <image src="{{client.head_icon}}" class="headIcon" style="float:right"/>
+          </view>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+        </view>
+        <view class="comment" wx:elif>
+          <view class="left">
+            <image src="{{client.head_icon}}" class="headIcon"/>
+          </view>
+          <view class="middle">
+            {{client.description}}<text style="color:#e75152">{{client.num}}</text><text>次</text>
+          </view>
+        </view>
+      </repeat>
+    </repeat>
+    <view class="font-size-30 ta-center c-909090" style="line-height:100rpx;" wx:if="{{noMore}}">没有更多数据</view>
+    </scroll-view>
+
+    <!-- 客户分析 -->
+    <scroll-view scroll-y style="height:{{scrollHeight}}rpx;" class="echart-part" hidden="{{clientChoose}}">
+      <view class="pie">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title">客户兴趣占比</view>
+        <pie :pieData.sync="pieData"></pie>
+      </view>
+      <view class="pie">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title" style="padding:18rpx 0 30rpx 0;">近15日客户活跃度</view>
+        <line :lineData.sync="lineData"></line>
+      </view>
+      <view class="pie">
+        <view class="font-size-30 c-3DB8C8 ta-center echart-title" style="padding:18rpx 0 30rpx 0;">客户与我的互动</view>
+        <column :columnData.sync="columnData" :columnTitle.sync="columnTitle"></column>
+      </view>     
+    </scroll-view>
+
+    <view class="foot">
+      <view class="font-size-30 c-3DB8C8 ta-center send" @tap="send">发消息</view>
+      <view class="font-size-30 c-3DB8C8 ta-center" @tap="goFollow">跟进</view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import time from '../components/time'
+  import pie from '@/components/echarts/pie'
+  import line from '@/components/echarts/line'
+  import column from '@/components/echarts/column'
+  import { aiRadarApi } from '@/api'
+  import {common} from '@/assets/js/common.js'
+  import { pagingMixin } from '@/mixins'
+  import {setFriendChatInfoBlue} from '@/storage/src/cardDetail'
+  export default class actionDetail extends wepy.page {
+    config = {
+      navigationBarTitleText: '客户信息'
+    }
+    mixins = [pagingMixin];
+    data = {
+      orderShow: true,
+      arrowShow: false,
+      maskShow: true,
+      imgShow: true,
+      clientChoose: true,
+      number: 0,
+      clientMsg: {},
+      orderList: [
+        {text: '跟进'},
+        {text: '互相跟进'}
+      ],
+      cardList: [],
+      cardGroupList: [],
+      pieData: [
+        {
+          name: '',
+          data: 0
+        }
+      ],
+      lineData: {
+        categories: [],
+        series: [{
+          name: '活跃度',
+          data: [],
+          format(val, name) {
+            return val.toFixed(2)
+          }
+        }]
+      },
+      columnTitle: '互动率',
+      columnData: {
+        main: {
+          title: '',
+          data: [],
+          categories: []
+        }
+      },
+      userId: '',
+      raleList: [],
+      dataList: [], // 跟进客户列表
+      scollerTo: '',
+      scrollHeight: 600,
+      showClientTime: false
+    }
+    components = {
+      time: time,
+      pie: pie,
+      line: line,
+      column: column
+    }
+    onLoad(option) {
+      this.userId = option.userId
+      this.getClientMsg()
+      this.init()
+      this.getAnalysisList()
+      for (let i = 1; i < 101; i++) {
+        this.raleList.push(i)
+      }
+    }
+    onShow() {
+      this.getClientMsg()
+      this.dataList = []
+      this.init()
+      this.getAnalysisList()
+      this.setScrollHeight()
+    }
+    // 设置滚动高度
+    setScrollHeight() {
+      wepy.getSystemInfo().then(res => {
+        this.scrollHeight = (res.screenHeight - res.screenWidth / 750 * 744) * 2
+        this.$apply()
+      })
+    }
+    // 获取用户简要信息
+    getClientMsg() {
+      aiRadarApi.clientSimplePromise(this.userId).then((res) => {
+        this.clientMsg = res
+        this.clientMsg.clinch_time = common.formatDateTimeToDateString(res.clinch_time)
+        if (this.clientMsg.clinch_time) {
+          this.showClientTime = true
+        } else {
+          this.showClientTime = false
+        }
+        this.$apply()
+      })
+    }
+    // 获取跟进和互相跟进数据
+    getDataList() {
+      let params = {
+        type: this.number,
+        user_id: this.userId
+      }
+      this.addRequestParams(params)
+      return aiRadarApi.followAndLogListPromise(this.params).then((res) => {
+        let tempdataList = common.getGroupListByKey(res.data_list, 'create_time')
+        // 将时间戳转化为字符串
+        for (let i = 0; i < tempdataList.length; i++) {
+          let timeString = common.formatDateTime(tempdataList[i].groupName)
+          tempdataList[i].groupName = timeString
+        }
+        this.dataList = this.dataList.concat(tempdataList)
+        this.$apply()
+        return res
+      })
+    }
+    // 获取图表数据
+    getAnalysisList() {
+      aiRadarApi.analysisListPromise(this.userId, 1).then((res) => {
+        this.lineData.categories = []
+        this.lineData.series[0].data = []
+        this.columnData.main.categories = []
+        this.columnData.main.data = []
+        if (res) {
+          this.pieData = res.pie
+          // 饼状图数据
+          for (let key in res.pie) {
+            this.pieData[key].data = Number(res.pie[key].value)
+            delete this.pieData[key].value
+          }
+          // 折线图数据
+          for (let key in res.line) {
+            this.lineData.categories.push(res.line[key].name)
+            this.lineData.series[0].data.push(Number(res.line[key].value))
+          }
+          // 柱状图数据
+          for (let key in res.bar) {
+            this.columnData.main.categories.push(res.bar[key].name)
+            this.columnData.main.data.push(Number(res.bar[key].value))
+          }
+        }
+        this.$apply()
+        this.$invoke('pie', 'pie', '')
+        this.$invoke('line', 'line', '')
+        this.$invoke('column', 'column', '')
+      })
+    }
+    // 获取跟进列表
+
+    methods = {
+      // 显示隐藏排序弹窗
+      mask() {
+        this.arrowShow = !this.arrowShow
+        this.maskShow = !this.maskShow
+        this.clientChoose = true
+      },
+      // 选择排序方式,0跟进，1互相跟进
+      follow(e) {
+        this.number = e.currentTarget.dataset.index
+        this.maskShow = true
+        this.arrowShow = false
+        this.dataList = []
+        this.init()
+      },
+      clientChoose() {
+        this.maskShow = true
+        this.arrowShow = false
+        this.clientChoose = false
+      },
+      // 设置预计成交日期
+      setDealDate(e) {
+        let params = {
+          times: e.detail.value,
+          user_id: this.userId
+        }
+        aiRadarApi.setWinTimePromise(params).then((res) => {
+          if (res === 'success') {
+            this.getClientMsg()
+            this.getDataList()
+            this.clientMsg.clinch_time = e.detail.value
+            this.showClientTime = true
+            this.$apply()
+          }
+        })
+      },
+      // 预计成交概率
+      dealRate(e) {
+        this.clientMsg.rate = this.raleList[e.detail.value]
+        let params = {
+          rate: this.clientMsg.rate,
+          user_id: this.userId
+        }
+        aiRadarApi.setWinRalePromise(params).then((res) => {
+          if (res === 'success') {
+            this.getClientMsg()
+            this.getDataList()
+          }
+        })
+      },
+      // 编辑客户信息
+      goEdit() {
+        this.$navigate(`/pages/aiRadar/detail/editClient?userId=${this.userId}`)
+      },
+      // 发消息
+      send() {
+        let friend = {
+          name: this.userId,
+          // 头像
+          avtor: this.clientMsg.head_icon,
+          nickName: this.clientMsg.nick_name
+        }
+        setFriendChatInfoBlue(friend)
+        this.$navigate('/pages/chat/chat')
+      },
+      // 跟进
+      goFollow() {
+        this.$navigate(`/pages/aiRadar/detail/follow?userId=${this.userId}`)
+      }
+    }
+    // 向后翻页
+    getMore(e) {
+      this.loadMoreData()
+    }
+  }
+</script>

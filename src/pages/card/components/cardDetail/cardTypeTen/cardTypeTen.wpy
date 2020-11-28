@@ -1,0 +1,61 @@
+<style lang="scss">
+  @import '../cardTypeFive/cardTypeFive.scss';
+  .card-type-ten {
+    .card-company {
+      margin-top: 114rpx!important;
+    }
+    .card-bg-text {
+      padding:38rpx 0 0 44rpx!important;
+    }
+    .card-bg-left {
+      padding-left: 52rpx;
+      width: 67%!important;
+    }
+  }
+</style>
+<template>
+  <view>
+    <form report-submit="true" bindsubmit="formSubmit">
+      <view class="card-temple-five card-type-ten">
+        <view class="card-bg">
+          <view class="card-bg-image" style="background-image: url({{res_url}}/dc_card_template_10.png)" wx:if="{{res_url}}">
+            <view class="card-bg-text">
+              <view class="card-bg-right">
+                <view class="card-head"><image src="{{syncData.head_icon}}"/></view>
+                <view class="c-006f1f card-name">{{syncData.name}}</view>
+                <view class="c-006f1f card-station" wx:if="{{syncData.station}}">{{syncData.station}}</view>
+              </view>
+              <view class="card-bg-left">
+                <view class="c-006f1f card-company ellipsis-2">{{syncData.enterprise_name}}</view>
+                <view class="card-phone" style="padding-top:16rpx;" wx:if="{{syncData.phone}}">
+                  <view class="card-phone-border"><image wx:if="{{res_url}}" class="card-phone-image" src="/assets/images/card/tel_10.png"/></view>
+                  <text class="c-006f1f margin15">{{syncData.phone}}</text>
+                </view>
+                <view class="card-email"  wx:if="{{syncData.mail}}">
+                  <view class="card-phone-border"><image wx:if="{{res_url}}" class="card-email-image" src="/assets/images/card/email_10.png"/></view>
+                  <text class="c-006f1f margin15">{{syncData.mail}}</text>
+                </view>
+                <view class="card-address flex"  wx:if="{{syncData.address}}">
+                  <view class="card-phone-border"><image wx:if="{{res_url}}" class="card-address-image" src="/assets/images/card/address_10.png"/></view>
+                  <view class="margin15 font-size-22 c-006f1f ellipsis-2" style="margin:0 0 0 20rpx;padding-top:4rpx;width:100%;line-height:28rpx;">{{syncData.address}}</view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </form>
+  </view>
+</template>
+
+<script>
+import wepy from 'wepy'
+import cardDetailMixin from '../../../mixins/cardDetailMixins.js'
+import {G_RES_URL} from '@/config'
+export default class CardTypeTen extends wepy.component {
+  mixins = [cardDetailMixin]
+  data = {
+    res_url: G_RES_URL
+  }
+}
+</script>
