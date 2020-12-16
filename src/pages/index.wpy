@@ -285,6 +285,7 @@ export default class domain extends wepy.page {
         this.toPage(loginType)
       },
       err => {
+        console.info(err)
         wepy.reLaunch({
           url: `/pages/home/homeIndex`
         })
