@@ -2,7 +2,6 @@
 // 这是API集群服务器的地址 by PLH说明
 // 统一定义图片资源服务器地址(For七牛服务器)
 
-// export const G_RES_URL = 'https://res.dev.deecard.net'
 // export const G_RES_URL = 'https://res.tooth.bitekun.xin'
 // export const urlOfGetApi = 'http://127.0.0.1:9001'
 // export const isLocalServer = true

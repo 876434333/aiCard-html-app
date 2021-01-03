@@ -76,7 +76,7 @@
     <view class="font-size-36 c-646464 ta-center">{{markedWords}}</view>
     <view class="font-size-36 c-ffffff ta-center create" @tap="createEnt">一键创建名片、商城、官网</view>
     <view class="font-size-36 ta-center create look" @tap="gotoCS">联系客服</view>
-    <view class="font-size-28 c-646464 ta-center" style="margin-top:28rpx;"硬骨头名片</view>
+    <view class="font-size-28 c-646464 ta-center" style="margin-top:28rpx;">硬骨头名片</view>
     <view class="font-size-28 c-646464 ta-center copy" style="margin-top:-2rpx;"><text class="line"></text><text style="margin:0 10rpx;">一张为销售赋能的微信小程序名片</text><text class="line"></text></view>
     <view class="font-size-28 c-646464 ta-center" style="margin-top:-2rpx;color:#e75152;" @tap="more">了解更多</view>
     <view class="font-size-28 c-909090 ta-center" style="margin-top:80rpx;" wx:if="{{recommendCardList.length > 0}}">看看他们怎么用</view>

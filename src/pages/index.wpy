@@ -73,7 +73,7 @@
           <image wx:if="{{res_url}}" src="{{res_url}}/dc_load_logo.png"/>
           <text class="font-size-36 c-323232">硬骨头名片</text>
         </view>
-        <view class="font-size-30 ta-center foot-title">工作社交就用硬骨头</view>
+        <view class="font-size-30 ta-center foot-title">最好的牙医都在这</view>
       </view>
       <button class="btn" form-type="submit"></button>
     </form>

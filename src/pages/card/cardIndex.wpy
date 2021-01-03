@@ -16,13 +16,10 @@
     <!-- <view class="to-card-list" @tap="gotoCardList" style="top:{{showFloat ? '150rpx;' : ''}}">
       <image class="to-card-list-img" src="../../assets/images/card/card_list_icon.png"/>
     </view> -->
-    <view class="float-msg" wx:if="{{showFloat}}">
+    <!-- <view class="float-msg" wx:if="{{showFloat}}">
         <view class="float-icon-part" @tap="closeMsg">
           <image class="float-icon" src="../../assets/images/card/close_index.png"/>
         </view>
-        <!-- <view class="view-img ml-40">
-            <image class="float-img" src="{{cardInfo.head_icon}}"/>
-        </view> -->
         <view class="float-left">
             <view class="text-top">企业通讯录创建成功 </view>
             <view class="text-bottom">赶快邀请你的同事加入吧 </view>
@@ -30,7 +27,7 @@
         <view class="float-right">
             <button class="float-botton" open-type="share" id="1">去添加</button>
         </view>
-    </view>
+    </view> -->
     <!-- 名片模板 -->
     <view style="margin-top:30rpx">
         <templatezero :syncData.sync="cardInfo"></templatezero>
