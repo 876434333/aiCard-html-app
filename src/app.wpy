@@ -23,9 +23,9 @@ export default class extends wepy.app {
       'pages/moment/momentIndex',
       'pages/moment/momentDetail',
       'pages/moment/releaseMoment',
-      'pages/contact/contactIndex',
-      'pages/contact/cardList',
-      'pages/contact/addContact',
+      // 'pages/contact/contactIndex',
+      // 'pages/contact/cardList',
+      // 'pages/contact/addContact',
       'pages/product/productIndex',
       'pages/product/personalCenter',
       'pages/product/addressList',
@@ -169,12 +169,12 @@ export default class extends wepy.app {
           iconPath: '/assets/images/bar_card_holder_2.png',
           selectedIconPath: '/assets/images/bar_card_holder_3.png'
         },
-        {
-          pagePath: 'pages/contact/contactIndex',
-          text: '通讯录',
-          iconPath: 'assets/images/bar_txl_1.png',
-          selectedIconPath: '/assets/images/bar_txl_2.png'
-        },
+        // {
+        //   pagePath: 'pages/contact/contactIndex',
+        //   text: '通讯录',
+        //   iconPath: 'assets/images/bar_txl_1.png',
+        //   selectedIconPath: '/assets/images/bar_txl_2.png'
+        // },
         {
           pagePath: 'pages/me/meIndex',
           text: '我',

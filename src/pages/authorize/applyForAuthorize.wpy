@@ -42,7 +42,7 @@
   <view class="wrap">
     <view class="logo"> 
       <image src="{{res_url}}/dc_load_logo.png?v=20190411" wx:if="{{res_url}}"/>
-      <view class="font-size-36 c-323232 ta-center">深卡人工智能名片</view>
+      <view class="font-size-36 c-323232 ta-center">硬骨头人工智能名片</view>
     </view>
     <view class="font-size-32 c-323232 ta-center sure-msg">请确认以下授权信息</view>
     <view class="font-size-28 c-909090 ta-center get-msg">·获取你的信息（头像，信息等）</view>

@@ -70,10 +70,10 @@
       </view>
       <view class="foot">
         <view class="logo">
-          <image wx:if="{{res_url}}" src="{{res_url}}/dc_load_logo.png?v=20190411"/>
-          <text class="font-size-36 c-323232">深卡名片</text>
+          <image wx:if="{{res_url}}" src="{{res_url}}/dc_load_logo.png"/>
+          <text class="font-size-36 c-323232">硬骨头名片</text>
         </view>
-        <view class="font-size-30 ta-center foot-title">工作社交就用深卡</view>
+        <view class="font-size-30 ta-center foot-title">工作社交就用硬骨头</view>
       </view>
       <button class="btn" form-type="submit"></button>
     </form>
@@ -97,7 +97,7 @@ export default class domain extends wepy.page {
   }
   config = {
     navigationBarBackgroundColor: '#ff7f02',
-    navigationBarTitleText: '深卡名片',
+    navigationBarTitleText: '硬骨头名片',
     enablePullDownRefresh: true
   }
   onLoad(option) {

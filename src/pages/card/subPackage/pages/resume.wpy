@@ -247,7 +247,7 @@ button[type='default'].default-btn {
             <view class="indent-2"> Hi!欢迎来到我的个人名片。我是XXX，在XXX公司XXX部（部门）担任XXX（职位），负责XXX工作（工作职责，如销售）。进入XXX公司以前，我曾在XXX、XXX（过往任职公司）任XXX、XXX（职位），</view>
             <view class="indent-2">拥有X年的XXX能力（核心能力，如：软件销售），在XXX领域（专业领域，如：软件销售）经验丰富。 </view>
             <view class="indent-2">工作之外，我喜欢阅读和跑步，与家人一起探索新的旅程是我最大的乐趣。（兴趣爱好）</view>
-            <view class="indent-2">您可以通过名片中的官网、企业动态、商城更多的了解深卡人工智能名片系统，如有业务合作或其他任何问题，请通过IM功能与我联系，我会第一时间回复您！</view>
+            <view class="indent-2">您可以通过名片中的官网、企业动态、商城更多的了解硬骨头名片系统，如有业务合作或其他任何问题，请通过IM功能与我联系，我会第一时间回复您！</view>
             <view style="margin: 0 20%;padding-top:15px;">
                 <button class="weui-btn default-btn" @tap="quote" style="line-height:2;" type="default">引用参考</button>
             </view>
@@ -676,7 +676,7 @@ export default class resume extends wepy.page {
     let p1 = '    Hi!欢迎来到我的个人名片。我是XXX，在XXX公司XXX部（部门）担任XXX（职位），负责XXX工作（工作职责，如销售）。进入XXX公司以前，我曾在XXX、XXX（过往任职公司）任XXX、XXX（职位），\n'
     let p2 = '    拥有X年的XXX能力（核心能力，如：软件销售），在XXX领域（专业领域，如：软件销售）经验丰富。\n'
     let p3 = '    工作之外，我喜欢阅读和跑步，与家人一起探索新的旅程是我最大的乐趣。（兴趣爱好）\n'
-    let p4 = '    您可以通过名片中的官网、企业动态、商城更多的了解深卡人工智能名片系统，如有业务合作或其他任何问题，请通过IM功能与我联系，我会第一时间回复您！'
+    let p4 = '    您可以通过名片中的官网、企业动态、商城更多的了解硬骨头名片系统，如有业务合作或其他任何问题，请通过IM功能与我联系，我会第一时间回复您！'
     this.signature.text = p1 + p2 + p3 + p4
     this.modal.show = false
   }

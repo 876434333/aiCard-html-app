@@ -214,7 +214,7 @@
       <view class="font-size-28 c-ffffff name-wrap">
         <text>您好，</text>
         <text class="name">{{createName}}</text>
-        <text>，您还没有建立自己的深卡名片哦</text>
+        <text>，您还没有建立自己的硬骨头名片哦</text>
       </view>
       <view class="create-btn">
         <form report-submit="true" bindsubmit="formSubmit" style="width:100%;height:100%;" class="flex">

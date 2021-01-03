@@ -241,7 +241,7 @@ button[type='default'].default-btn {
         <view style="position:absolute;top:0;left:0;right:0;bottom:0;" wx:if="{{tip}}">
             <view class="" style="background-color:#FAFAFA;color:#767676;padding: 20px 10px;font-size:13px;border-radius: 7px;box-shadow:0px 0px 10px 4px #EBEBEB;position:fixed;z-index:9999;width: 82%;right: 24px; top:120px;">
                 知识小贴士 : 什么是组织名称
-                <view style="text-indent:25px;padding-top:15px;">首次使用深卡人工智能名片系统，创建您的个人名片，您所属的组织团队名称:</view>
+                <view style="text-indent:25px;padding-top:15px;">首次使用硬骨头人工智能名片系统，创建您的个人名片，您所属的组织团队名称:</view>
                 <view>1. 如果您是创建公司团队, 请输入您的公司名称</view>
                 <view>2. 如果您是虚拟组织团队, 请输入您的组织团队名称</view>
                 <view>3. 如果您是临时体验, 您可以随意输入公司名称</view>

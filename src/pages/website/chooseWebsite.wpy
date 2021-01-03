@@ -232,7 +232,7 @@
     data = {
       openHidden: false,
       avatarText: '',
-      enterpriseName: '南京深卡网络技术有限公司',
+      enterpriseName: '南京葆桦口腔',
       current: 0,
       swiper: {
         autoplay: false

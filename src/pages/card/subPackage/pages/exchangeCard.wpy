@@ -36,7 +36,7 @@
             ctx.fillRect(0, 0, 900, 1080)
             ctx.setFontSize(30)
             ctx.setFillStyle('#e75152')
-            ctx.fillText('深卡名片', 286, 150)
+            ctx.fillText('硬骨头名片', 286, 150)
             ctx.setFillStyle('#646464')
             ctx.fillText('小程序码', 422, 150)
             ctx.setTextAlign('center')
@@ -46,7 +46,7 @@
             ctx.drawImage(that.qrCode, 300, 375, 255, 228)
 
             ctx.setFontSize(24)
-            ctx.fillText('深卡名片名片码', 414, 640)
+            ctx.fillText('硬骨头名片名片码', 414, 640)
 
             // 绘制圆形
             // ctx.arc(326, 836, 16, 0, Math.PI * 2, false)
@@ -54,8 +54,8 @@
             // ctx.fill()
 
             ctx.setFillStyle('#646464')
-            ctx.fillText('深卡名片', 414, 846)
-            ctx.fillText('—  创建深卡名片，获得专属小程序码  —', 414, 890)
+            ctx.fillText('硬骨头名片', 414, 846)
+            ctx.fillText('—  创建硬骨头名片，获得专属小程序码  —', 414, 890)
 
             // 将绘制的内容画到画布上
             ctx.draw()

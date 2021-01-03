@@ -236,9 +236,9 @@
     <view class="mask-black" wx:if="{{useMaskShow}}" @tap="useMask" data-method="maskHide"></view>
     <view class="mask" wx:if="{{useMaskShow}}">
       <view class="font-size-30 c-909090 content">
-        <view>欢迎使用深卡工作社交名片!</view>
+        <view>欢迎使用硬骨头硬骨头工作社交名片!</view>
         <view>请使用您的手机号作为账号（缺省密码为您的手机号）登陆PC端<text @tap="useMask" data-method="copySite">"{{site}}"</text>进行文件上传操作。</view>
-        <view>有操作问题请给深卡小蜜留言。</view>
+        <view>有操作问题请给硬骨头客服留言。</view>
       </view>
       <view class="mask-btn flex">
         <view class="font-size-36 c-323232 ta-center" @tap="useMask" data-method="maskHide">取消</view>
@@ -267,7 +267,7 @@ export default class meIndex extends wepy.page {
     enterpariseId: '',
     pendingPerson: 0,
     useMaskShow: false,
-    site: 'http://popular.deecard.net/#/ems/login'
+    site: 'https://web.tooth.bitekun.xin/#/ems/login'
   }
   onLoad(option) {
     this.staff = common.getStaffInfo(this)
